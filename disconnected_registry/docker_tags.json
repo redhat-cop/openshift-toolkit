@@ -1,0 +1,2 @@
+{"core_components":{"openshift3":["ose-deployer","ose-haproxy-router","ose-sti-builder","ose-docker-builder","ose-pod","ose-docker-registry"]}, "hosted_components": {"openshift3": ["logging-deployer","logging-elasticsearch","logging-kibana","logging-fluentd","logging-curator","logging-auth-proxy","metrics-deployer","metrics-hawkular-metrics","metrics-cassandra","metrics-heapster"]}}
+
