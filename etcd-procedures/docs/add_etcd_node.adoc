@@ -15,8 +15,6 @@ This procedure will cover the following points in order to scale up an existing 
 
 === Install etcd as a Docker container
 
-NOTE: Check if etcd needs to be installed in order to perform OCP upgrades
-
 ==== From one of the existing etcd Nodes, get the etcd container image version we need to run
 
     Containerized etcd:
