@@ -1,0 +1,199 @@
+---
+- name: Get facts from existing etcd Nodes
+  hosts: etcd
+  gather_facts: True
+
+- name: Configure and deploy etcd in new Node(s)
+  hosts: new_etcd
+  vars:
+    etcd_version: "{{ hostvars[groups['etcd'][0]]['ansible_local']['openshift']['etcd']['etcd_image'] }}"
+    num_hosts: "{{ groups['new_etcd'] | length }}"
+
+  tasks:
+
+    - name: Validate the number of new ETCD Nodes
+      fail: msg="For etc Cluster integrity reasons, just 1 member can be added at the same time"
+      when: num_hosts | int != 1
+
+    - name: Set etcd_version var if fact does not exist
+      set_fact:
+        etcd_version: "registry.access.redhat.com/rhel7/etcd:latest"
+      when: etcd_version is undefined
+
+    - name: Deploy etcd - Ensure IPTABLES rules for etcd are applied
+      iptables:
+        chain: OS_FIREWALL_ALLOW
+        ctstate: NEW
+        destination_port: "{{ item }}"
+        protocol: tcp
+        jump: ACCEPT
+      with_items:
+        - 2379
+        - 2380
+
+    - name: Deploy etcd - Ensure IPTABLES rules are persistent
+      lineinfile:
+        dest: /etc/sysconfig/iptables
+        state: present
+        line: -A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport {{ item }} -j ACCEPT
+        insertbefore: "^COMMIT"
+        backup: yes
+      with_items:
+        - 2379
+        - 2380
+
+    - name: Deploy etcd - Ensure etcd directory structure exists
+      file:
+        state: directory
+        dest: "{{ item }}"
+        setype: svirt_sandbox_file_t
+      with_items:
+        - /etc/etcd
+        - /var/lib/etcd
+
+    - name: Deploy etcd - Ensure etcd_container systemd service exists
+      template:
+        src: templates/etcd_container.service.j2
+        dest: /etc/systemd/system/etcd_container.service
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Deploy etcd - Ensure etcd_container service is enabled and stopped
+      systemd:
+        daemon_reload: yes
+        enabled: yes
+        name: etcd_container.service
+        state: stopped
+
+- name: Add new etcd Node(s) to the existing Cluster
+  hosts: etcd
+
+  tasks:
+
+    - name: Ensure certificate directories for new etcd Node(s) exist
+      file:
+        state: directory
+        dest: /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}
+      with_items:
+        - "{{ groups['new_etcd'] }}"
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Create server.csr and server.key
+      command: openssl req -new -keyout /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}/server.key -config /etc/etcd/ca/openssl.cnf -out /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}/server.csr -reqexts etcd_v3_req -batch -nodes -subj /CN={{ hostvars[item]['ansible_nodename'] }}
+      environment:
+        SAN: IP:{{ hostvars[item]['ansible_default_ipv4']['address'] }}
+      with_items:
+        - "{{ groups['new_etcd'] }}"
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Create server.crt
+      command: openssl ca -name etcd_ca -config /etc/etcd/ca/openssl.cnf -out /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}/server.crt -in /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}/server.csr -extensions etcd_v3_ca_server -batch
+      environment:
+        SAN: IP:{{ hostvars[item]['ansible_default_ipv4']['address'] }}
+      with_items:
+        - "{{ groups['new_etcd'] }}"
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Create peer.csr and peer.key
+      command: openssl req -new -keyout /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}/peer.key -config /etc/etcd/ca/openssl.cnf -out /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}/peer.csr -reqexts etcd_v3_req -batch -nodes -subj /CN={{ hostvars[item]['ansible_nodename'] }}
+      environment:
+        SAN: IP:{{ hostvars[item]['ansible_default_ipv4']['address'] }}
+      with_items:
+        - "{{ groups['new_etcd'] }}"
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Create peer.crt
+      command: openssl ca -name etcd_ca -config /etc/etcd/ca/openssl.cnf -out /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}/peer.crt -in /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}/peer.csr -extensions etcd_v3_ca_peer -batch
+      environment:
+        SAN: IP:{{ hostvars[item]['ansible_default_ipv4']['address'] }}
+      with_items:
+        - "{{ groups['new_etcd'] }}"
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Copy Certificate Authority
+      copy:
+        src: /etc/etcd/ca.crt
+        dest: /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}
+        remote_src: true
+      with_items:
+        - "{{ groups['new_etcd'] }}"
+      when: inventory_hostname == play_hosts[0]
+
+- name: Copy generated certs to new etcd Nodes
+  hosts: new_etcd
+
+  tasks:
+
+    - name: Copy files
+      synchronize:
+        src: "{{ item.source}}"
+        dest: "{{ item.dest }}"
+      with_items:
+        #- { source: '/etc/etcd/generated_certs/etcd-{{ ansible_nodename }}.tgz', dest: '/etc/etcd/' }
+        - { source: '/etc/etcd/generated_certs/etcd-{{ ansible_nodename }}/', dest: '/etc/etcd/' }
+        - { source: '/etc/etcd/etcd.conf', dest: '/etc/etcd/etcd.conf' }
+      delegate_to: "{{ groups.etcd[0] }}"
+
+    - name: Create new member and save generated params
+      command: docker exec -i etcd_container etcdctl -C https://{{ groups.etcd[0] }}:2379 --ca-file=/etc/etcd/ca.crt --cert-file=/etc/etcd/peer.crt --key-file=/etc/etcd/peer.key member add {{ ansible_nodename }} https://{{ ansible_default_ipv4.address }}:2380
+      register: new_member
+      delegate_to: "{{ groups.etcd[0] }}"
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Create new facts from the etcd Cluster member
+      set_fact:
+        etcd_entries: "{{ etcd_entries|default([]) + [ {'line': item} ] }}"
+      with_items:
+        - "{{ new_member.stdout_lines }}"
+
+    - name: Ensure etcd group exists
+      group:
+        name: etcd
+        state: present
+
+    - name: Ensure etcd user exists
+      user:
+        name: etcd
+        comment: etcd user
+        createhome: no
+        home: /var/lib/etcd
+        shell: /sbin/nologin
+        group: etcd
+        state: present
+
+    - name: Ensure /etc/etcd/etcd.conf is correctly configured
+      lineinfile:
+        dest: /etc/etcd/etcd.conf
+        regexp: "{{ item.reg }}"
+        line: "{{ item.exp }}"
+      with_items:
+        - { reg: "^ETCD_NAME=", exp: "ETCD_NAME={{ ansible_nodename }}" }
+        - { reg: "^ETCD_INITIAL_CLUSTER=", exp: "{{ etcd_entries[3].line }}" }
+        - { reg: "^ETCD_INITIAL_CLUSTER_STATE=", exp: "{{ etcd_entries[4].line }}" }
+        - { reg: "^ETCD_LISTEN_PEER_URLS=", exp: "ETCD_LISTEN_PEER_URLS=https://{{ ansible_default_ipv4.address }}:2380" }
+        - { reg: "^ETCD_LISTEN_CLIENT_URLS=", exp: "ETCD_LISTEN_CLIENT_URLS=https://{{ ansible_default_ipv4.address }}:2379" }
+        - { reg: "^ETCD_INITIAL_ADVERTISE_PEER_URLS=", exp: "ETCD_INITIAL_ADVERTISE_PEER_URLS=https://{{ ansible_default_ipv4.address }}:2380" }
+        - { reg: "^ETCD_ADVERTISE_CLIENT_URLS=", exp: "ETCD_ADVERTISE_CLIENT_URLS=https://{{ ansible_default_ipv4.address }}:2379" }
+
+    - name: Remove quotation marks from etcd.conf generated file
+      replace:
+        dest: /etc/etcd/etcd.conf
+        regexp: '"'
+        replace: ''
+
+    - name: Ensure files have the correct owner
+      file:
+        group: etcd
+        owner: etcd
+        dest: /etc/etcd
+        recurse: yes
+
+    - name: Wait to etcd be informed about the new member(s)
+      command: sleep 10
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Ensure etcd_container service is started
+      systemd:
+        name: etcd_container.service
+        state: started

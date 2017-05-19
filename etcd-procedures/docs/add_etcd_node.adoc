@@ -1,0 +1,93 @@
+== Introduction
+
+This procedure will cover the following points in order to scale up an existing etcd Cluster
+
+- Install etcd as a Docker container in RHEL or RHEL Atomic
+- Add etcd Nodes to existing etcd Cluster
+
+== Requirements
+
+- A working etcd Cluster with at least 1 Node
+- DNS working
+- Access to registry.access.redhat.com for image pulling
+- SSH access from the existing etcd Nodes to new etcd Nodes
+
+
+=== Install etcd as a Docker container
+
+NOTE: Check if etcd needs to be installed in order to perform OCP upgrades
+
+==== From one of the existing etcd Nodes, get the etcd container image version we need to run
+
+    Containerized etcd:
+      # docker ps | grep etcd | awk {'print $2'}
+    Package etcd:
+      # etcd --version | grep etcd | awk {'print "registry.access.redhat.com/rhel7/etcd:"$3'}
+
+==== Deploy etcd in the new Node
+
+    # export ETCD_IMAGE={output image from previuos step}
+    # iptables -A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 2379 -j ACCEPT
+    # iptables -A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 2380 -j ACCEPT
+
+WARNING: Add IPTABLES rules before COMMIT line to /etc/sysconfig/iptables
+
+    # mkdir /etc/etcd
+    # mkdir /var/lib/etcd
+    # chcon -Rt svirt_sandbox_file_t /etc/etcd /var/lib/etcd
+    # restorecon -Rv /etc/etcd /var/lib/etcd
+
+    # src/etcd_container.service.sh $ETCD_IMAGE
+    # systemctl daemon-reload
+    # systemctl enable etcd_container
+
+=== Add the new etcd Node to the existing Cluster
+
+==== From one of the existing etcd Nodes do the following
+
+    # cd /etc/etcd
+    # export NEW_ETCD="{new etcd node FQDN hostname}"
+    # export CN=$NEW_ETCD
+    # export SAN="IP:$(dig +short A $NEW_ETCD)"
+    # export PREFIX="./generated_certs/etcd-$CN/"
+    # mkdir $PREFIX
+
+    # openssl req -new -keyout ${PREFIX}server.key -config ca/openssl.cnf -out ${PREFIX}server.csr -reqexts etcd_v3_req -batch -nodes -subj /CN=$CN
+    # openssl ca -name etcd_ca -config ca/openssl.cnf -out ${PREFIX}server.crt -in ${PREFIX}server.csr -extensions etcd_v3_ca_server -batch
+
+    # openssl req -new -keyout ${PREFIX}peer.key -config ca/openssl.cnf -out ${PREFIX}peer.csr -reqexts etcd_v3_req -batch -nodes -subj /CN=$CN
+    # openssl ca -name etcd_ca -config ca/openssl.cnf -out ${PREFIX}peer.crt -in ${PREFIX}peer.csr -extensions etcd_v3_ca_peer -batch
+
+    # cp ca.crt ${PREFIX}
+    # cp etcd.conf ${PREFIX}
+    # tar -czvf ${PREFIX}${CN}.tgz -C ${PREFIX} .
+
+    # scp ${PREFIX}${CN}.tgz  $CN:/etc/etcd/
+
+    # export ETCD_CA_HOST="$(hostname)"
+    # export NEW_ETCD_IP="$(dig +short A $NEW_ETCD)"
+    # docker exec -it etcd_container etcdctl -C https://${ETCD_CA_HOST}:2379 --ca-file=/etc/etcd/ca.crt --cert-file=/etc/etcd/peer.crt --key-file=/etc/etcd/peer.key member add ${NEW_ETCD} https://${NEW_ETCD_IP}:2380 > /etc/etcd/${NEW_ETCD}.added
+    # scp /etc/etcd/${NEW_ETCD}.added $CN:/etc/etcd/
+
+
+==== From the new etcd Node do the following
+
+    # export NEW_ETCD="{new etcd node hostname}"
+    # export NEW_ETCD_IP="$(dig +short A $NEW_ETCD)"
+
+    # groupadd etcd
+    # useradd -c "etcd user" -d /var/lib/etcd -s /sbin/nologin -g etcd etcd
+
+    # tar -xf /etc/etcd/*.tgz -C /etc/etcd/ --overwrite
+    # chown etcd:etcd /etc/etcd/*
+
+    # src/etcdconf.vars.sh
+
+    # systemctl start etcd_container
+
+NOTE: As the etcd container must be pulled, review service logs until etcd process start: # journalctl -u etcd_container -f
+
+==== From the initial existing etcd Node do the following to check the status
+
+    # docker exec -it etcd_container etcdctl -C https://${ETCD_CA_HOST}:2379 --ca-file=/etc/etcd/ca.crt --cert-file=/etc/etcd/peer.crt --key-file=/etc/etcd/peer.key member list
+    # docker exec -it etcd_container etcdctl -C https://${ETCD_CA_HOST}:2379 --ca-file=/etc/etcd/ca.crt --cert-file=/etc/etcd/peer.crt --key-file=/etc/etcd/peer.key cluster-health
