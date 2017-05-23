@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import urllib
+import requests
 import json
 from pkg_resources import parse_version
 import argparse
@@ -8,6 +8,7 @@ import subprocess
 import logging
 import datetime
 import time
+import sys
 
 parser = argparse.ArgumentParser(description='Syncs images from a public docker registry to a private registry. Use '
                                              'this to populate private registries in a closed off environment. Must be '
@@ -69,10 +70,18 @@ def generate_url_list(dictionary_key, list_to_populate):
 
 
 def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type = None):
+    session = requests.Session()
     for url in url_list:
-        redhat_registry = urllib.urlopen(url)
-        # The object is returned as a string so it needs to be converted to a json object
-        image_tag_dictionary = json.loads(redhat_registry.read())
+        redhat_registry = session.get(url)
+        try:
+            # The object is returned as a string so it needs to be converted to a json object
+            image_tag_dictionary = json.loads(redhat_registry.text)
+        except ValueError as e:
+            logging.error("ERROR: Unable to parse response from registry")
+            logging.error("  URL: %s" % url)
+            logging.error("  Response Code: %s" % redhat_registry.code)
+            logging.error("  Response: %s" % redhat_registry.text)
+            sys.exit()
         # Get the latest version for a given release
         latest_tag = ''
         image_name = image_tag_dictionary['name']
