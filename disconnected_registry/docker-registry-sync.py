@@ -186,6 +186,7 @@ for namespace_and_image in latest_tag_list:
             logging.info("Tagging for this registry: %s" % options.local_registry)
             tag_images(options.remote_registry, options.local_registry, namespace_and_image)
             logging.info("Pushing into the local registry...")
+            push_images(options.local_registry, namespace_and_image)
 
 if failed_images:
     number_of_failures = len(failed_images)
