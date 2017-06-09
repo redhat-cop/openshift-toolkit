@@ -1,0 +1,64 @@
+---
+#perform validation check: ansible-playbook  --syntax-check /root/etcd-backup.yaml
+#sample invocation: ansible-playbook -i /etc/ansible/hosts /root/etcd-backup.yaml
+
+#stop all etcd services on all the masters
+- hosts: etcd
+  remote_user: root
+  tasks:
+  - name: Stop etcd on all master nodes
+    service:
+      name: etcd
+      state: stopped
+
+#etcd backup
+- hosts: etcd
+  remote_user: root
+  vars:
+    #Directory that will be backed up on each master
+    etc_dir: /var/lib/etcd
+    #Temporary location where the etc directory will be backed up.  This dir will be removed.
+    etc_backup_dir: /tmp/etcd.bak
+    #Prefix of the generated tar.gz file
+    tar_file_prefix: etcd
+    #Temporary location where the tar file will be created.  This file will be removed.
+    dest_backup_dir: /tmp
+    #Location (on the Ansible host) where the tar will be copied.
+    host_dest_dir: /tmp
+
+  tasks:
+  - name: Remove tmp backup etcd dir on each master
+    file:
+      path: "{{ etc_backup_dir }}"
+      state: absent
+      recurse: yes
+  - name: Backup etcd on each master
+    shell: "etcdctl backup --data-dir {{ etc_dir }} --backup-dir {{ etc_backup_dir }}"
+  - name: Tar etcd backup on master
+    shell: "tar czf {{ dest_backup_dir }}/{{ tar_file_prefix }}-{{ inventory_hostname }}.tar.gz ."
+    args:
+      chdir: "{{ etc_backup_dir }}"
+  - name: Remove tmp etcd backup dir on each master
+    file:
+      path: "{{ etc_backup_dir }}"
+      state: absent
+      recurse: yes
+  - name: Copy tar back to ansible host
+    fetch:
+      src: "{{ dest_backup_dir }}/{{ tar_file_prefix }}-{{ inventory_hostname }}.tar.gz"
+      dest: "{{ host_dest_dir }}"
+      flat: yes
+  - name: Remove temp tar file from master
+    file:
+      path: "{{ dest_backup_dir }}/{{ tar_file_prefix }}-{{ inventory_hostname }}.tar.gz"
+      state: absent
+      recurse: no
+
+#Restart etcd
+- hosts: etcd
+  remote_user: root
+  tasks:
+  - name: Start etcd service on each master
+    service:
+      name: etcd
+      state: start
