@@ -10,6 +10,12 @@ Requirements
 ------------
 None
 
+Dependencies
+------------
+
+Jooho.image-resize
+Jooho.openshift_custom_login_page.
+
 Roles Variables
 --------------
 
@@ -18,30 +24,29 @@ Roles Variables
 | openshift_master_conf_dir | /etc/origin/master                    |         yes          | Where openshift configuation dir is                                         |
 | master_url                | http://master1.example.com:8443       |         yes          | API Server URL                                                              |
 | login_html_dir            | /etc/origin/master                    |         yes          | Where new login html page will locate                                       |
-| logo_image                | /tmp/sample-openshift-ori.png         |         yes          | Logo image path                                                             |
 | temp_dir                  | /tmp                                  |         no           | Temp directory                                                              |
 | input_img                 | sample-openshift-ori.png              |         yes          | Original Image InputPath                                                    |
-| output_img                | /tmp/sample-openshift-ori-resize.png  |         yes          | Resized Image Output Path                                                   |
+| output_img_file           | /tmp/sample-openshift-ori.png         |         yes          | Resized Image Output/Logo Path                                              |
 | size                      | 193x144                               |         yes          | Resized Image Size                                                          |
-| force                     | false                                 |         no           | Overwrite Exist Image                                                       |
+| force                     | false                                 |         no           | If true, it overwrite exist resized image                                   |
 
 
-Dependencies
-------------
+**TIP**
+If you want to overwrite variables, updating group_vars/all file is the easest way.
 
-None
+
+Example group_vars
+------------------
+```
+output_img_file: /tmp/sample-openshift-ori.png
+```
+
 
 Example Execute Command
 -----------------------
 ~~~
 ansible-galaxy install -r requirements.yaml
 ansible-playbook  ./playbook.yaml  --extra-vars output_img_file=/tmp/sample-openshift-ori.png
-
-# Restart Openshift Master Server restart
-# Single Master
-ansible masters -m shell -a "systemctl restart atomic-openshift-master"
-# Multiple Masters
-ansible masters -m shell -a "systemctl restart atomic-openshift-master-api"
 ~~~
 
 Example Playbook
@@ -61,6 +66,18 @@ Example Playbook
 
 ~~~
 
+After Work
+----------
+~~~
+# Restart Openshift Master Server restart
+
+# Single Master
+ansible masters -m shell -a "systemctl restart atomic-openshift-master"
+
+# Multiple Masters
+ansible masters -m shell -a "systemctl restart atomic-openshift-master-api"
+
+~~
 License
 -------
 
