@@ -1,0 +1,15 @@
+---
+ 
+ - name: Resize image and create openshift custom login page with the image.
+   hosts: masters
+   gather_facts: false
+
+   pre_tasks:
+   - name: Shared values in roles
+     set_fact:
+        output_img_file: /tmp/sample-openshift-ori.png
+
+   roles:
+      - { role: Jooho.image-resize, output_img: "{{output_img_file}}", force: true}
+      - { role: Jooho.openshift-custom-login-page, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443", login_html_dir: "/etc/origin/master/stylesheet/images" }
+
