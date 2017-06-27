@@ -13,8 +13,8 @@ None
 Dependencies
 ------------
 
-Jooho.image-resize
-Jooho.openshift_custom_login_page.
+- Jooho.image-resize
+- Jooho.openshift_custom_login_page.
 
 Roles Variables
 --------------
