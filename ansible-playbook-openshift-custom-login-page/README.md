@@ -14,7 +14,7 @@ Dependencies
 ------------
 
 - Jooho.image-resize
-- Jooho.openshift_custom_login_page.
+- Jooho.openshift-custom-login-page
 
 Roles Variables
 --------------
@@ -61,9 +61,8 @@ Example Playbook
          output_img_file: /path/to/logo.png
  
   roles:
-     - { role: resize_image, output_img: "{{output_img_file}}", force: true, when: "{{inventory_hostname == groups.masters[0]}}"}
-     - { role: configure_login_logo, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443", login_html_dir: "/etc/origin/master/stylesheet/images" }
-
+     - { role: Jooho.image-resize, output_img: "{{output_img_file}}", force: true, when: "{{inventory_hostname == groups.masters[0]}}"}
+     - { role: Jooho.openshift-custom-login-page, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443", login_html_dir: "/etc/origin/master/stylesheet/images" }
 ~~~
 
 After Work
