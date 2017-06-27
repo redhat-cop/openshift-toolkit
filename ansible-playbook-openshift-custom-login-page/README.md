@@ -61,7 +61,7 @@ Example Playbook
          output_img_file: /tmp/sample-openshift-ori.png
  
   roles:
-     - { role: resize_image, output_img: "{{output_img_file}}", force: true}
+     - { role: resize_image, output_img: "{{output_img_file}}", force: true, when: "{{inventory_hostname ==groups.masters[0]}}"}
      - { role: configure_login_logo, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443", login_html_dir: "/etc/origin/master/stylesheet/images" }
 
 ~~~
