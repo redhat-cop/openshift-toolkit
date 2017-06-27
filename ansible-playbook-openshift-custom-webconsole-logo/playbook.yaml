@@ -1,0 +1,10 @@
+---
+ 
+ - name: Resize image and create openshift custom webconsole with the image.
+   hosts: masters
+   gather_facts: false
+
+   roles:
+      - { role: Jooho.image-resize, output_img: "{{output_img_file}}", force: true ,when: "{{inventory_hostname == groups.masters[0]}}" }
+      - { role: Jooho.openshift-custom-webconsole-logo, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443", stylesheet_base_dir: "/etc/origin/master/stylesheet", force: true }
+
