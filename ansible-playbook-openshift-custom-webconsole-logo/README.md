@@ -14,7 +14,7 @@ Dependencies
 ------------
 
 - Jooho.image-resize
-- Jooho.openshift_custom_webconsole_logo.
+- Jooho.openshift-custom-webconsole-logo.
 
 Roles Variables
 --------------
@@ -61,8 +61,8 @@ Example Playbook
          output_img_file: /path/to/logo.png
  
   roles:
-     - { role: resize_image, output_img: "{{output_img_file}}", force: true, when: "{{inventory_hostname == groups.masters[0]}}"}
-     - { role: configure_login_logo, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443", stylesheet_base_dir: "/etc/origin/master/stylesheet", force: true }
+     - { role: Jooho.image-resize, output_img: "{{output_img_file}}", force: true, when: "{{inventory_hostname == groups.masters[0]}}"}
+     - { role: Jooho.openshift-custom-webconsole-logo, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443", stylesheet_base_dir: "/etc/origin/master/stylesheet", force: true }
 
 ~~~
 
