@@ -77,7 +77,8 @@ ansible masters -m shell -a "systemctl restart atomic-openshift-master"
 # Multiple Masters
 ansible masters -m shell -a "systemctl restart atomic-openshift-master-api"
 
-~~
+~~~
+
 License
 -------
 
