@@ -13,8 +13,8 @@ None
 Dependencies
 ------------
 
-Jooho.image-resize
-Jooho.openshift_custom_webconsole_logo.
+- Jooho.image-resize
+- Jooho.openshift_custom_webconsole_logo.
 
 Roles Variables
 --------------
