@@ -38,7 +38,7 @@ If you want to overwrite variables, updating group_vars/all file is the easest w
 Example group_vars
 ------------------
 ```
-output_img_file: /tmp/sample-openshift-ori.png
+output_img_file: /path/to/logo.png
 ```
 
 
@@ -46,7 +46,7 @@ Example Execute Command
 -----------------------
 ~~~
 ansible-galaxy install -r requirements.yaml
-ansible-playbook  ./playbook.yaml  --extra-vars output_img_file=/tmp/sample-openshift-ori.png
+ansible-playbook  ./playbook.yaml  --extra-vars output_img_file=/path/to/logo.png
 ~~~
 
 Example Playbook
@@ -58,10 +58,10 @@ Example Playbook
   pre_tasks:
     - name: Shared values in roles
       set_fact:
-         output_img_file: /tmp/sample-openshift-ori.png
+         output_img_file: /path/to/logo.png
  
   roles:
-     - { role: resize_image, output_img: "{{output_img_file}}", force: true, when: "{{inventory_hostname ==groups.masters[0]}}"}
+     - { role: resize_image, output_img: "{{output_img_file}}", force: true, when: "{{inventory_hostname == groups.masters[0]}}"}
      - { role: configure_login_logo, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443", login_html_dir: "/etc/origin/master/stylesheet/images" }
 
 ~~~
