@@ -1,8 +1,8 @@
-##Cluster Management
+## Cluster Management
 
 This directory contains scripts specific to cluster managment intended to be run after an OCP installation for operationalization purposes.
 
-###Contents:
+### Contents:
 
 1. Garbage collection
 ..* Sets up spotify docker-gc on hosts. Should be run against ansible inventory file. 
