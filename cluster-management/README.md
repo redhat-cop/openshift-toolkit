@@ -5,5 +5,5 @@ This directory contains scripts specific to cluster managment intended to be run
 ### Contents:
 
 1. Garbage collection
-..* Sets up spotify docker-gc on hosts. Should be run against ansible inventory file. 
-..* View the documentation for spotify docker-gc here: [LINK](https://github.com/spotify/docker-gc)
+- Sets up spotify docker-gc on hosts. Should be run against ansible inventory file. 
+- View the documentation for spotify docker-gc here: [LINK](https://github.com/spotify/docker-gc)
