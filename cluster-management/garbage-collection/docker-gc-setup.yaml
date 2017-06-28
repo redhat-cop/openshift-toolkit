@@ -3,7 +3,7 @@
 
 ---
 - name: Setup docker garbage collector
-  hosts: all
+  hosts: nodes
   become: true
   vars:
     # Minimum age of containers and images to remove (seconds)
