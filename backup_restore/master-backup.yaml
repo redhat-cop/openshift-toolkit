@@ -1,0 +1,48 @@
+---
+#perform validation check: ansible-playbook  --syntax-check /root/master-backup.yaml
+#sample invocation: ansible-playbook -i /etc/ansible/hosts /root/master-backup.yaml
+
+- hosts: masters
+  remote_user: root
+  vars:
+    #Directory that will be backed up on each master
+    source_backup_dir: /etc/origin/master
+    #Prefix of the generated tar.gz file
+    tar_file_prefix: certs-and-keys
+    #Temporary location where the tar file will be created.  This file will be removed.
+    dest_backup_dir: /tmp
+    #Location (on the Ansible host) where the tar will be copied.
+    #This parameter should be updated to use a location that's backed up on the host.
+    host_dest_dir: /tmp
+
+  #Run the backup steps, NOTE this was written vs Ansible 2.2, so the archive task does not exist.
+  tasks:
+    #So we'll need to copy the files first, then create the tar ... or
+    #Create the tar then compress the tar
+  - name: Backup master certs (*.crt)
+    shell: "tar cf {{ dest_backup_dir }}/{{ tar_file_prefix }}-{{ inventory_hostname }}.tar *.crt"
+    args:
+      chdir: "{{ source_backup_dir }}"
+  - name: Backup master keys (*.key)
+    shell: "tar rf {{ dest_backup_dir }}/{{ tar_file_prefix }}-{{ inventory_hostname }}.tar *.key"
+    args:
+      chdir: "{{ source_backup_dir }}"
+  - name: Compress tar file to create tar.gz
+    shell: "gzip {{ dest_backup_dir }}/{{ tar_file_prefix }}-{{ inventory_hostname }}.tar"
+    args:
+      chdir: "{{ source_backup_dir }}"
+  - name: Remove old tar file
+    file:
+      path: "{{ dest_backup_dir }}/{{ tar_file_prefix }}-{{ inventory_hostname }}.tar"
+      state: absent
+      recurse: no
+  - name: Copy backup tar.gz back to ansible host machine
+    fetch:
+      src: "{{ dest_backup_dir }}/{{ tar_file_prefix }}-{{ inventory_hostname }}.tar.gz"
+      dest: "{{ host_dest_dir }}"
+      flat: yes
+  - name: Remove temp tar.gz file from master
+    file:
+      path: "{{ dest_backup_dir }}/{{ tar_file_prefix }}-{{ inventory_hostname }}.tar.gz"
+      state: absent
+      recurse: no
