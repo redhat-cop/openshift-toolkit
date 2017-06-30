@@ -48,10 +48,10 @@ The script will continue to run until exited, either through Ctrl+C or killing t
 | `NAMESPACE` | n/a; Required | Namespace the app is running in. |
 | `TOKEN` | n/a; Required | OpenShift User or ServiceAccount token. Can be retrieved using `oc whoami -t` for users or `oc serviceaccount get-token <sa name>` for serviceaccounts. |
 | `APP_NAME` | n/a; Required | Name of DeploymentConfig. Must match name shown in `oc get dc` |
-| HAWKULAR_HOSTNAME | n/a; Required | Route hostname for hawkular service. i.e. `oc get route hawkular-metrics -n openshift-infra` |
-| METRIC_PULL_INTERVAL_SECONDS | 60 | Number of seconds between each scale up check |
-| SCALE_UP_THRESHOLD | .7 | Floating numeric value 0-1; Percentage of total memory used over which a scale-up will happen |
-| CA_CERT | False | Path to a CA Certificate file to validate Hawkular certificate. Default value of `False` will turn off certificate checks and flash a warning message. |
+| `HAWKULAR_HOSTNAME` | n/a; Required | Route hostname for hawkular service. i.e. `oc get route hawkular-metrics -n openshift-infra` |
+| `METRIC_PULL_INTERVAL_SECONDS` | 60 | Number of seconds between each scale up check |
+| `SCALE_UP_THRESHOLD` | .7 | Floating numeric value 0-1; Percentage of total memory used over which a scale-up will happen |
+| `CA_CERT` | False | Path to a CA Certificate file to validate Hawkular certificate. Default value of `False` will turn off certificate checks and flash a warning message. |
 
 
 

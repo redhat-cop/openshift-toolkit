@@ -141,6 +141,9 @@ while True:
 
     usage = get_app_usage(app_name, current_pods)
     limit = get_app_limit(app_name, current_pods)
+    if limit <= 0:
+        print "ERROR: Cannot scale on apps with no limit defined. Program will exit."
+        sys.exit(1)
 
     print "Average usage is {}".format(usage)
     print "Averate limit is {}".format(limit)
