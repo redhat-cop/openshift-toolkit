@@ -13,8 +13,8 @@ None
 Dependencies
 ------------
 
-- Jooho.image-resize
-- Jooho.openshift-custom-login-page
+- [Jooho.image-resize](https://galaxy.ansible.com/Jooho/image-resize/)
+- [Jooho.openshift-custom-login-page](https://galaxy.ansible.com/Jooho/openshift-custom-login-page/)
 
 Roles Variables
 --------------
@@ -45,7 +45,7 @@ output_img_file: /path/to/logo.png
 Example Execute Command
 -----------------------
 ~~~
-ansible-galaxy install -r requirements.yaml
+ansible-galaxy install -r requirements.yaml --force
 ansible-playbook  ./playbook.yaml  --extra-vars output_img_file=/path/to/logo.png
 ~~~
 
