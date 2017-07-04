@@ -13,8 +13,8 @@ None
 Dependencies
 ------------
 
-- Jooho.image-resize
-- Jooho.openshift-custom-webconsole-logo.
+- [Jooho.image-resize](https://galaxy.ansible.com/Jooho/image-resize)
+- [Jooho.openshift-custom-webconsole-logo](https://galaxy.ansible.com/Jooho/openshift-custom-webconsole-logo)
 
 Roles Variables
 --------------
@@ -28,7 +28,7 @@ Roles Variables
 | input_img                 | sample-openshift-ori.png              |         yes          | Original Image InputPath                                                    |
 | output_img_file           | /tmp/logo.png                         |         yes          | Resized Image Output/Logo Path                                              |
 | size                      | 193x144                               |         yes          | Resized Image Size                                                          |
-| force                     | false                                 |         no           | If true, it overwrite exist resized image/css                               |
+| overwrite_force           | false                                 |         no           | If true, it overwrite exist resized image/css                               |
 
 
 **TIP**
@@ -45,8 +45,8 @@ output_img_file: /path/to/logo.png
 Example Execute Command
 -----------------------
 ~~~
-ansible-galaxy install -r requirements.yaml
-ansible-playbook  ./playbook.yaml  --extra-vars output_img_file=/path/to/logo.png
+ansible-galaxy install -r requirements.yaml --force
+ansible-playbook  ./playbook.yaml 
 ~~~
 
 Example Playbook
@@ -55,14 +55,10 @@ Example Playbook
 - name: Example Playbook
   hosts: masters
   gather_facts: false
-  pre_tasks:
-    - name: Shared values in roles
-      set_fact:
-         output_img_file: /path/to/logo.png
  
   roles:
-     - { role: Jooho.image-resize, output_img: "{{output_img_file}}", force: true, when: "{{inventory_hostname == groups.masters[0]}}"}
-     - { role: Jooho.openshift-custom-webconsole-logo, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443", stylesheet_base_dir: "/etc/origin/master/stylesheet", force: true }
+     - { role: Jooho.image-resize, output_img: "{{output_img_file}}", overwrite_force: true, when: "inventory_hostname == groups.masters[0]"}
+     - { role: Jooho.openshift-custom-webconsole-logo, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443", stylesheet_base_dir: "/etc/origin/master/stylesheet", overwrite_force: true }
 
 ~~~
 
