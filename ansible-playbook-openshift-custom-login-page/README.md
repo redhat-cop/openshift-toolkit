@@ -26,9 +26,9 @@ Roles Variables
 | login_html_dir            | /etc/origin/master                    |         yes          | Where new login html page will locate                                       |
 | temp_dir                  | /tmp                                  |         no           | Temp directory                                                              |
 | input_img                 | sample-openshift-ori.png              |         yes          | Original Image InputPath                                                    |
-| output_img_file           | /tmp/sample-openshift-ori.png         |         yes          | Resized Image Output/Logo Path                                              |
+| output_img_file           | /tmp/sample-openshift-ori.png         |         yes          | Resized Image Output and Logo Path                                          |
 | size                      | 193x144                               |         yes          | Resized Image Size                                                          |
-| force                     | false                                 |         no           | If true, it overwrite exist resized image                                   |
+| overwrite_force           | false                                 |         no           | If true, it overwrite exist resized image                                   |
 
 
 **TIP**
@@ -55,14 +55,10 @@ Example Playbook
 - name: Example Playbook
   hosts: masters
   gather_facts: false
-  pre_tasks:
-    - name: Shared values in roles
-      set_fact:
-         output_img_file: /path/to/logo.png
  
   roles:
-     - { role: Jooho.image-resize, output_img: "{{output_img_file}}", force: true, when: "{{inventory_hostname == groups.masters[0]}}"}
-     - { role: Jooho.openshift-custom-login-page, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443", login_html_dir: "/etc/origin/master/stylesheet/images" }
+     - { role: Jooho.image-resize, output_img: "{{output_img_file}}", overwrite_force: true, when: "{{inventory_hostname == groups.masters[0]}}"}
+     - { role: Jooho.openshift-custom-login-page, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443" }
 ~~~
 
 After Work
