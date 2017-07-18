@@ -21,44 +21,33 @@ Roles Variables
 
 | Name                      | Default value                         |        Requird       | Description                                                                 |
 |---------------------------|---------------------------------------|----------------------|-----------------------------------------------------------------------------|
-| openshift_master_conf_dir | /etc/origin/master                    |         yes          | Where openshift configuation dir is                                         |
-| master_url                | http://master1.example.com:8443       |         yes          | API Server URL                                                              |
-| login_html_dir            | /etc/origin/master                    |         yes          | Where new login html page will locate                                       |
+| openshift_master_conf_dir | /etc/origin/master                    |         no           | Where openshift configuation dir is                                         |
+| master_url                | http://master1.example.com:8443       |         no           | API Server URL                                                              |
+| login_html_dir            | /etc/origin/master                    |         no           | Where new login html page will locate                                       |
 | temp_dir                  | /tmp                                  |         no           | Temp directory                                                              |
-| input_img                 | sample-openshift-ori.png              |         yes          | Original Image InputPath                                                    |
-| output_img_file           | /tmp/sample-openshift-ori.png         |         yes          | Resized Image Output and Logo Path                                          |
-| size                      | 193x144                               |         yes          | Resized Image Size                                                          |
-| overwrite_force           | false                                 |         no           | If true, it overwrite exist resized image                                   |
+| input_img                 | sample-openshift-ori.png              |         no           | Original Image InputPath                                                    |
+| output_img_file           | /tmp/sample-openshift-ori.png         |         no           | Resized Image Output and Logo Path                                          |
+| size                      | 193x144                               |         no           | Resized Image Size                                                          |
+| overwrite_force           | true                                  |         no           | If true, it overwrite exist resized image
 
-
-**TIP**
-If you want to overwrite variables, updating group_vars/all file is the easest way.
-
-
-Example group_vars
-------------------
-```
-output_img_file: /path/to/logo.png
-```
-
+** Important **
+If you want to use different vars from default one, you should specify them with -e options
 
 Example Execute Command
 -----------------------
+
+- Download roles
 ~~~
-ansible-galaxy install -r requirements.yaml --force
-ansible-playbook  ./playbook.yaml  --extra-vars output_img_file=/path/to/logo.png
+ansible-galaxy install -f -r requirements.yaml
 ~~~
 
-Example Playbook
-----------------
+- Use default logo
 ~~~
-- name: Example Playbook
-  hosts: masters
-  gather_facts: false
- 
-  roles:
-     - { role: Jooho.image-resize, output_img: "{{output_img_file}}", overwrite_force: true, when: "{{inventory_hostname == groups.masters[0]}}"}
-     - { role: Jooho.openshift-custom-login-page, logo_img: "{{output_img_file}}", master_url: "master1.example.com:8443" }
+ansible-playbook ./playbook.yaml -e master_url=lb.example.com:8443
+~~~
+
+- Use your own logo
+ansible-playbook ./playbook.yaml -e master_url=lb.example.com:8443 -e input_img=/path/to/logo.png
 ~~~
 
 After Work
