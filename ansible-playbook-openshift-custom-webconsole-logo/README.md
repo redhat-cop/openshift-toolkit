@@ -30,7 +30,7 @@ Roles Variables
 | size                      | 193x144                               |         no           | Resized Image Size                                                          |
 | force                     | true                                  |         no           | If true, it overwrite exist resized image/css                               |
 
-** Important **
+**NOTE**
 If you want to use different vars from default one, you should specify them with -e options
 
 Example Execute Command
