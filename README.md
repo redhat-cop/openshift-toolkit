@@ -10,3 +10,4 @@ A collection of code samples to help you get started with OpenShift
 * [Maintenance and Cleanup](./maintenance_cleanup/)
 * [Storage Related Tasks (PV creating)](./storage/)
 * [Pre install OpenShift validation](./validation/)
+* [Sample Install Inventories](./install/)

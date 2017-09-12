@@ -7,12 +7,12 @@ This directory contains several different versions of inventories for a fictiona
 * [Base Install](./c1-ocp.myorg.com-base): This configuration represents a bare bones install of a Highly Available, disconnected cluster.
 * [LDAP Authentication](./c1-ocp.myorg.com-ldap): This configuration shows how LDAP Authentication can be layered on the base install.
 * [Metrics] (Coming Soon)
-* [Loggin] (Coming Soon)
+* [Logging] (Coming Soon)
 * [Custom Named Certificates] (Coming Soon)
 
 ## Usage
 
-Any of the inventories should be fairly runnable out of the box, assume you've got infrastructure to match. Use it as a base to start your own cluster builds, or build your infrastructure using the [Install Guide](http://playbooks-rhtconsulting.rhcloud.com/playbooks/installation/) and run it directly:
+Any of the inventories should be fairly runnable out of the box, assuming you've got infrastructure to match. Use it as a base to start your own cluster builds, or build your infrastructure using the [Install Guide](http://playbooks-rhtconsulting.rhcloud.com/playbooks/installation/) and run it directly:
 
 ```
 ansible-playbook -i ./c1-ocp.myorg.com-base/hosts /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
