@@ -6,7 +6,7 @@
 - name: Configure and deploy etcd in new Node(s)
   hosts: new_etcd
   vars:
-    etcd_version: "{{ hostvars[groups['etcd'][0]]['ansible_local']['openshift']['etcd']['etcd_image'] }}"
+    etcd_version: "{{ hostvars[groups['etcd'][0]]['ansible_local']['openshift']['etcd']['etcd_image'] | default('registry.access.redhat.com/rhel7/etcd:latest') }}"
     num_hosts: "{{ groups['new_etcd'] | length }}"
 
   tasks:
@@ -15,14 +15,9 @@
       fail: msg="For etc Cluster integrity reasons, just 1 member can be added at the same time"
       when: num_hosts | int != 1
 
-    - name: Set etcd_version var if fact does not exist
-      set_fact:
-        etcd_version: "registry.access.redhat.com/rhel7/etcd:latest"
-      when: etcd_version is undefined
-
     - name: Deploy etcd - Ensure IPTABLES rules for etcd are applied
       iptables:
-        chain: OS_FIREWALL_ALLOW
+        chain: INPUT
         ctstate: NEW
         destination_port: "{{ item }}"
         protocol: tcp
@@ -35,7 +30,7 @@
       lineinfile:
         dest: /etc/sysconfig/iptables
         state: present
-        line: -A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport {{ item }} -j ACCEPT
+        line: -A INPUT -p tcp -m state --state NEW -m tcp --dport {{ item }} -j ACCEPT
         insertbefore: "^COMMIT"
         backup: yes
       with_items:
@@ -111,11 +106,56 @@
         - "{{ groups['new_etcd'] }}"
       when: inventory_hostname == play_hosts[0]
 
-    - name: Copy Certificate Authority
-      copy:
+    - name: Ensure a temporary directoy exists to store certificates on Ansible Host
+      file:
+        path: /var/tmp/etcd-{{ hostvars[item]['ansible_nodename'] }}
+        state: directory
+        mode: 0755
+      with_items:
+        - "{{ groups['new_etcd'] }}"
+      when: inventory_hostname == play_hosts[0]
+      delegate_to: localhost
+
+    - name: Copy etcd config file to Ansible Host
+      fetch:
+        src: /etc/etcd/etcd.conf
+        dest: /var/tmp/etcd-{{ hostvars[item]['ansible_nodename'] }}
+        flat: yes
+        fail_on_missing: yes
+        validate_checksum: no
+      with_items:
+        - "{{ groups['new_etcd'] }}"
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Copy Certificate Authority to Ansible host
+      fetch:
         src: /etc/etcd/ca.crt
-        dest: /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}
-        remote_src: true
+        dest: /var/tmp/etcd-{{ hostvars[item]['ansible_nodename'] }}
+        flat: yes
+        fail_on_missing: yes
+        validate_checksum: no
+      with_items:
+        - "{{ groups['new_etcd'] }}"
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Copy Certificate File to Ansible host
+      fetch:
+        src: /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}/peer.crt
+        dest: /var/tmp/etcd-{{ hostvars[item]['ansible_nodename'] }}/peer.crt
+        flat: yes
+        fail_on_missing: yes
+        validate_checksum: no
+      with_items:
+        - "{{ groups['new_etcd'] }}"
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Copy Certificate Key to Ansible host
+      fetch:
+        src: /etc/etcd/generated_certs/etcd-{{ hostvars[item]['ansible_nodename'] }}/peer.key
+        dest: /var/tmp/etcd-{{ hostvars[item]['ansible_nodename'] }}/peer.key
+        flat: yes
+        fail_on_missing: yes
+        validate_checksum: no
       with_items:
         - "{{ groups['new_etcd'] }}"
       when: inventory_hostname == play_hosts[0]
@@ -129,11 +169,9 @@
       synchronize:
         src: "{{ item.source}}"
         dest: "{{ item.dest }}"
+        recursive: yes
       with_items:
-        #- { source: '/etc/etcd/generated_certs/etcd-{{ ansible_nodename }}.tgz', dest: '/etc/etcd/' }
-        - { source: '/etc/etcd/generated_certs/etcd-{{ ansible_nodename }}/', dest: '/etc/etcd/' }
-        - { source: '/etc/etcd/etcd.conf', dest: '/etc/etcd/etcd.conf' }
-      delegate_to: "{{ groups.etcd[0] }}"
+        - { source: '/var/tmp/etcd-{{ ansible_nodename }}/', dest: '/etc/etcd/' }
 
     - name: Create new member and save generated params
       command: docker exec -i etcd_container etcdctl -C https://{{ groups.etcd[0] }}:2379 --ca-file=/etc/etcd/ca.crt --cert-file=/etc/etcd/peer.crt --key-file=/etc/etcd/peer.key member add {{ ansible_nodename }} https://{{ ansible_default_ipv4.address }}:2380

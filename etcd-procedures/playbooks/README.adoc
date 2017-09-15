@@ -29,4 +29,4 @@ newmaster01.mak.lab openshift_hostname=newmaster01.mak.lab openshift_public_host
 
 === Playbooks
 
-* link:playbooks/etcd_scaleup.yml[etcd_scaleup.yml]: automatically scales up an existing etcd cluster with a new member included in [new_etcd] group. This is only aplicable to containerized etcd Clusters.
+* link:playbooks/etcd_scaleup.yml[etcd_scaleup.yml]: automatically scales up an existing etcd cluster with a new member included in [new_etcd] group. This is only aplicable to containerized etcd Clusters. *Once the Cluster has been scaled up, the information about the new member must be added manually to 'etcdClientInfo' section in 'master-config.yaml' file on every Master in order to use this Node as well* 
