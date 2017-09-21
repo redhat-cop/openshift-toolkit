@@ -1,0 +1,51 @@
+#The following playbook creates a recurring docker-gc job. It adds the redhat oce-specific images to an excluder file so that vendor availability will not be a potential point of failure.
+
+
+---
+- name: Setup docker garbage collector
+  hosts: nodes
+  become: true
+  vars:
+    # Minimum age of containers and images to remove (seconds)
+    time: 3600
+
+  tasks:
+  - name: Clone docker-gc repo
+    git:
+      repo: 'https://github.com/spotify/docker-gc.git'
+      dest: /tmp/docker-gc
+  - name: Copy docker-gc script to proper location
+    copy:
+      src: /tmp/docker-gc/docker-gc
+      dest: /usr/sbin/docker-gc
+      remote_src: true
+  - name: Create gc cron job
+    shell: echo -e "#!/bin/bash\nGRACE_PERIOD_SECONDS={{ time }} /usr/sbin/docker-gc" > /etc/cron.hourly/docker-gc
+  - name: Delete temp files
+    file:
+      state: absent
+      path: /tmp/docker-gc
+  - name: Add permissions on cron job
+    file:
+      path: /usr/sbin/docker-gc
+      mode: u=rwX,g=rX,o=rX
+  - name: Add permissions on cron job
+    file:
+      path: /etc/cron.hourly/docker-gc
+      mode: u=rwX,g=rX,o=rX
+  - name: Add exclude file
+    file:
+      path: /etc/docker-gc-exclude
+      state: touch
+      mode: "u=rw,g=r,o=r"
+  - name: Add excluder for Red Hat Images
+    blockinfile:
+      dest: /etc/docker-gc-exclude
+      block: |
+        registry.access.redhat.com/openshift3/ose-haproxy-router:*
+        registry.access.redhat.com/openshift3/ose-deployer:*
+        registry.access.redhat.com/openshift3/ose-sti-builder:*
+        registry.access.redhat.com/openshift3/ose-docker-builder:*
+        registry.access.redhat.com/openshift3/ose-pod:*
+        registry.access.redhat.com/openshift3/ose-docker-registry:*
+        registry.access.redhat.com/openshift3/ose-recycler:*
