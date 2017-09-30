@@ -5,7 +5,7 @@
 1. Install a registry server
 
   ```bash
-  yum install -y docker docker-distribution firewalld
+  yum install -y docker docker-distribution python-requests firewalld
 
   systemctl enable firewalld
   systemctl start firewalld
