@@ -1,0 +1,32 @@
+== How to use these playbooks
+
+In order to use these playbooks, an updated Ansible Inventory file for your OCP Cluster is needed. This Inventory file must follow the instructions provided during the https://docs.openshift.com/container-platform/latest/install_config/install/advanced_install.html#configuring-ansible[Advance Install for OCP]
+
+These playbooks will identify the etcd members to operate by adding the following to the Inventory file:
+
+- A new entry called *new_etcd* under [OSEv3:children] group
+- A new group called *[new_etcd]*
+
+As an example:
+
+[source,text]
+----
+[OSEv3:children]
+masters
+nodes
+etcd
+new_nodes
+new_etcd
+
+[etcd]
+master01.mak.lab openshift_hostname=master01.mak.lab openshift_public_hostname=master01.mak.lab
+master02.mak.lab openshift_hostname=master02.mak.lab openshift_public_hostname=master02.mak.lab
+master03.mak.lab openshift_hostname=master03.mak.lab openshift_public_hostname=master03.mak.lab
+
+[new_etcd]
+newmaster01.mak.lab openshift_hostname=newmaster01.mak.lab openshift_public_hostname=newmaster01.mak.lab
+----
+
+=== Playbooks
+
+* link:playbooks/etcd_scaleup.yml[etcd_scaleup.yml]: automatically scales up an existing etcd cluster with a new member included in [new_etcd] group. This is only aplicable to containerized etcd Clusters. *Once the Cluster has been scaled up, the information about the new member must be added manually to 'etcdClientInfo' section in 'master-config.yaml' file on every Master in order to use this Node as well* 

@@ -1,0 +1,5 @@
+== Introduction
+
+This procedure will cover the following points
+
+- Replace existing etcd Cluster with new Nodes

@@ -1,0 +1,7 @@
+== How to use these documents
+
+The following documents can be used to operate an etcd Cluster. Each one contains detailed explanation, commands included step by step, about a particular procedure for an etcd Cluster.
+
+=== Documents
+
+- link:docs/add_etcd_node.adoc[add_etcd_node.adoc]: this document can be used to *scale up* an existing etcd Cluster with new member(s). This is only aplicable to containerized etcd Clusters.
