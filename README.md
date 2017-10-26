@@ -3,7 +3,7 @@ A collection of code samples to help you get started with OpenShift
 
 ## Solutions
 
-* [Backup and Restoration](./backup-restore/)
+* [Backup and Restoration](./backup_restore/)
 * [Custom Autoscaler](./custom-autoscaler/)
 * [Syncing a Registry for Bootstrapping Disconnected Installs](./disconnected_registry/)
 * [A set of documents and playbooks to operate etcd clusters in OpenShift](./etcd-procedures)
