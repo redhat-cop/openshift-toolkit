@@ -47,6 +47,7 @@ ansible-playbook ./playbook.yaml -e master_url=lb.example.com:8443
 ~~~
 
 - Use your own logo
+~~~
 ansible-playbook ./playbook.yaml -e master_url=lb.example.com:8443 -e input_img=/path/to/logo.png
 ~~~
 
