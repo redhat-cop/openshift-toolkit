@@ -1,0 +1,10 @@
+== Different procedures to operate etcd in OCP
+
+=== Project Description
+
+The aim of this repository is to generate the required tools (ansible playbooks and/or automated scripts) and documentation to operate an etcd cluster for *Openshift Container Platform* and cover the following topics
+
+- Add new member to an existing Cluster (tested in etcd coming with OCP 3.4, 3.5 and 3.6): link:docs/add_etcd_node.adoc[Document] and link:playbooks/etcd_scaleup.yml[Playbook]
+- Remove a member from an existing Cluster
+- Replace members from an existing Cluster
+- Disaster Recovering

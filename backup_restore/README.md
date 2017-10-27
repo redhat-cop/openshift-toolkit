@@ -10,8 +10,6 @@ The following table outlines the scripts and purpose.
 
 Script / Playbook Name | Description | Notes
 --- | --- | ---
-`ocp-etcd-master-backup.sh` | Creates an etcd backup. | Must be run on an OCP master node.
 `ocp-master-cert-backup.sh` | Creates a backup of the master certificates. | Must be run on an OCP master node.
 `ocp-project-backup.sh` | Creates a yaml backup of all projects in the OpenShift cluster. | Must be run on an OCP master node.
-`etcd-backup.yaml` | Ansible clone of the bash `ocp-etcd-master-backup.sh` script.
 `master-backup.yaml` | Ansible clone of the bash `ocp-master-cert-backup.sh` script.

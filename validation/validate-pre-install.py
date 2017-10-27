@@ -89,6 +89,9 @@ if options.openshift_version:
     elif "3.5" in options.openshift_version:
         openshift_server_repo ="rhel-7-server-ose-3.5-rpms rhel-7-fast-datapath-rpms"
         default_docker_hashes = original_docker_file_hashes_docker_1_12
+    elif "3.6" in options.openshift_version:
+        openshift_server_repo ="rhel-7-server-ose-3.6-rpms rhel-7-fast-datapath-rpms"
+        default_docker_hashes = original_docker_file_hashes_docker_1_12        
 else:
     print(textColors.WARNING + "Unable to find ose rpm repo for the version you specifiied. Defaulting to 3.4..."
           + textColors.ENDC)
