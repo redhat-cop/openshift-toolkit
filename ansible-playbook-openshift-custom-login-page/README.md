@@ -57,7 +57,7 @@ or
 ansible-playbook -i /path/to/hosts  -b ./playbook.yaml    #(if ansible_ssh_user is not root)
 ~~~
 
-- Use your own logo
+- **Use your own logo**
 ~~~
 ansible-playbook -i /path/to/hosts  ./playbook.yaml -e input_img=/path/to/logo.png
 
