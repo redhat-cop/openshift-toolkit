@@ -32,17 +32,17 @@ Roles Variables
 **NOTE**
 If you want to use different vars from default one, you should specify them with -e options
 
-Example Execute Command
+Example Execute Commands
 -----------------------
 
-- Download roles
+- **Download roles**
 ~~~
 cd openshift-toolkit/ansible-playbook-openshift-custom-login-logo
 
 ansible-galaxy install -f -r requirements.yaml -p ./roles
 ~~~
 
-- Use default logo
+- **Use default logo**
 
 *Options:*
   - If you don't use root user, you need to add `-b` (=sudo)
@@ -50,22 +50,37 @@ ansible-galaxy install -f -r requirements.yaml -p ./roles
   - If you want to use your own image, please add `-e input_img=/path/to/logo.png`
 
 ~~~
-ansible-playbook ./playbook.yaml                           
+ansible-playbook -i /path/to/hosts ./playbook.yaml                           
 
 or 
 
-ansible-playbook -b ./playbook.yaml    #(if ansible_ssh_user is not root)
+ansible-playbook -i /path/to/hosts  -b ./playbook.yaml    #(if ansible_ssh_user is not root)
 ~~~
 
 - Use your own logo
 ~~~
-ansible-playbook ./playbook.yaml -e input_img=/path/to/logo.png
+ansible-playbook -i /path/to/hosts  ./playbook.yaml -e input_img=/path/to/logo.png
 
 or 
 
-ansible-playbook -b ./playbook.yaml -e input_img=/path/to/logo.png    #(if ansible_ssh_user is not root)
+ansible-playbook -i /path/to/hosts  -b ./playbook.yaml -e input_img=/path/to/logo.png    #(if ansible_ssh_user is not root)
 ~~~
 
+Sample Hosts file
+------------------
+
+```
+[masters]
+dhcp1-1.gsslab.rdu2.redhat.com
+
+[etcd]
+dhcp1-1.gsslab.rdu2.redhat.com
+
+[nodes]
+dhcp1-1.gsslab.rdu2.redhat.com openshift_node_labels="{'region': 'mgmt', 'role': 'master'}"
+dhcp1-2.gsslab.rdu2.redhat.com openshift_node_labels="{'region': 'infra', 'role': 'app', 'zone': 'default'}"
+dhcp1-3.gsslab.rdu2.redhat.com openshift_node_labels="{'region': 'infra', 'role': 'app', 'zone': 'default'}"
+```
 
 License
 -------
