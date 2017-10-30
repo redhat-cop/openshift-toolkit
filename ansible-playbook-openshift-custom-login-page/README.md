@@ -82,6 +82,15 @@ dhcp1-2.gsslab.rdu2.redhat.com openshift_node_labels="{'region': 'infra', 'role'
 dhcp1-3.gsslab.rdu2.redhat.com openshift_node_labels="{'region': 'infra', 'role': 'app', 'zone': 'default'}"
 ```
 
+Video Clip
+----------
+[![asciicast](https://asciinema.org/a/144986.png)](https://asciinema.org/a/144986)
+
+
+Result Image
+------------
+![alt Result](./result.png)
+
 License
 -------
 
