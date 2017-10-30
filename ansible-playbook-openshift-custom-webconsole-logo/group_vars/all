@@ -1,1 +1,2 @@
-output_img_file: /tmp/logo.png
+output_img_file: "{{temp_dir}}/logo_resized.png"
+

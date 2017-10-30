@@ -26,7 +26,6 @@ Roles Variables
 | login_html_dir            | /etc/origin/master                    |         no           | Where new login html page will locate                                       |
 | temp_dir                  | /tmp                                  |         no           | Temp directory                                                              |
 | input_img                 | sample-openshift-ori.png              |         no           | Original Image InputPath                                                    |
-| output_img_file           | /tmp/sample-openshift-ori.png         |         no           | Resized Image Output and Logo Path                                          |
 | size                      | 193x144                               |         no           | Resized Image Size                                                          |
 | overwrite_force           | true                                  |         no           | If true, it overwrite exist resized image
 
@@ -38,31 +37,35 @@ Example Execute Command
 
 - Download roles
 ~~~
-ansible-galaxy install -f -r requirements.yaml
+cd openshift-toolkit/ansible-playbook-openshift-custom-login-logo
+
+ansible-galaxy install -f -r requirements.yaml -p ./roles
 ~~~
 
 - Use default logo
+
+*Options:*
+  - If you don't use root user, you need to add `-b` (=sudo)
+  - If you want to restart master manually, please add `-e restart_master=false`
+  - If you want to use your own image, please add `-e input_img=/path/to/logo.png`
+
 ~~~
-ansible-playbook ./playbook.yaml -e master_url=lb.example.com:8443
+ansible-playbook ./playbook.yaml                           
+
+or 
+
+ansible-playbook -b ./playbook.yaml    #(if ansible_ssh_user is not root)
 ~~~
 
 - Use your own logo
 ~~~
-ansible-playbook ./playbook.yaml -e master_url=lb.example.com:8443 -e input_img=/path/to/logo.png
+ansible-playbook ./playbook.yaml -e input_img=/path/to/logo.png
+
+or 
+
+ansible-playbook -b ./playbook.yaml -e input_img=/path/to/logo.png    #(if ansible_ssh_user is not root)
 ~~~
 
-After Work
-----------
-~~~
-# Restart Openshift Master Server restart
-
-# Single Master
-ansible masters -m shell -a "systemctl restart atomic-openshift-master"
-
-# Multiple Masters
-ansible masters -m shell -a "systemctl restart atomic-openshift-master-api"
-
-~~~
 
 License
 -------
