@@ -88,6 +88,15 @@ node1.example.com   openshift_node_labels="{'region': 'infra', 'role': 'app', 'z
 node2.example.com   openshift_node_labels="{'region': 'infra', 'role': 'app', 'zone': 'default'}"
 ```
 
+Video Clip
+----------
+[![asciicast](https://asciinema.org/a/144986.png)](https://asciinema.org/a/144986)
+
+
+Result Image
+------------
+![alt Result](./result.png)
+
 License
 -------
 
