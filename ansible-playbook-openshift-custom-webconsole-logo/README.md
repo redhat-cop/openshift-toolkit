@@ -63,7 +63,7 @@ Quick Demo Script
 ```
 git clone https://github.com/redhat-cop/openshift-toolkit.git
 
-cd openshift-toolkit/ansible-playbook-openshift-custom-login-logo
+cd openshift-toolkit/ansible-playbook-openshift-custom-webconsole-logo
 
 ansible-galaxy install -f -r requirements.yaml -p ./roles
 
@@ -88,6 +88,13 @@ master1.example.com openshift_node_labels="{'region': 'mgmt', 'role': 'master'}"
 node1.example.com   openshift_node_labels="{'region': 'infra', 'role': 'app', 'zone': 'default'}"
 node2.example.com   openshift_node_labels="{'region': 'infra', 'role': 'app', 'zone': 'default'}"
 ```
+
+Tip commands
+-------------
+Copy ssh key to all nodes
+~~~
+for node in $(cat ./hosts|grep -v '\['|awk '{print $1}'|grep -v '^$'|uniq); do ssh-copy-id -i ~/.ssh/id_rsa.pub  $node; done
+~~~
 
 Movie Clips
 -----------
