@@ -45,41 +45,47 @@ ansible-galaxy install -f -r requirements.yaml -p ./roles
 - **Use default logo**
 
 *Options:*
-  - If you don't use root user, you need to add `-b` (=sudo)
   - If you want to restart master manually, please add `-e restart_master=false`
   - If you want to use your own image, please add `-e input_img=/path/to/logo.png`
 
 ~~~
 ansible-playbook -i /path/to/hosts ./playbook.yaml                           
-
-or 
-
-ansible-playbook -i /path/to/hosts  -b ./playbook.yaml    #(if ansible_ssh_user is not root)
 ~~~
 
 - **Use your own logo**
 ~~~
 ansible-playbook -i /path/to/hosts  ./playbook.yaml -e input_img=/path/to/logo.png
-
-or 
-
-ansible-playbook -i /path/to/hosts  -b ./playbook.yaml -e input_img=/path/to/logo.png    #(if ansible_ssh_user is not root)
 ~~~
+
+Quick Demo Script
+----------------
+```
+git clone https://github.com/redhat-cop/openshift-toolkit.git
+
+cd openshift-toolkit/ansible-playbook-openshift-custom-login-logo
+
+ansible-galaxy install -f -r requirements.yaml -p ./roles
+
+wget https://i.ytimg.com/vi/iai4v0ocX3w/maxresdefault.jpg -O ./superman.jpg
+
+ansible-playbook -i ./hosts ./playbook.yaml -e input_img=./superman.jpg
+
+```
 
 Sample Hosts file
 ------------------
 
 ```
 [masters]
-dhcp1-1.gsslab.rdu2.redhat.com
+master1.example.com
 
 [etcd]
-dhcp1-1.gsslab.rdu2.redhat.com
+master1.example.com
 
 [nodes]
-dhcp1-1.gsslab.rdu2.redhat.com openshift_node_labels="{'region': 'mgmt', 'role': 'master'}"
-dhcp1-2.gsslab.rdu2.redhat.com openshift_node_labels="{'region': 'infra', 'role': 'app', 'zone': 'default'}"
-dhcp1-3.gsslab.rdu2.redhat.com openshift_node_labels="{'region': 'infra', 'role': 'app', 'zone': 'default'}"
+master1.example.com openshift_node_labels="{'region': 'mgmt', 'role': 'master'}"
+node1.example.com   openshift_node_labels="{'region': 'infra', 'role': 'app', 'zone': 'default'}"
+node2.example.com   openshift_node_labels="{'region': 'infra', 'role': 'app', 'zone': 'default'}"
 ```
 
 License
