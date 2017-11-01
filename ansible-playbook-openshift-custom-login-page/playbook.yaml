@@ -1,0 +1,10 @@
+---
+ 
+ - name: Resize image and create openshift custom login page with the image.
+   hosts: masters
+   gather_facts: false
+
+   roles:
+     - { role: Jooho.image-resize, overwrite_force: true ,when: "inventory_hostname == groups.masters[0]" }
+     - { role: Jooho.openshift-custom-login-page, logo_img: "{{output_img}}" }
+
