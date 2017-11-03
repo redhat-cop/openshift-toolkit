@@ -4,4 +4,4 @@ The following documents can be used to operate an etcd Cluster. Each one contain
 
 === Documents
 
-- link:docs/add_etcd_node.adoc[add_etcd_node.adoc]: this document can be used to *scale up* an existing etcd Cluster with new member(s). This is only aplicable to containerized etcd Clusters.
+- link:./add_etcd_node.adoc[add_etcd_node.adoc]: this document can be used to *scale up* an existing etcd Cluster with new member(s). This is only aplicable to containerized etcd Clusters.
