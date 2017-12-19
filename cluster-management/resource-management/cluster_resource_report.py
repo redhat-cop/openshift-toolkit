@@ -30,7 +30,7 @@ def query_cluster_api(master_fqdn):
     client_key_base64 = os.popen("sudo python -c 'print %s'" % client_key_list_compre).read()
     client_key_decoded = client_key_base64.strip().strip("[").strip("]").strip("'").decode('base64')
  
-    pod_url = "https://%s:8443/api/v1/namespaces/default/pods" % master_fqdn
+    pod_url = "https://%s:8443/api/v1/pods" % master_fqdn
     with NamedTemporaryFile(delete=False) as client_file:
       client_file.write(client_cert_decoded)
       client_file.flush()
@@ -57,7 +57,7 @@ def process_json_response(dictionary, json_response, resource_type):
     # { <node>: {<pod_name>: {<container_name> {<memory_request>: <value>, <cpu_request>: <value>} }}}
     # each pod will have multiple containers in it
     pod_name = json_response['metadata']['name']
-    node_name = json_response['spec']['host']
+    node_name = json_response['spec']['nodeName']
     container_count = 0
     while container_count != len(json_response['spec']['containers']):
         container_name = json_response['spec']['containers'][container_count]['name']
