@@ -15,6 +15,6 @@ A collection of code samples to help you get started with OpenShift
 * [Sample Install Inventories](./install/)
 
 ## Ansible Playbooks
-* [Create Openshift Custom Login Page with New Logo](./ansible-playbook-openshift-custom-login-page/)
-* [Change Openshift Webconsole Logo](./ansible-playbook-openshift-custom-webconsole-logo/)
+* [Create Openshift Custom Login Page with New Logo](./branding/ansible-playbook-openshift-custom-login-page/)
+* [Change Openshift Webconsole Logo](./branding/ansible-playbook-openshift-custom-webconsole-logo/)
 
