@@ -108,7 +108,7 @@ done
 
 
 #Now tar it.
-tar_archive="${ARCHIVE_LOCATION}/${temp_backup_path}-$(date -u '+%Y%m%d-%k%M%S').tar.gz"
+tar_archive="${ARCHIVE_LOCATION}/${temp_backup_path}-$(date -u '+%Y%m%d-%H%M%S').tar.gz"
 echo "Creating archive of project backups at: ${tar_archive}"
 tar -czf ${tar_archive}  ${temp_backup_path}
 
