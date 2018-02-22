@@ -1,0 +1,16 @@
+kind: NetworkPolicy
+apiVersion: extensions/v1beta1
+metadata:
+  name: apiserver-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: apiserver
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: controller-manager
+      ports:
+        - port: 6443
+          protocol: TCP

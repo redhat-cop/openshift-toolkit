@@ -1,0 +1,22 @@
+kind: NetworkPolicy
+apiVersion: extensions/v1beta1
+metadata:
+  name: cassandra-nodes-ingress
+spec:
+  podSelector:
+    matchLabels:
+      metrics-infra: hawkular-cassandra
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            metrics-infra: hawkular-cassandra
+      ports:
+        - port: 7000
+          protocol: TCP
+        - port: 7001
+          protocol: TCP
+        - port: 9042
+          protocol: TCP
+        - port: 9160
+          protocol: TCP

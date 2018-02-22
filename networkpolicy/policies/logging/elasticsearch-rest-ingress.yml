@@ -1,0 +1,22 @@
+kind: NetworkPolicy
+apiVersion: extensions/v1beta1
+metadata:
+  name: elasticsearch-rest-ingress
+spec:
+  podSelector:
+    matchLabels:
+      component: es
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            component: fluentd
+      - podSelector:
+          matchLabels:
+            component: kibana
+      - podSelector:
+          matchLabels:
+            component: curator
+      ports:
+        - port: 9200
+          protocol: TCP
