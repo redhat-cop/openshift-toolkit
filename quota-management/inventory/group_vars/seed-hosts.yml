@@ -3,7 +3,7 @@ openshift_cluster_content:
   content:
   - name: "myapp-space2-quota"
     file: "{{ inventory_dir }}/../files/quota-medium.yml"
-    namespace: "myapp-space2-quota"
+    namespace: "myapp-space2"
   - name: "myapp-space4"
     file: "{{ inventory_dir }}/../files/quota-large.yml"
     namespace: "myapp-space4"

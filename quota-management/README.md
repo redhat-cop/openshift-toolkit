@@ -16,25 +16,25 @@ The following sections describe how we piece together this approach.
 
 ### Quota Files
 
-First off, each quota is definied in its own YAML file (`./quota-small.yml`, `./quota-medium/yml`, `./quota-large.yml`) in a git repo. Each file contains the same _List_ of objects all with the same names:
+First off, each quota is definied in its own YAML file (`./files/quota-small.yml`, `./files/quota-medium.yml`, `./files/quota-large.yml`) in a git repo. Each file contains the same _List_ of objects all with the same names:
 
 ```
-$ awk '/name:/{print}' file/quota-*.yml
-file/quota-large.yml:    name: quota
-file/quota-large.yml:    name: burst-quota
-file/quota-large.yml:    name: limits
-file/quota-medium.yml:    name: quota
-file/quota-medium.yml:    name: burst-quota
-file/quota-medium.yml:    name: limits
-file/quota-small.yml:    name: quota
-file/quota-small.yml:    name: burst-quota
-file/quota-small.yml:    name: limits
+$ awk '/name:/{print}' files/quota-*.yml
+files/quota-large.yml:    name: quota
+files/quota-large.yml:    name: burst-quota
+files/quota-large.yml:    name: limits
+files/quota-medium.yml:    name: quota
+files/quota-medium.yml:    name: burst-quota
+files/quota-medium.yml:    name: limits
+files/quota-small.yml:    name: quota
+files/quota-small.yml:    name: burst-quota
+files/quota-small.yml:    name: limits
 ```
 
 The _profiles_ are differentiated using labels and annotations:
 
 ```
-$ awk /'labels:/{getline; print}' file/quota-*.yml
+$ awk /'labels:/{getline; print}' files/quota-*.yml
       quota-tier: Large
       quota-tier: Large
       quota-tier: Large
@@ -45,7 +45,7 @@ $ awk /'labels:/{getline; print}' file/quota-*.yml
       quota-tier: Small
       quota-tier: Small
 
-$ awk /'annotations:/{getline; print}' file/quota-*.yml
+$ awk /'annotations:/{getline; print}' files/quota-*.yml
       openshift.io/quota-tier: Large
       openshift.io/quota-tier: Large
       openshift.io/quota-tier: Large
@@ -59,14 +59,14 @@ $ awk /'annotations:/{getline; print}' file/quota-*.yml
 
 ### Apply Quota Tier Profiles
 
-When set up as above, our _tier profiles_ may be easily applied, reapplied, and overlayed on top of eachother. Let's look at an example.
+When set up as above, our _tier profiles_ may be easily applied, reapplied, and overlayed on top of each other. Let's look at an example.
 
 A user wants to create a new project, and does so via `oc new-project myapp-space`.
 
 A `cluster-admin` can then simply go in and apply the small quota to that project in order to limit resource consumption in that new project.
 
 ```
-$ oc apply -f file/quota-small.yml -n myapp-space
+$ oc apply -f files/quota-small.yml -n myapp-space
 resourcequota "quota" created
 resourcequota "burst-quota" created
 limitrange "limits" created
@@ -88,11 +88,11 @@ Now let's create a couple more projects all with a small quota.
 
 ```
 $ oc new-project myapp-space2
-$ oc apply -f file/quota-small.yml -n myapp-space2
+$ oc apply -f files/quota-small.yml -n myapp-space2
 $ oc new-project myapp-space3
-$ oc apply -f file/quota-small.yml -n myapp-space3
+$ oc apply -f files/quota-small.yml -n myapp-space3
 $ oc new-project myapp-space4
-$ oc apply -f file/quota-small.yml -n myapp-space4
+$ oc apply -f files/quota-small.yml -n myapp-space4
 ```
 
 And now, let's re-examine what we've got as far as quotas established.
@@ -121,7 +121,7 @@ As you can see, we have 4 projects, each with our Small _tier profile_ applied t
 Now let's say that `myapp-space2` is consistently running up against it's quota, and we would like to grant it some more breathing room. Doing that is as easy as applying a larger _tier profile_ to the project.
 
 ```
-$ oc apply -f file/quota-medium.yml -n myapp-space2
+$ oc apply -f files/quota-medium.yml -n myapp-space2
 resourcequota "quota" configured
 resourcequota "burst-quota" configured
 limitrange "limits" configured
@@ -151,7 +151,7 @@ myapp-space4   limits/limits   10m       quota-tier=Small
 Just for the sake of experimentation, let's also apply the Large profile to a project.
 
 ```
-$ oc apply -f file/quota-large.yml -n myapp-space4
+$ oc apply -f files/quota-large.yml -n myapp-space4
 resourcequota "quota" configured
 resourcequota "burst-quota" configured
 limitrange "limits" configured
@@ -181,7 +181,7 @@ This section describes a few ways we can advance the solution through advanced c
 
 OpenShift allows cluster administrators to customize the default template that is used to create projects when a user runs `oc new-project`. That process is described further in the [OpenShift Documentation](https://docs.openshift.com/container-platform/latest/admin_guide/managing_projects.html#modifying-the-template-for-new-projects).
 
-In order to lower the overhead in our process, we can embed the Small _tier profile_ in our cluster's default project template. This way, every project that gets created will, by default, be restrcted by a small quota. An example of what this default project template looks like can be found in `file/default-project-template.yml`.
+In order to lower the overhead in our process, we can embed the Small _tier profile_ in our cluster's default project template. This way, every project that gets created will, by default, be restrcted by a small quota. An example of what this default project template looks like can be found in `files/default-project-template.yml`.
 
 With that template applied and configured, this ensures that all projects in our cluster will automatically be created with a small default quota. Now, the only action that needs to be taken by an administrator is to update a project to a larger quota.
 
