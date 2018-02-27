@@ -1,13 +1,16 @@
 kind: NetworkPolicy
 apiVersion: extensions/v1beta1
 metadata:
-  name: elasticsearch-nodes-ingress
+  name: asb-etcd-ingress
 spec:
   podSelector:
     matchLabels:
-      component: es
+      app: etcd
   ingress:
     - from:
       - podSelector:
           matchLabels:
-            component: es
+            app: openshift-ansible-service-broker
+      ports:
+        - port: 2379
+          protocol: TCP
