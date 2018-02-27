@@ -16,7 +16,7 @@ The following sections describe how we piece together this approach.
 
 ### Quota Files
 
-First off, each quota is definied in its own YAML file (`./files/quota-small.yml`, `./files/quota-medium.yml`, `./files/quota-large.yml`) in a git repo. Each file contains the same _List_ of objects all with the same names:
+First off, each quota is defined in its own YAML file (`./files/quota-small.yml`, `./files/quota-medium.yml`, `./files/quota-large.yml`) in a git repo. Each file contains the same _List_ of objects all with the same names:
 
 ```
 $ awk '/name:/{print}' files/quota-*.yml
