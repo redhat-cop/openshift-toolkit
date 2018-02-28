@@ -1,0 +1,40 @@
+---
+  openshift_cluster_content:
+    - object: default-project
+      content:
+        - name: docker-registry
+          file: "{{ inventory_dir }}/../policies/default/docker-registry-ingress.yml"
+          namespace: default
+          tags:
+            - default
+    - object: service-broker
+      content:
+        - name: kube-service-catalog
+          file: "{{ inventory_dir }}/../policies/kube-service-catalog/"
+          namespace: kube-service-catalog
+          tags:
+            - service-catalog
+        - name: openshift-template-service-broker
+          file: "{{ inventory_dir }}/../policies/openshift-template-service-broker/"
+          namespace: openshift-template-service-broker
+          tags:
+            - service-catalog
+        - name: openshift-ansible-service-broker
+          file: "{{ inventory_dir }}/../policies/openshift-ansible-service-broker/"
+          namespace: openshift-ansible-service-broker
+          tags:
+            - service-catalog
+    - object: logging
+      content:
+        - name: logging
+          file: "{{ inventory_dir }}/../policies/logging/"
+          namespace: logging
+          tags:
+            - logging
+    - object: metrics
+      content:
+        - name: metrics
+          file: "{{ inventory_dir }}/../policies/openshift-infra/"
+          namespace: openshift-infra
+          tags:
+            - metrics

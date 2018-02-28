@@ -1,0 +1,13 @@
+kind: NetworkPolicy
+apiVersion: extensions/v1beta1
+metadata:
+  name: cassandra-nodes-ingress
+spec:
+  podSelector:
+    matchLabels:
+      metrics-infra: hawkular-cassandra
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            metrics-infra: hawkular-cassandra

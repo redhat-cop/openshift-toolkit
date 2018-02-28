@@ -1,0 +1,15 @@
+kind: NetworkPolicy
+apiVersion: extensions/v1beta1
+metadata:
+  name: registry-allow-other-namespaces
+spec:
+  podSelector:
+    matchLabels:
+      docker-registry: default
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels: {}
+      ports:
+        - port: 5000
+          protocol: TCP

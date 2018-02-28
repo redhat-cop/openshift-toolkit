@@ -1,0 +1,24 @@
+---
+
+- name: Run OpenShift applier
+  import_playbook: roles/casl-ansible/playbooks/openshift-cluster-seed.yml
+  when: skip_applier is not defined or (skip_applier is defined and skip_applier|bool)
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    baseline_policies_dir: "{{ inventory_dir }}/../policies/baseline"
+    apply_default_policies: true
+  tasks:
+    - name: Apply Default Policies to All Projects
+      block:
+        - name: Get List of OpenShift Projects
+          command: >
+            oc get namespaces -o name
+          register: openshift_namespaces
+        - name: Apply Default Policies
+          command: >
+            oc apply -f {{ baseline_policies_dir }} -n {{ item | basename }}
+          with_items: "{{ openshift_namespaces.stdout_lines }}"
+      when: apply_default_policies
