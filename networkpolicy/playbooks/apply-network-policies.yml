@@ -14,11 +14,11 @@
     - name: Apply Default Policies to All Projects
       block:
         - name: Get List of OpenShift Projects
-          shell: >
+          command: >
             oc get namespaces -o name
           register: openshift_namespaces
         - name: Apply Default Policies
-          shell: >
+          command: >
             oc apply -f {{ baseline_policies_dir }} -n {{ item | basename }}
           with_items: "{{ openshift_namespaces.stdout_lines }}"
       when: apply_default_policies
