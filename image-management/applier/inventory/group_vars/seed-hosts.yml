@@ -1,0 +1,7 @@
+openshift_cluster_content:
+- object: Set up Image Builds
+  content:
+  - name: Create Image Builds Project
+    template: "{{ inventory_dir }}/../templates/project.yml"
+    params: "{{ inventory_dir }}/../params/image-management-project"
+    template_action: create

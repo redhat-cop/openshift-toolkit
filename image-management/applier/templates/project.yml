@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: project
+metadata:
+  annotations:
+  name: project
+objects:
+- kind: ProjectRequest
+  apiVersion: v1
+  metadata:
+    name: ${PROJECT_NAME}
+    creationTimestam: null
+  displayName: ${PROJECT_DISPLAY}
+  description: ${PROJECT_DESCRIPTION}
+parameters:
+- description: The Name of the Project
+  name: PROJECT_NAME
+  required: true
+- description: The Pretty Name for the Project
+  name: PROJECT_DISPLAY
+  required: false
+- description: An optional project description
+  name: PROJECT_DESCRIPTION
+  required: false
