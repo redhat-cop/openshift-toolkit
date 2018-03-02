@@ -48,6 +48,9 @@ items:
     - default:
         cpu: 100m
         memory: 512Mi
+      defaultRequest:
+        cpu: 100m
+        memory: 512Mi
       max:
         cpu: 200m
         memory: 2Gi

@@ -121,6 +121,9 @@ objects:
     - default:
         cpu: 50m
         memory: 256Mi
+      defaultRequest:
+        cpu: 50m
+        memory: 256Mi
       max:
         cpu: 100m
         memory: 1Gi
