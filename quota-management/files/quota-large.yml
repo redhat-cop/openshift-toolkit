@@ -1,0 +1,60 @@
+kind: List
+metadata: {}
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    annotations:
+      openshift.io/quota-tier: Large
+    labels:
+      quota-tier: Large
+    name: quota
+  spec:
+    hard:
+      cpu: "2"
+      memory: 8Gi
+    scopes:
+    - NotTerminating
+- apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    annotations:
+      openshift.io/quota-tier: Large
+    labels:
+      quota-tier: Large
+    name: burst-quota
+  spec:
+    hard:
+      cpu: "2"
+      memory: 9Gi
+- apiVersion: v1
+  kind: LimitRange
+  metadata:
+    annotations:
+      openshift.io/quota-tier: Large
+    labels:
+      quota-tier: Large
+    name: limits
+  spec:
+    limits:
+    - max:
+        cpu: 200m
+        memory: 2Gi
+      min:
+        cpu: 20m
+        memory: 256Mi
+      type: Pod
+    - default:
+        cpu: 100m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 100m
+        memory: 512Mi
+      max:
+        cpu: 200m
+        memory: 2Gi
+      min:
+        cpu: 20m
+        memory: 256Mi
+      type: Container

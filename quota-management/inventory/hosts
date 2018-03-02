@@ -1,0 +1,5 @@
+[masters]
+master-[0:2].c1-osp.myorg.com
+
+[seed-hosts:children]
+masters
