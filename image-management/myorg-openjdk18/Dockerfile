@@ -1,4 +1,4 @@
-FROM redhat-openjdk-18/openjdk18-openshift
+FROM redhat-openjdk-18/openjdk18-openshift:1.2
 
 USER root
 
