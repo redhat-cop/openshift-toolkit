@@ -6,18 +6,25 @@ Tools to configure OpenShift with a set of baseline [NetworkPolicy](https://docs
 
 The [OpenShift SDN](https://docs.openshift.com/container-platform/latest/install_config/configuring_sdn.html) offers several plugin implementations. One of these plugins supports NetworkPolicy, which provides for more fine grained policies for communication between pods running on the cluster. Once enabled, all communication between pods within OpenShift are not restricted in any way. The tools within this repository will configure an OpenShift environment with a set of default policies that support a [zero trust network](https://tigera.io/wp-content/uploads/2017/12/wp-tigera-zero-trust-cloud-native-environment.pdf).
 
-The following sections describes the relevant concepts along with tooling to automate the application of these policies to an OpenShift environment. 
+The following sections describes the relevant concepts along with tooling to automate the application of these policies to an OpenShift environment.
 
 ## Concepts
 
 ### Deny Traffic By Default
 
-Since NetworkPolicy does not restrict pod communication by default, this would violate many of the benefits that are enforced by other SDN plugins (such as the _ovs-multitenant_ SDN plugin. To support a zero trust network policy, all components within the cluster should not be able to communicate with each other unless a Network Policy is configured. This requires the application of a policy to deny traffic within each project. A [default-deny.yml](baseline/default-deny.yml) NetworkPolicy is available which can be applied to each project to enforce this rule.
+Since NetworkPolicy does not restrict pod communication by default, this would violate many of the benefits that are enforced by other SDN plugins (such as the _ovs-multitenant_ SDN plugin). To support a zero trust network policy, all components within the cluster should not be able to communicate with each other unless a Network Policy is configured. This requires the application of a policy to deny traffic within each project. A [default-deny.yml](policies/baseline/default-deny.yml) NetworkPolicy is available which can be applied to each project to enforce this rule.
 
+### Deny Egress Traffic by Default
+
+OpenShift provides a similar `EgressNetworkPolicy` object for controlling outbound traffic leaving the cluster. A [deny-external-egress.yml](policies/baseline/deny-external-egress.yml) EgressNetworkPolicy is available to be defined which will drop all connections attempting to leave the cluster from the project in which it is defined.
+
+### Allowing Traffic Within a Namespace
+
+Once the default NetworkPolicy of denying all traffic has been applied to each project, all traffic between all pods will be denied. This includes traffic between pods in the same namespace or even different replicas of the same deployment. A typical OpenShift user would probably expect that pods within the same namespace to be able to communicate, so we can add a rule for that. A [allow-from-same-namespace.yml](policies/baseline/allow-from-same-namespace.yml) NetworkPolicy can be applied to enable inter-project communication.
 
 ### Allowing Traffic Between Namespaces
 
-Once the default NetworkPolicy of denying all traffic has been applied to each project, traffic from other namespaces will also be disabled. In certain cases, cross namespace communication is required in order for the operation of the components within OpenShift. In particular, traffic must be able to flow from the router deployed within the _default_ project and other namespaces. Network Policies can be applied to allow traffic from other namespaces based on namespace labels. 
+With the default NetworkPolicy of denying all traffic has been applied to each project, traffic from other namespaces will also be disabled. In certain cases, cross namespace communication is required in order for the operation of the components within OpenShift. In particular, traffic must be able to flow from the router deployed within the _default_ project and other namespaces. Network Policies can be applied to allow traffic from other namespaces based on namespace labels.
 
 Execute the following commands to label the namespaces which traffic will be originating from to support cross namespace communication
 
@@ -31,7 +38,7 @@ Additional namespaces may be configured if desired.
 
 ### Allow Traffic from the Default Namespace
 
-OpenShift provides a routing layer to external traffic to access applications within the cluster. Since traffic traverses through router(s) which are deployed within the _default_ namespace, a trust must be established between projects and the default namespace for traffic to flow properly. The NetworkPolicy [allow-from-default-namespace.yml](baseline/allow-from-default.yml) is available that should be applied to all projects.
+OpenShift provides a routing layer to external traffic to access applications within the cluster. Since traffic traverses through router(s) which are deployed within the _default_ namespace, a trust must be established between projects and the default namespace for traffic to flow properly. The NetworkPolicy [allow-from-default-namespace.yml](policies/baseline/allow-from-default.yml) is available that should be applied to all projects.
 
 ### Configure Existing Projects
 
@@ -39,8 +46,10 @@ To enforce for projects which are configured during the installation of OpenShif
 
 ```
 for namespace in `oc get namespaces -o name`; do
-oc apply -f baseline/default-deny.yml -n $namespace
-oc apply -f baseline/allow-from-default-namespace.yml -n $namespace
+oc apply -f policies/baseline/default-deny.yml -n $namespace
+oc apply -f policies/baseline/deny-external-egress.yml -n $namespace
+oc apply -f policies/baseline/allow-from-same-namespace.yml -n $namespace
+oc apply -f policies/baseline/allow-from-default-namespace.yml -n $namespace
 done
 ```
 
@@ -61,6 +70,33 @@ openshift_project_request_template_edits:
         name: default-deny
       spec:
         podSelector:
+  - key: objects
+    action: append
+    value:
+      apiVersion: v1
+      kind: EgressNetworkPolicy
+      metadata:
+        name: deny-external-egress
+      spec:
+        egress:
+        - type: Allow
+          to:
+            dnsName: github.com
+        - type: Deny
+          to:
+            cidrSelector: 0.0.0.0/0
+  - key: objects
+    action: append
+    value:
+      apiVersion: extensions/v1beta1
+      kind: NetworkPolicy
+      metadata:
+        name: allow-from-same-namespace
+      spec:
+        podSelector:
+        ingress:
+        - from:
+          - podSelector: {}
   - key: objects
     action: append
     value:
