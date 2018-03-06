@@ -40,7 +40,7 @@ NOTE: All `Allow` rules must come _before_ the `Deny` rule, or they will not be 
 
 ### Allowing Traffic Within a Namespace
 
-Once the default NetworkPolicy of denying all traffic has been applied to each project, all traffic between all pods will be denied. This includes traffic between pods in the same namespace or even different replicas of the same deployment. A typical OpenShift user would probably expect that pods within the same namespace to be able to communicate, so we can add a rule for that. A [allow-from-same-namespace.yml](policies/baseline/allow-from-same-namespace.yml) NetworkPolicy can be applied to enable inter-project communication.
+Once the default NetworkPolicy of denying all traffic has been applied to each project, all traffic between all pods will be denied. This includes traffic between pods in the same namespace or even different replicas of the same deployment. A typical OpenShift user would probably expect that pods within the same namespace to be able to communicate, so we can add a rule for that. A [allow-from-same-namespace.yml](policies/baseline/allow-from-same-namespace.yml) NetworkPolicy can be applied to enable intra-project communication.
 
 ### Allowing Traffic Between Namespaces
 
