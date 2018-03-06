@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: EgressNetworkPolicy
+metadata:
+  name: deny-external-egress
+spec:
+  egress:
+  - type: Deny
+    to:
+      cidrSelector: 0.0.0.0/0
