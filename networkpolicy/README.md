@@ -16,7 +16,27 @@ Since NetworkPolicy does not restrict pod communication by default, this would v
 
 ### Deny Egress Traffic by Default
 
-OpenShift provides a similar `EgressNetworkPolicy` object for controlling outbound traffic leaving the cluster. A [deny-external-egress.yml](policies/baseline/deny-external-egress.yml) EgressNetworkPolicy is available to be defined which will drop all connections attempting to leave the cluster from the project in which it is defined.
+OpenShift provides a similar `EgressNetworkPolicy` object for controlling outbound traffic leaving the cluster. A [deny-external-egress.yml](policies/baseline/deny-external-egress.yml) `EgressNetworkPolicy` is available to be defined which will drop all connections attempting to leave the cluster from the project in which it is defined.
+
+It is likely that there will be specific endpoints outside of the cluster that will need to be accessible to applications in the platform. Those endpoints can be added as `Allow` rules within an `EgressNetworkPolicy`. If there is a common set of endpoints or a range of IP addresses that should be a common allowance, those cold be added to the default [deny-external-egress.yml](policies/baseline/deny-external-egress.yml).
+
+An `Allow` rule for a range of IP addresses would look like:
+
+```
+- type: Allow
+  to:
+    cidrSelector: 10.24.4.0/23
+```
+
+Alternatively, if there is a specific domain or hostname that you'd like to allow requests to, you can define that using a `dnsName` selector.
+
+```
+- type: Allow
+  to:
+    dnsName: myorg.com
+```
+
+NOTE: All `Allow` rules must come _before_ the `Deny` rule, or they will not be applied.
 
 ### Allowing Traffic Within a Namespace
 
@@ -79,9 +99,6 @@ openshift_project_request_template_edits:
         name: deny-external-egress
       spec:
         egress:
-        - type: Allow
-          to:
-            dnsName: github.com
         - type: Deny
           to:
             cidrSelector: 0.0.0.0/0
