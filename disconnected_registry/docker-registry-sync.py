@@ -50,7 +50,7 @@ console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 
 # Set the default release version incase unspecified
-release_version = '3.4'
+release_version = '3.7'
 
 if options.ocp_version is not None:
     release_version = options.ocp_version
@@ -93,7 +93,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
                 splice_position = 4
             else:
                 splice_position = 3
-            if release_version in tag[:splice_position]:
+            if release_version in tag[:splice_position] or not 'openshift' in url:
                 # There may be a better way of getting the highest tag for a release
                 # but the list may potentially have a higher release version than what you are looking for
                 if parse_version(tag) > parse_version(latest_tag):
