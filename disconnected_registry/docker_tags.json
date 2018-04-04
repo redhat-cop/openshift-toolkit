@@ -1,2 +1,48 @@
-{"core_components":{"openshift3":["ose-deployer","ose-haproxy-router","ose-sti-builder","ose-docker-builder","ose-pod","ose-docker-registry"]}, "hosted_components": {"openshift3": ["logging-deployer","logging-elasticsearch","logging-kibana","logging-fluentd","logging-curator","logging-auth-proxy","metrics-deployer","metrics-hawkular-metrics","metrics-cassandra","metrics-heapster","registry-console"]}}
-
+{
+    "core_components": {
+        "openshift3": [
+            "ose-ansible",
+            "ose-cluster-capacity",
+            "ose-deployer",
+            "ose-docker-builder",
+            "ose-docker-registry",
+            "ose-egress-http-proxy",
+            "ose-egress-router",
+            "ose-f5-router",
+            "ose-federation",
+            "ose-haproxy-router",
+            "ose-keepalived-ipfailover",
+            "ose-pod",
+            "ose-sti-builder",
+            "ose",
+            "container-engine",
+            "node",
+            "openvswitch",
+            "logging-auth-proxy",
+            "logging-curator",
+            "logging-elasticsearch",
+            "logging-fluentd",
+            "logging-kibana",
+            "metrics-cassandra",
+            "metrics-hawkular-metrics",
+            "metrics-hawkular-openshift-agent",
+            "metrics-heapster",
+            "ose-service-catalog",
+            "ose-ansible-service-broker",
+            "mediawiki-apb",
+            "postgresql-apb",
+            "registry-console",
+            "prometheus",
+            "oauth-proxy",
+            "prometheus-alertmanager",
+            "prometheus-alert-buffer"
+        ]
+    },
+    "hosted_components": {
+        "openshift3": [
+        ],
+        "rhel7": [
+            "etcd"
+        ]
+    }
+}
