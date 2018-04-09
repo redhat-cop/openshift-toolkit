@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: myorg-openjdk18
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+    labels:
+      build: myorg-openjdk18
+    name: myorg-openjdk18
+  spec:
+    failedBuildsHistoryLimit: 5
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: myorg-openjdk18:latest
+        namespace: ${OUTPUT_NAMESPACE}
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      contextDir: ${CONTEXT_DIR}
+      git:
+        ref: ${GIT_REF}
+        uri: ${GIT_URL}
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: redhat-openjdk18-openshift:1.2
+          namespace: openshift
+      type: Source
+    successfulBuildsHistoryLimit: 5
+    triggers:
+    - github:
+        secret: LaKb2XCE1Uz0GuVc100F
+      type: GitHub
+    - generic:
+        secret: D-WZT8ZtZMg7V3g1y3hY
+      type: Generic
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+  status:
+    lastVersion: 0
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+    generation: 1
+    labels:
+      build: myorg-openjdk18
+    name: myorg-openjdk18
+    namespace: ${OUTPUT_NAMESPACE}
+- apiVersion: v1
+  groupNames: null
+  kind: RoleBinding
+  metadata:
+    creationTimestamp: null
+    name: myorg-image-builders
+    namespace: ${OUTPUT_NAMESPACE}
+  roleRef:
+    name: system:image-builder
+  subjects:
+  - kind: ServiceAccount
+    name: builder
+    namespace: image-management
+  userNames:
+  - system:serviceaccount:image-management:builder
+parameters:
+- name: OUTPUT_NAMESPACE
+  value: openshift
+- name: CONTEXT_DIR
+  value: image-management/myorg-openjdk18
+- name: GIT_URL
+  value: https://github.com/redhat-cop/openshift-toolkit
+- name: GIT_REF
+  value: master

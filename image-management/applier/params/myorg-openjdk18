@@ -1,0 +1,3 @@
+OUTPUT_NAMESPACE=openshift
+GIT_URL=https://github.com/etsauer/openshift-toolkit
+GIT_REF=image-management
