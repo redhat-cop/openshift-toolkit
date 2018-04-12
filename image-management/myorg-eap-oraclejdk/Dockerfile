@@ -1,4 +1,4 @@
-FROM jboss-eap-7/eap71-openshift:1.1
+FROM jboss-eap-7/jboss-eap70-openshift:1.5
 USER root
 
 ENV JAVA_HOME="/usr/lib/jvm/jdk1.8.0" \

@@ -55,8 +55,8 @@ objects:
     annotations:
     generation: 1
     labels:
-      build: myorg-openjdk18
-    name: myorg-openjdk18
+      build: ${IMAGE_NAME}
+    name: ${IMAGE_NAME}
     namespace: ${OUTPUT_NAMESPACE}
 parameters:
 - name: IMAGE_NAME
@@ -65,7 +65,7 @@ parameters:
 - name: OUTPUT_NAMESPACE
   value: openshift
 - name: CONTEXT_DIR
-  value: 
+  value:
 - name: GIT_URL
   value: https://github.com/redhat-cop/openshift-toolkit
 - name: GIT_REF
