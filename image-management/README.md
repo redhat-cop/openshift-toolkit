@@ -19,7 +19,7 @@ The projects here contain the following structures:
 
 The image build workflow has the following components:
 
-- An `image-management` project which is where the custom images will be built
+- An `image-builds` project which is where the custom images will be built
 - A `BuildConfig` for each image which defines how the images will be built
 - An `ImageStream` which will get created in the `openshift` namespace by default
 - A `RoleBinding` to allow the _builder_ `ServiceAccount` to push images into another namespace (e.g. `openshift`)
