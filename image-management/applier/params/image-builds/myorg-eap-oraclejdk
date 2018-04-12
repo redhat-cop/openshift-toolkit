@@ -1,5 +1,5 @@
 NAMESPACE=image-management
-IMAGE_NAME=myorg-openjdk18
+IMAGE_NAME=myorg-eap-oraclejdk
 BASE_IMAGE_STREAM=jboss-eap71-openshift:1.1
 OUTPUT_NAMESPACE=openshift
 GIT_URL=https://github.com/redhat-cop/openshift-toolkit
