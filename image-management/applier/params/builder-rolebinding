@@ -1,0 +1,2 @@
+IMAGE_NAMESPACE=openshift
+BUILDER_NAMESPACE=image-builds

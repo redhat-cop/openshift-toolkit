@@ -1,0 +1,6 @@
+openshift_cluster_content:
+- object: Set up Image Builds
+  content:
+  - name: Image buildConfigs
+    template: "{{ inventory_dir }}/../templates/docker-build-git.yml"
+    params: "{{ inventory_dir }}/../params/image-builds/"

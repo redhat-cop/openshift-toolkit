@@ -2,22 +2,23 @@ apiVersion: v1
 kind: Template
 metadata:
   creationTimestamp: null
-  name: myorg-openjdk18
+  name: docker-build
 objects:
 - apiVersion: v1
   kind: BuildConfig
   metadata:
     annotations:
     labels:
-      build: myorg-openjdk18
-    name: myorg-openjdk18
+      build: ${IMAGE_NAME}
+    name: ${IMAGE_NAME}
+    namespace: ${NAMESPACE}
   spec:
     failedBuildsHistoryLimit: 5
     nodeSelector: null
     output:
       to:
         kind: ImageStreamTag
-        name: myorg-openjdk18:latest
+        name: ${IMAGE_NAME}:latest
         namespace: ${OUTPUT_NAMESPACE}
     postCommit: {}
     resources: {}
@@ -32,7 +33,7 @@ objects:
       sourceStrategy:
         from:
           kind: ImageStreamTag
-          name: redhat-openjdk18-openshift:1.2
+          name: ${BASE_IMAGE_STREAM}
           namespace: openshift
       type: Source
     successfulBuildsHistoryLimit: 5
@@ -57,26 +58,14 @@ objects:
       build: myorg-openjdk18
     name: myorg-openjdk18
     namespace: ${OUTPUT_NAMESPACE}
-- apiVersion: v1
-  groupNames: null
-  kind: RoleBinding
-  metadata:
-    creationTimestamp: null
-    name: myorg-image-builders
-    namespace: ${OUTPUT_NAMESPACE}
-  roleRef:
-    name: system:image-builder
-  subjects:
-  - kind: ServiceAccount
-    name: builder
-    namespace: image-management
-  userNames:
-  - system:serviceaccount:image-management:builder
 parameters:
+- name: IMAGE_NAME
+- name: BASE_IMAGE_STREAM
+- name: NAMESPACE
 - name: OUTPUT_NAMESPACE
   value: openshift
 - name: CONTEXT_DIR
-  value: image-management/myorg-openjdk18
+  value: 
 - name: GIT_URL
   value: https://github.com/redhat-cop/openshift-toolkit
 - name: GIT_REF

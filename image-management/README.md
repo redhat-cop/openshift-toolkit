@@ -29,3 +29,25 @@ The workflow we will deploy looks something like this:
 ![Image Build Workflow](img/workflow.png)
 
 In this workflow, we use the `image-builds` namespace as the home for running builds. This namespace would be private, accessible only to our _Image Builder_ actor. However, both the Red Hat base images, and the customized `myorg-` images will be hosted in the `openshift` namespace, thus being readable from all other namespaces, and making the resulting content more accessible to the organization. The `buildConfigs` also utilize [_image change triggers_](https://docs.openshift.com/container-platform/3.7/dev_guide/builds/triggering_builds.html#image-change-triggers) to automatically rebuild any time a change is detected in an upstream image. In this way, we ensure that all of our images are always up to date with the latest parent images.
+
+## Deploying the Workflow
+
+This project uses [Ansible](https://www.ansible.com/) and [Ansible Galaxy](http://docs.ansible.com/ansible/latest/reference_appendices/galaxy.html) to deploy the workflow.
+
+First thing to do is to install the prerequisites:
+```
+cd image-management/
+ansible-galaxy install -r requirements.yml -p galaxy
+```
+
+Next, we can run the _Operator_ inventory to create the projects and map roles
+```
+ansible-playbook -i applier/operator-inventory/ galaxy/openshift-applier/playbooks/openshift-cluster-seed.yml
+```
+
+Finally, we can run the _Image Builder_ inventory, which will deploy the Build Configs, and kick off the image builds.
+```
+ansible-playbook -i applier/image-builder-inventory/ galaxy/openshift-applier/playbooks/openshift-cluster-seed.yml
+```
+
+Once done, you can track the status of the builds using `oc status -n image-builds` or by looking in the Web Console, under _Builds_.
