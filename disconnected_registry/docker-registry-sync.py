@@ -30,6 +30,8 @@ parser.add_argument('--dry-run', action='store_true', dest='dry_run', help='If t
 parser.add_argument('--openshift-version', action='store', dest='ocp_version', help='The version of OpenShift which you '
                                                                               'want to sync images for')
 
+#parser.add_argument('--generate-tar', action='store', dest='generate_tar', help='Generate tar of images for import ')
+
 options = parser.parse_args()
 
 
@@ -116,6 +118,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
 
 
 def generate_realtime_output(cmd):
+    print cmd
     output = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, stderr=subprocess.STDOUT)
     for stdout_line in iter(output.stdout.readline, ""):
         yield stdout_line.strip()
@@ -173,10 +176,16 @@ counter = 1
 
 logging.info("")
 logging.info("Total images to download: %s" % total_number_of_images_to_download)
+
+if options.local_registry == 'tar':
+    cmd = ['docker','save','-o', 'ose3-images.tar']
+
 for namespace_and_image in latest_tag_list:
     if options.dry_run:
         logging.info("Dry run mode activated. Docker commands were outputted to the screen")
         dry_run_print_docker_commands(options.remote_registry, options.local_registry, namespace_and_image)
+    elif options.local_registry == 'tar':
+        cmd.append(options.remote_registry + '/' + namespace_and_image)
     else:
         logging.info("")
         logging.info("Downloading image %s/%s" % (counter, total_number_of_images_to_download))
@@ -187,6 +196,10 @@ for namespace_and_image in latest_tag_list:
             tag_images(options.remote_registry, options.local_registry, namespace_and_image)
             logging.info("Pushing into the local registry...")
             push_images(options.local_registry, namespace_and_image)
+
+if options.local_registry == 'tar':
+    for output in generate_realtime_output(cmd):
+        logging.info(output),
 
 if failed_images:
     number_of_failures = len(failed_images)
