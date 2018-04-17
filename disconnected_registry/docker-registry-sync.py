@@ -186,7 +186,8 @@ for namespace_and_image in latest_tag_list:
         dry_run_print_docker_commands(options.remote_registry, options.local_registry, namespace_and_image)
     elif options.local_registry == 'tar':
         # create export images for a tar
-        cmd.append(options.remote_registry + '/' + namespace_and_image)
+        if not pull_images(options.remote_registry, namespace_and_image):
+           cmd.append(options.remote_registry + '/' + namespace_and_image)
     else:
         logging.info("")
         logging.info("Downloading image %s/%s" % (counter, total_number_of_images_to_download))
