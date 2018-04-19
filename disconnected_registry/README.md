@@ -17,10 +17,18 @@
   systemctl start docker-distribution
   ```
 
-2. Run the `docker-registry-sync.py` script to sync Red Hat images to private registry.
+2. Run the `docker-registry-sync.py` script:
+   
+   a. To sync Red Hat images to private registry.
 
   ```
   ./docker-registry-sync.py --from=registry.access.redhat.com --to=<registry-server-ip>:5000 --file=./docker_tags.json
+  ```
+
+   b. To sync Red Hat images to ose-images.tar
+
+  ```
+  ./docker-registry-sync.py --from=registry.access.redhat.com --to=tar --file=./docker_tags.json
   ```
 
 ## Adding Images to Sync List

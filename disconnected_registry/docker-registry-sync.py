@@ -173,10 +173,21 @@ counter = 1
 
 logging.info("")
 logging.info("Total images to download: %s" % total_number_of_images_to_download)
+
+#
+# Generate initial array list if local registry is a tar file
+#
+if options.local_registry == 'tar':
+    cmd = ['docker','save','-o', 'ose3-images.tar']
+
 for namespace_and_image in latest_tag_list:
     if options.dry_run:
         logging.info("Dry run mode activated. Docker commands were outputted to the screen")
         dry_run_print_docker_commands(options.remote_registry, options.local_registry, namespace_and_image)
+    elif options.local_registry == 'tar':
+        # create export images for a tar
+        if not pull_images(options.remote_registry, namespace_and_image):
+           cmd.append(options.remote_registry + '/' + namespace_and_image)
     else:
         logging.info("")
         logging.info("Downloading image %s/%s" % (counter, total_number_of_images_to_download))
@@ -187,6 +198,13 @@ for namespace_and_image in latest_tag_list:
             tag_images(options.remote_registry, options.local_registry, namespace_and_image)
             logging.info("Pushing into the local registry...")
             push_images(options.local_registry, namespace_and_image)
+
+##
+# create tar file of images
+#
+if options.local_registry == 'tar':
+    for output in generate_realtime_output(cmd):
+        logging.info(output),
 
 if failed_images:
     number_of_failures = len(failed_images)
