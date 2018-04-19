@@ -1,6 +1,6 @@
 # Tooling for Setting up a Proper Image Management Workflow in OpenShift
 
-The purpose of this project is to be used as a bootstrap for an custom based image build workflow.
+The purpose of this project is to be used as a bootstrap for an custom base image build workflow.
 
 ## Architecture
 

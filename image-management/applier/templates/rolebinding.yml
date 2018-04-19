@@ -18,7 +18,7 @@ objects:
   subjects:
   - kind: ServiceAccount
     name: builder
-    namespace: image-management
+    namespace: ${BUILDER_NAMESPACE}
   userNames:
   - system:serviceaccount:${BUILDER_NAMESPACE}:builder
 parameters:

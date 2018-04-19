@@ -39,10 +39,10 @@ objects:
     successfulBuildsHistoryLimit: 5
     triggers:
     - github:
-        secret: LaKb2XCE1Uz0GuVc100F
+        secret: ${GITHUB_WEBHOOK_SECRET}
       type: GitHub
     - generic:
-        secret: D-WZT8ZtZMg7V3g1y3hY
+        secret: ${GENERIC_WEBHOOK_SECRET}
       type: Generic
     - type: ConfigChange
     - imageChange: {}
@@ -70,3 +70,7 @@ parameters:
   value: https://github.com/redhat-cop/openshift-toolkit
 - name: GIT_REF
   value: master
+- name: GITHUB_WEBHOOK_SECRET
+  value: webhook123
+- name: GENERIC_WEBHOOK_SECRET
+  value: webhook123
