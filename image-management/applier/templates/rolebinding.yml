@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: builder-rolebinding
+metadata:
+  annotations:
+  name: builder-rolebinding
+objects:
+- apiVersion: v1
+  groupNames: null
+  kind: RoleBinding
+  metadata:
+    creationTimestamp: null
+    name: myorg-image-builders
+    namespace: ${IMAGE_NAMESPACE}
+  roleRef:
+    name: system:image-builder
+  subjects:
+  - kind: ServiceAccount
+    name: builder
+    namespace: ${BUILDER_NAMESPACE}
+  userNames:
+  - system:serviceaccount:${BUILDER_NAMESPACE}:builder
+parameters:
+- name: IMAGE_NAMESPACE
+  value: openshift
+- name: BUILDER_NAMESPACE
+  value: image-builds

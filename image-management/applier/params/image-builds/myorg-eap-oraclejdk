@@ -1,0 +1,7 @@
+NAMESPACE=image-builds
+IMAGE_NAME=myorg-eap-oraclejdk
+BASE_IMAGE_STREAM=jboss-eap70-openshift:1.5
+OUTPUT_NAMESPACE=openshift
+GIT_URL=https://github.com/redhat-cop/openshift-toolkit
+GIT_REF=master
+CONTEXT_DIR=image-management/myorg-eap-oraclejdk

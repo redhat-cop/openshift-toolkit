@@ -1,0 +1,7 @@
+NAMESPACE=image-builds
+IMAGE_NAME=myorg-openjdk18
+BASE_IMAGE_STREAM=redhat-openjdk18-openshift:1.2
+OUTPUT_NAMESPACE=openshift
+GIT_URL=https://github.com/redhat-cop/openshift-toolkit
+GIT_REF=master
+CONTEXT_DIR=image-management/myorg-openjdk18

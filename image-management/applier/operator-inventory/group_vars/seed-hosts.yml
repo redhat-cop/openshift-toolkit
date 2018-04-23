@@ -1,0 +1,10 @@
+openshift_cluster_content:
+- object: Set up Image Builds
+  content:
+  - name: Create Image Builds Project
+    template: "{{ inventory_dir }}/../templates/project.yml"
+    params: "{{ inventory_dir }}/../params/image-builds-project"
+    template_action: create
+  - name: Create RoleBinding to images project
+    template: "{{ inventory_dir }}/../templates/rolebinding.yml"
+    params: "{{ inventory_dir}}/../params/builder-rolebinding"
