@@ -1,4 +1,4 @@
-NAMESPACE=image-management
+NAMESPACE=image-builds
 IMAGE_NAME=myorg-openjdk18
 BASE_IMAGE_STREAM=redhat-openjdk18-openshift:1.2
 OUTPUT_NAMESPACE=openshift
