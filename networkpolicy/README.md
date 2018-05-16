@@ -58,7 +58,7 @@ Additional namespaces may be configured if desired.
 
 ### Allow Traffic from the Default Namespace
 
-OpenShift provides a routing layer to external traffic to access applications within the cluster. Since traffic traverses through router(s) which are deployed within the _default_ namespace, a trust must be established between projects and the default namespace for traffic to flow properly. The NetworkPolicy [allow-from-default-namespace.yml](policies/baseline/allow-from-default.yml) is available that should be applied to all projects.
+OpenShift provides a routing layer to external traffic to access applications within the cluster. Since traffic traverses through router(s) which are deployed within the _default_ namespace, a trust must be established between projects and the default namespace for traffic to flow properly. The NetworkPolicy [allow-from-default-namespace.yml](https://raw.githubusercontent.com/christianh814/openshift-toolkit/master/networkpolicy/policies/baseline/allow-from-default-namespace.yml) is available that should be applied to all projects.
 
 ### Configure Existing Projects
 
