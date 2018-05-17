@@ -40,7 +40,7 @@ NOTE: All `Allow` rules must come _before_ the `Deny` rule, or they will not be 
 
 ### Allowing Traffic Within a Namespace
 
-Once the default NetworkPolicy of denying all traffic has been applied to each project, all traffic between all pods will be denied. This includes traffic between pods in the same namespace or even different replicas of the same deployment. A typical OpenShift user would probably expect that pods within the same namespace to be able to communicate, so we can add a rule for that. A [allow-from-same-namespace.yml](policies/baseline/allow-from-same-namespace.yml) NetworkPolicy can be applied to enable intra-project communication.
+Once the default NetworkPolicy of denying all traffic has been applied to each project, all traffic between all pods will be denied. This includes traffic between pods in the same namespace or even different replicas of the same deployment. A typical OpenShift user would probably expect that pods within the same namespace to be able to communicate, so we can add a rule for that. A [allow-from-same-namespace.yml](https://raw.githubusercontent.com/redhat-cop/openshift-toolkit/master/networkpolicy/policies/baseline/allow-from-same-namespace.yml) NetworkPolicy can be applied to enable intra-project communication.
 
 ### Allowing Traffic Between Namespaces
 
@@ -58,7 +58,7 @@ Additional namespaces may be configured if desired.
 
 ### Allow Traffic from the Default Namespace
 
-OpenShift provides a routing layer to external traffic to access applications within the cluster. Since traffic traverses through router(s) which are deployed within the _default_ namespace, a trust must be established between projects and the default namespace for traffic to flow properly. The NetworkPolicy [allow-from-default-namespace.yml](policies/baseline/allow-from-default.yml) is available that should be applied to all projects.
+OpenShift provides a routing layer to external traffic to access applications within the cluster. Since traffic traverses through router(s) which are deployed within the _default_ namespace, a trust must be established between projects and the default namespace for traffic to flow properly. The NetworkPolicy [allow-from-default-namespace.yml](https://raw.githubusercontent.com/christianh814/openshift-toolkit/master/networkpolicy/policies/baseline/allow-from-default-namespace.yml) is available that should be applied to all projects.
 
 ### Configure Existing Projects
 
