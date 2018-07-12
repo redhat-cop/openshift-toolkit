@@ -36,11 +36,20 @@ objects:
         kind: ImageStreamTag
         name: ${NAME}:latest
     source:
-      contextDir: "${CONTEXT_DIR}"
-      git:
-        ref: "${SOURCE_REPOSITORY_REF}"
-        uri: "${SOURCE_REPOSITORY_URL}"
-      type: Git
+      dockerfile: |-
+        FROM registry.access.redhat.com/rhel7/rhel
+
+        ENV OCP_VERSION=3.7
+
+        ADD bin/sign-image /usr/local/bin/
+
+        RUN rpm -ihv https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && \
+            yum repolist > /dev/null && \
+            yum clean all && \
+            INSTALL_PKGS="docker atomic jq atomic-openshift-clients image-inspector tar" && \
+            yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
+            rpm -V $INSTALL_PKGS && \
+            yum clean all
     strategy:
       dockerStrategy:
         env:
@@ -64,18 +73,3 @@ parameters:
   name: FROM_IMAGE
   required: true
   value: rhel7:latest
-- name: VERSION
-  displayName: OpenShift Container Platform Version
-  description: Version of the OpenShift Container Platform
-  value: "3.7"
-  required: true
-- description: Git branch/tag reference
-  name: SOURCE_REPOSITORY_REF
-  value: master
-- description: Git source URL for application
-  name: SOURCE_REPOSITORY_URL
-  required: true
-  value: https://github.com/sabre1041/image-scanning-signing-service
-- description: Path within Git repository to build; empty for root of repository
-  name: CONTEXT_DIR
-  value: images/image-sign-scan-base
