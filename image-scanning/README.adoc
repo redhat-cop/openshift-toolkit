@@ -1,0 +1,49 @@
+= Add Basic Image Scanning to any Cluster
+
+This project deploys a Jenkins job that will run an OpenSCAP scan of all images currently being used by `Running` pods. A report will be created for each image and archived by Jenkins into a directory structure as follows:
+
+[source,bash]
+----
+./
+  <namespace>/
+    <image-ID>/
+      report.html
+      report-arf.xml
+----
+
+The entire report can be downloaded as a ZIP for data processing/archiving purposes.
+
+== Automated Deployment with Applier
+
+This capability can be deployed to any cluster using link:https://github.com/redhat-cop/openshift-applier[OpenShift Applier].
+
+[source,bash]
+----
+cd image-scanning/
+ansible-galaxy install -r requirements.yml -p galaxy
+ansible-playbook -i inventory/ galaxy/openshift-applier/playbooks/openshift-cluster-seed.yml
+----
+
+NOTE: This inventory deploys several cluster-level resources such as `ClusterRoleBindings` and a new `SecurityContextConstraint`. Cluster level permissions are required to deploy this, and care should be taken.
+
+Once deployed, the scan may be run at any time by running:
+
+[source,bash]
+----
+oc start-build scan-image -n image-scanning
+----
+
+Once started, you can follow the job by logging into the Jenkins Console. For each image scanned, you will see a block in the logs that looks like:
+
+[source,bash]
+----
+Starting scan of image registry.access.redhat.com/openshift3/registry-console@sha256:0a2afe5836ca550e529608a21652a90dc1ec5657e76dee4cab95fdc61e384dc0
+2018/07/12 19:50:50 Pulling image registry.access.redhat.com/openshift3/registry-console@sha256:0a2afe5836ca550e529608a21652a90dc1ec5657e76dee4cab95fdc61e384dc0
+2018/07/12 19:50:53 Finished Downloading Image (10771Kb downloaded)
+2018/07/12 19:50:53 Extracting image registry.access.redhat.com/openshift3/registry-console@sha256:0a2afe5836ca550e529608a21652a90dc1ec5657e76dee4cab95fdc61e384dc0 to /tmp/cve-scan-4lYI9/image-content
+2018/07/12 19:50:56 Writing OpenSCAP results to /tmp/cve-scan-4lYI9/results
+Scan of registry.access.redhat.com/openshift3/registry-console@sha256:0a2afe5836ca550e529608a21652a90dc1ec5657e76dee4cab95fdc61e384dc0 complete.
+Moving results to /home/jenkins/workspace/image-scanning/image-scanning-scan-image/openshift3/registry-console@sha256:0a2afe5836ca550e529608a21652a90dc1ec5657e76dee4cab95fdc61e384dc0
+----
+
+When the job completes, you can download the ZIP file report from the workspace of the `image-scanning/scan-image` Jenkins job.

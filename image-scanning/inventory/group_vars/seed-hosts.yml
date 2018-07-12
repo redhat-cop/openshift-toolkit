@@ -1,0 +1,21 @@
+---
+openshift_cluster_content:
+- object: Deploy Pipeline
+  content:
+  - name: image-sign-scan-base
+    template: "{{ inventory_dir }}/../templates/image-scan-base.yml"
+    params: "{{ inventory_dir }}/../params/image-scan-base"
+    namespace: image-scanning
+    tags:
+    - core
+  - name: Scanner SCC Mapping
+    template: "{{ inventory_dir }}/../templates/scanning-scc.yml"
+    params: "{{ inventory_dir }}/../params/scanning-scc-jenkins"
+    tags:
+    - core
+  - name: Pipeline Job Template
+    template: "{{inventory_dir}}/../templates/pipeline.yml"
+    params: "{{inventory_dir}}/../params/pipeline"
+    namespace: image-scanning
+    tags:
+    - pipeline

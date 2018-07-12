@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: sign-image-template
+  annotations:
+    openshift.io/display-name: Image Signing and Scanning Base
+    description: Template to create a base image for signing and scanning images
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${NAME}
+  spec:
+    lookupPolicy:
+      local: true
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${NAME}
+  spec:
+    lookupPolicy:
+      local: true
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: rhel7
+  spec:
+    dockerImageRepository: registry.access.redhat.com/rhel7/rhel
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: ${NAME}
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${NAME}:latest
+    source:
+      contextDir: "${CONTEXT_DIR}"
+      git:
+        ref: "${SOURCE_REPOSITORY_REF}"
+        uri: "${SOURCE_REPOSITORY_URL}"
+      type: Git
+    strategy:
+      dockerStrategy:
+        env:
+        - name: OCP_VERSION
+          value: "${VERSION}"
+        from:
+          kind: ImageStreamTag
+          name: ${FROM_IMAGE}
+      type: Docker
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+parameters:
+- name: NAME
+  displayName: Name
+  description: Name Applied to the Resulting ImageStream and BuildConfig
+  value: image-sign-scan-base
+  required: true
+- description: Image stream tag for the image you'd like to use to build the application
+  name: FROM_IMAGE
+  required: true
+  value: rhel7:latest
+- name: VERSION
+  displayName: OpenShift Container Platform Version
+  description: Version of the OpenShift Container Platform
+  value: "3.7"
+  required: true
+- description: Git branch/tag reference
+  name: SOURCE_REPOSITORY_REF
+  value: master
+- description: Git source URL for application
+  name: SOURCE_REPOSITORY_URL
+  required: true
+  value: https://github.com/sabre1041/image-scanning-signing-service
+- description: Path within Git repository to build; empty for root of repository
+  name: CONTEXT_DIR
+  value: images/image-sign-scan-base

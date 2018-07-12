@@ -1,0 +1,162 @@
+apiVersion: v1
+kind: Template
+metadata:
+  labels:
+    type: image-scanning
+  annotations:
+    description: Jenkins Pipeline for Running OpenSCAP
+    tags: scanning,security
+  name: image-scanning-pipeline
+objects:
+- apiVersion: v1
+  groupNames: null
+  kind: ClusterRoleBinding
+  metadata:
+    creationTimestamp: null
+    name: ${APPLICATION_NAME}-registry-viewer
+  roleRef:
+    name: registry-viewer
+  subjects:
+  - kind: ServiceAccount
+    name: jenkins
+    namespace: ${NAMESPACE}
+  userNames:
+  - system:serviceaccount:${NAMESPACE}:jenkins
+- apiVersion: v1
+  groupNames: null
+  kind: ClusterRoleBinding
+  metadata:
+    creationTimestamp: null
+    name: ${APPLICATION_NAME}-cluster-reader
+  roleRef:
+    name: cluster-reader
+  subjects:
+  - kind: ServiceAccount
+    name: jenkins
+    namespace: ${NAMESPACE}
+  userNames:
+  - system:serviceaccount:${NAMESPACE}:jenkins
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: ${APPLICATION_NAME}
+    namespace: ${NAMESPACE}
+  labels:
+    type: image-scanning
+  spec:
+    strategy:
+      type: JenkinsPipeline
+      jenkinsPipelineStrategy:
+        env:
+        - name: SCANNER_IMAGE_NAMESPACE
+          value: "${SCANNER_IMAGE_NAMESPACE}"
+        - name: SCANNER_IMAGE_NAME
+          value: "${SCANNER_IMAGE_NAME}"
+        - name: SERVICE_ACCOUNT
+          value: "${SERVICE_ACCOUNT}"
+        jenkinsfile: |-
+          node('master') {
+
+            def defaultNamespace = readFile('/var/run/secrets/kubernetes.io/serviceaccount/namespace').trim()
+
+            env.IMAGE_NAMESPACE = "$SCANNER_IMAGE_NAMESPACE".trim() != "" ? "$SCANNER_IMAGE_NAMESPACE" : defaultNamespace
+
+            env.IMAGE_SIGN_SCANNING_IMAGE = sh (
+                script: """
+                  set +x
+                  oc get is $SCANNER_IMAGE_NAME -n ${env.IMAGE_NAMESPACE} -o jsonpath='{ .status.dockerImageRepository }'
+
+                  """,
+                returnStdout: true
+            ).trim()
+          }
+
+          podTemplate(label: 'image-sign-scan-base-slave', cloud: 'openshift', serviceAccount: "$SERVICE_ACCOUNT", containers: [
+          containerTemplate(name: 'image-sign-scan-base', image: "${env.IMAGE_SIGN_SCANNING_IMAGE}", ttyEnabled: true, privileged: true, command: 'cat', resourceRequestMemory: '1Gi'),
+          containerTemplate(name: 'jnlp', image: 'openshift3/jenkins-slave-base-rhel7', args: '${computer.jnlpmac} ${computer.name}')
+          ],
+          volumes: [
+              hostPathVolume(
+                hostPath: '/var/run/docker.sock',
+                mountPath: '/var/run/docker.sock'
+              )
+          ]) {
+
+            node('image-sign-scan-base-slave') {
+
+              container('image-sign-scan-base') {
+
+                stage('scan image') {
+
+                  image_result = sh(script: """
+                  set +x
+                  scan_image() {
+                    IMAGE_TO_SCAN=\$1
+                    IMAGE_NAMESPACE=\$(echo \$IMAGE_TO_SCAN | awk -F'/' '{print \$2}')
+                    IMAGE_NAME=\$(echo \$IMAGE_TO_SCAN | awk -F'/' '{print \$3}')
+                    WORKING_DIR=\$(mktemp -d -t cve-scan-XXXXX)
+                    IMAGE_CONTENT=\${WORKING_DIR}/image-content
+                    RESULTS=\${WORKING_DIR}/results
+                    JENKINS_WORKSPACE=$WORKSPACE
+                    EXPORT_TO=\${JENKINS_WORKSPACE}/\${IMAGE_NAMESPACE}/\${IMAGE_NAME}
+
+                    echo "Starting scan of image \$IMAGE_TO_SCAN"
+
+                    mkdir -p \$IMAGE_CONTENT
+                    mkdir -p \$RESULTS
+
+                    { # try
+                      image-inspector --path=\${IMAGE_CONTENT} --scan-results-dir=\${RESULTS} --scan-type=openscap --openscap-html-report --image=\$IMAGE_TO_SCAN
+                    } && {
+                      echo "Scan of \${IMAGE_TO_SCAN} complete."
+                    } || {
+                      echo "Failed to scan image \${IMAGE_TO_SCAN}"
+                      echo "<error>Failed to scan image \${IMAGE_TO_SCAN}</error>" > \${RESULTS}/result-arf.xml
+                    }
+
+                    echo "Moving results to \${EXPORT_TO}"
+                    mkdir -p \${EXPORT_TO}
+                    mv \${RESULTS}/* \${EXPORT_TO} || echo "Result Empty."
+
+                    rm -rf \${WORKING_DIR}
+                    echo "\n"
+                  }
+
+                cluster_images=\$(oc get pod --all-namespaces -o jsonpath='{range .items[?(@.status.phase=="Running")]}{range .status.containerStatuses[*]}{.imageID}{"\\n"}{end}{end}' | sed 's/docker-pullable:\\/\\///g' | awk '!seen[\$0]++')
+                for image in \${cluster_images}; do
+                  scan_image \$image
+                done
+
+                  """, returnStatus: true)
+
+                  archiveArtifacts(artifacts: '**/*')
+
+                  if(image_result != 0) {
+                      currentBuild.result = 'FAILURE'
+                      error("Image Scanning Failed!")
+                  }
+                }
+              }
+            }
+          }
+parameters:
+- description: The Name for the Application.
+  displayName: Application Name
+  name: APPLICATION_NAME
+  required: true
+  value: scan-image
+- name: NAMESPACE
+- description: The Namespace Containing the Scanner Image.
+  displayName: Scanner Image Namespace
+  name: SCANNER_IMAGE_NAMESPACE
+  value: image-management
+- description: The Name of the Scanner Image
+  displayName: Scanner Image Name
+  name: SCANNER_IMAGE_NAME
+  required: true
+  value: image-sign-scan-base
+- description: Name of the Service Account Used to Launch the Slave Pod.
+  displayName: Slave Pod Service Account
+  name: SERVICE_ACCOUNT
+  value: jenkins
+  required: true

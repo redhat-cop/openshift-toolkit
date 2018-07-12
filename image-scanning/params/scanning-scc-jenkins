@@ -1,0 +1,2 @@
+NAMESPACE=image-scanning
+SERVICE_ACCOUNT=jenkins
