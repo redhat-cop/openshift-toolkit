@@ -131,10 +131,6 @@ objects:
 
                   archiveArtifacts(artifacts: '**/*')
 
-                  if(image_result != 0) {
-                      currentBuild.result = 'FAILURE'
-                      error("Image Scanning Failed!")
-                  }
                 }
               }
             }
