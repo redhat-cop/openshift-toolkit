@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: scanning-scc
+objects:
+- kind: SecurityContextConstraints
+  metadata:
+    annotations:
+      kubernetes.io/description: 'Allows access required to scan images across the cluster'
+    creationTimestamp: null
+    name: ${SCC_NAME}
+  allowHostDirVolumePlugin: true
+  allowHostIPC: true
+  allowHostNetwork: true
+  allowHostPID: true
+  allowHostPorts: true
+  allowPrivilegedContainer: true
+#  allowedCapabilities:
+#  - '*'
+  allowedFlexVolumes: []
+  apiVersion: v1
+  defaultAddCapabilities: []
+  priority: null
+  readOnlyRootFilesystem: false
+  requiredDropCapabilities: []
+  runAsUser:
+    type: RunAsAny
+  seLinuxContext:
+    type: RunAsAny
+#  seccompProfiles:
+#  - '*'
+  fsGroup:
+    type: RunAsAny
+  supplementalGroups:
+    type: RunAsAny
+  groups:
+  - system:cluster-admins
+  - system:nodes
+  - system:masters
+  users:
+  - system:serviceaccount:${NAMESPACE}:${SERVICE_ACCOUNT}
+  volumes:
+  - configMap
+  - downwardAPI
+  - emptyDir
+  - hostPath
+  - persistentVolumeClaim
+  - projected
+  - secret
+parameters:
+- name: SCC_NAME
+  value: image-scanning
+- name: SERVICE_ACCOUNT
+  required: true
+- name: NAMESPACE
+  required: true

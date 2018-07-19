@@ -1,0 +1,6 @@
+kind: ProjectRequest
+apiVersion: v1
+metadata:
+  name: image-scanning
+  creationTimestam: null
+displayName: Image Scanning Quickstart

@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: sign-image-template
+  annotations:
+    openshift.io/display-name: Image Signing and Scanning Base
+    description: Template to create a base image for signing and scanning images
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${NAME}
+  spec:
+    lookupPolicy:
+      local: true
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${NAME}
+  spec:
+    lookupPolicy:
+      local: true
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: rhel7
+  spec:
+    dockerImageRepository: registry.access.redhat.com/rhel7/rhel
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: ${NAME}
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${NAME}:latest
+    source:
+      dockerfile: |-
+        FROM registry.access.redhat.com/rhel7/rhel
+
+        RUN yum repolist > /dev/null && \
+            yum clean all && \
+            INSTALL_PKGS="docker atomic jq atomic-openshift-clients image-inspector tar" && \
+            yum install -y --enablerepo=rhel-7-server-ose-${OCP_VERSION}-rpms --enablerepo=rhel-7-server-extras-rpms --setopt=tsflags=nodocs $INSTALL_PKGS && \
+            yum clean all
+    strategy:
+      dockerStrategy:
+        env:
+        - name: OCP_VERSION
+          value: "${VERSION}"
+        from:
+          kind: ImageStreamTag
+          name: ${FROM_IMAGE}
+      type: Docker
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+parameters:
+- name: NAME
+  displayName: Name
+  description: Name Applied to the Resulting ImageStream and BuildConfig
+  value: image-sign-scan-base
+  required: true
+- description: Image stream tag for the image you'd like to use to build the application
+  name: FROM_IMAGE
+  required: true
+  value: rhel7:latest
+- description: OpenShift Major Version
+  name: VERSION
+  value: '3.9'
