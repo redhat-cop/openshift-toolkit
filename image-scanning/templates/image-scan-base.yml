@@ -69,4 +69,4 @@ parameters:
   value: rhel7:latest
 - description: OpenShift Major Version
   name: VERSION
-  value: '3.7'
+  value: '3.9'
