@@ -90,6 +90,7 @@ objects:
 
                   image_result = sh(script: """
                   set +x
+
                   scan_image() {
                     IMAGE_TO_SCAN=\$1
                     IMAGE_NAMESPACE=\$(echo \$IMAGE_TO_SCAN | awk -F'/' '{print \$2}')
@@ -98,15 +99,23 @@ objects:
                     IMAGE_CONTENT=\${WORKING_DIR}/image-content
                     RESULTS=\${WORKING_DIR}/results
                     JENKINS_WORKSPACE=$WORKSPACE
+                    DOCKER_CFG_HOME=/tmp/dockercfg
                     EXPORT_TO=\${JENKINS_WORKSPACE}/\${IMAGE_NAMESPACE}/\${IMAGE_NAME}
 
                     echo "Starting scan of image \$IMAGE_TO_SCAN"
 
-                    mkdir -p \$IMAGE_CONTENT
-                    mkdir -p \$RESULTS
+                    mkdir -p \$IMAGE_CONTENT \$RESULTS \$DOCKER_CFG_HOME
+
+                    # Docker Login to Registry
+                    SA_FULLNAME=\$(oc whoami)
+                    SA_NAME="\${SA_FULLNAME##*:}"
+                    NAMESPACE=\$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+                    DOCKERCFG_SECRET_NAME=\$(oc get sa -n \$NAMESPACE \$SA_NAME -o jsonpath='{range .secrets[*]}{.name}{"\\n"}{end}' | grep dockercfg)
+
+                    oc get secret -n \$NAMESPACE \$DOCKERCFG_SECRET_NAME -o jsonpath='{.data.\\.dockercfg}' | base64 --decode > \$DOCKER_CFG_HOME/.dockercfg
 
                     { # try
-                      image-inspector --path=\${IMAGE_CONTENT} --scan-results-dir=\${RESULTS} --scan-type=openscap --openscap-html-report --image=\$IMAGE_TO_SCAN
+                      image-inspector --path=\${IMAGE_CONTENT} --scan-results-dir=\${RESULTS} --scan-type=openscap --openscap-html-report --image=\$IMAGE_TO_SCAN --dockercfg=\$DOCKER_CFG_HOME/.dockercfg
                     } && {
                       echo "Scan of \${IMAGE_TO_SCAN} complete."
                     } || {
