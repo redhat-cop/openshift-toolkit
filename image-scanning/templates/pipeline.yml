@@ -91,6 +91,11 @@ objects:
                   image_result = sh(script: """
                   set +x
 
+<<<<<<< HEAD
+=======
+                  oc whoami
+
+>>>>>>> Updating pipeline script to explicitly authenticate to registry
                   scan_image() {
                     IMAGE_TO_SCAN=\$1
                     IMAGE_NAMESPACE=\$(echo \$IMAGE_TO_SCAN | awk -F'/' '{print \$2}')
