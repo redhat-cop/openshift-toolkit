@@ -2,7 +2,7 @@
 
 set -Exeuo pipefail
 
-# Date: 08/1/2018
+# Date: 08/01/2018
 #
 # Script Purpose: Create a backup of all projects on the OCP cluster.
 # Version       : 1.01
