@@ -84,16 +84,20 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
             sys.exit()
         # Get the latest version for a given release
         latest_tag = ''
+	temp_tag = ''
+        req_tag = ''
         image_name = image_tag_dictionary['name']
         for tag in image_tag_dictionary['tags']:
             # check to see if there is a 'v' in the version tag:
             if tag.startswith('v'):
-                # This tracks the position of the splice. It assumes that you are trying to get the latest
-                # release based on a two digit release (i.e. 3.4 or 3.7)
-                splice_position = 4
+               # Ensures taht a valid version is being parsed and searched for
+               # release based on a two series release (i.e. 3.9 or 3.10)
+              temp_tag = tag.split('.')
+              req_tag = temp_tag[0] +'.'+ temp_tag[1]
             else:
-                splice_position = 3
-            if release_version in tag[:splice_position] or not 'openshift' in url:
+              req_tag = ''
+            if release_version in req_tag or not 'openshift' in url:
+            #if release_version in tag[:splice_position] or not 'openshift' in url:
                 # There may be a better way of getting the highest tag for a release
                 # but the list may potentially have a higher release version than what you are looking for
                 if parse_version(tag) > parse_version(latest_tag):
