@@ -90,7 +90,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
         for tag in image_tag_dictionary['tags']:
             # check to see if there is a 'v' in the version tag:
             if tag.startswith('v'):
-               # Ensures taht a valid version is being parsed and searched for
+               # Ensures that a valid version is being parsed and searched for
                # release based on a two series release (i.e. 3.9 or 3.10)
               temp_tag = tag.split('.')
               req_tag = temp_tag[0] +'.'+ temp_tag[1]
