@@ -216,4 +216,4 @@ if failed_images:
     number_of_failures = len(failed_images)
     number_of_images_attempted = total_number_of_images_to_download + number_of_failures
     logging.warn("")
-    logging.warn("%s/%s failed to download: %s" % (number_of_failures, number_of_images_attempted, failed_images))
+    logging.warn("%s/%s failed to download version requested fell back to 'latest': %s" % (number_of_failures, number_of_images_attempted, failed_images))
