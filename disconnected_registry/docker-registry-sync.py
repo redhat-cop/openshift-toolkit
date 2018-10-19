@@ -90,7 +90,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
         for tag in image_tag_dictionary['tags']:
             # check to see if there is a 'v' in the version tag:
             if tag.startswith('v'):
-               # Ensures that a valid version is being parsed and searched for
+               # Ensures taht a valid version is being parsed and searched for
                # release based on a two series release (i.e. 3.9 or 3.10)
               temp_tag = tag.split('.')
               req_tag = temp_tag[0] +'.'+ temp_tag[1]
@@ -112,9 +112,11 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
         latest_tag_minus_hyphon = latest_tag.split('-')[0]
         # If the tag has successfully removed a hyphen, it will be unicode, otherwise it will be a string
         if type(latest_tag_minus_hyphon) is not unicode:
-            logging.error("Unable to properly parse the version for image: %s" % image_name)
+            logging.error("Unable to match the version for image: %s" % image_name)
             logging.error("Are you sure that the version exists in the RedHat registry?")
+            logging.error("Attempting to pull image tag 'latest' instead")
             failed_image_list.append(image_name)
+            tag_list.append("%s:%s" % (image_name, 'latest'))
         else:
             tag_list.append("%s:%s" % (image_name, latest_tag_minus_hyphon))
 
