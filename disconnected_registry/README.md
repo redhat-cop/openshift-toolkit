@@ -22,7 +22,7 @@
    a. To sync Red Hat images to private registry.
 
   ```
-  ./docker-registry-sync.py --from=registry.access.redhat.com --to=<registry-server-ip>:5000 --file=./docker_tags.json
+  ./docker-registry-sync.py --from=registry.access.redhat.com --to=<registry-server-ip>:5000 --file=./docker_tags.json --openshift-version=3.10
   ```
 
    b. To sync Red Hat images to ose-images.tar
