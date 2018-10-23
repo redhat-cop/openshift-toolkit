@@ -17,8 +17,12 @@
   systemctl start docker-distribution
   ```
 2. We also need to set our internal registry up as an insecure registry. Add the following line to /etc/sysconfig/docker on the box from which you will sync images.
-
+  a.
 ```INSECURE_REGISTRY='--insecure-registry registry.c1-ocp.myorg.com:5000'```
+  b. or run
+  ```echo "INSECURE_REGISTRY='--insecure-registry registry.c1-ocp.myorg.com:5000'" >> /etc/sysconfig/docker```
+
+
 And then restart docker with:
 ```systemctl restart docker```
 
