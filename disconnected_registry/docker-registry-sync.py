@@ -114,7 +114,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
         if type(latest_tag_minus_hyphon) is not unicode:
             logging.error("Unable to match the version for image: %s" % image_name)
             logging.error("Are you sure that the version exists in the RedHat registry?")
-            logging.error("Attempting to pull image tag 'latest' instead")
+            logging.info("Attempting to pull image tag 'latest' instead")
             failed_image_list.append(image_name)
             tag_list.append("%s:%s" % (image_name, 'latest'))
         else:
