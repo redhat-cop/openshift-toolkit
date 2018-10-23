@@ -20,15 +20,16 @@
   
   a. edit for your server and add to file
   
-```INSECURE_REGISTRY='--insecure-registry registry.c1-ocp.myorg.com:5000'```
+  ```INSECURE_REGISTRY='--insecure-registry registry.c1-ocp.myorg.com:5000'```
   
   b. or edit for your server and run
   
   ```echo "INSECURE_REGISTRY='--insecure-registry registry.c1-ocp.myorg.com:5000'" >> /etc/sysconfig/docker```
 
 
-And then restart docker with:
-```systemctl restart docker```
+  And then restart docker with:
+  
+  ```systemctl restart docker```
 
 3. Run the `docker-registry-sync.py` script:
    
