@@ -9,6 +9,7 @@ import logging
 import datetime
 import time
 import sys
+import re
 
 parser = argparse.ArgumentParser(description='Syncs images from a public docker registry to a private registry. Use '
                                              'this to populate private registries in a closed off environment. Must be '
@@ -115,10 +116,15 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
             logging.error("Unable to match the version for image: %s" % image_name)
             logging.error("Are you sure that the version exists in the RedHat registry?")
             logging.info("Attempting to pull image tag 'latest' instead")
-            failed_image_list.append(image_name)
+            #insted of failing we will try to pull the tag 'latest'
+            #failed_image_list.append(image_name)
             tag_list.append("%s:%s" % (image_name, 'latest'))
         else:
             tag_list.append("%s:%s" % (image_name, latest_tag_minus_hyphon))
+
+        #If package is an rhgs3 package grabed the version and 'latest'
+        if 'rhgs3/' in image_name:
+            tag_list.append("%s:%s" % (image_name, 'latest'))
 
 
 def generate_realtime_output(cmd):

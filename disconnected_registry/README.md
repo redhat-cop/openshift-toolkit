@@ -18,18 +18,24 @@
   ```
 2. We also need to set our internal registry up as an insecure registry. Add the following line to /etc/sysconfig/docker on the box from which you will sync images.
   
-   a. edit for your server and add to file
+   a. Edit for your server and add to file
   
-  ```INSECURE_REGISTRY='--insecure-registry registry.c1-ocp.myorg.com:5000'```
+  ```
+  INSECURE_REGISTRY='--insecure-registry registry.c1-ocp.myorg.com:5000'
+  ```
   
-   b. or edit for your server and run
+   b. Or edit for your server and run
   
-  ```echo "INSECURE_REGISTRY='--insecure-registry registry.c1-ocp.myorg.com:5000'" >> /etc/sysconfig/docker```
+  ```
+  echo "INSECURE_REGISTRY='--insecure-registry registry.c1-ocp.myorg.com:5000'" >> /etc/sysconfig/docker
+  ```
 
 
   And then restart docker with:
   
-  ```systemctl restart docker```
+  ```
+  systemctl restart docker
+  ```
 
 3. Run the `docker-registry-sync.py` script:
    
