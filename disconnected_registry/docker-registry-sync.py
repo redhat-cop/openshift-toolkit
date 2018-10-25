@@ -122,7 +122,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
         else:
             tag_list.append("%s:%s" % (image_name, latest_tag_minus_hyphon))
 
-        #If package is an rhgs3 package grabed the version and 'latest'
+        #If package is an rhgs3 package grabe the version and 'latest', discovered trying to deploy 3.10 disconnected
         if 'rhgs3/' in image_name:
             tag_list.append("%s:%s" % (image_name, 'latest'))
 
