@@ -9,7 +9,6 @@ import logging
 import datetime
 import time
 import sys
-import re
 
 parser = argparse.ArgumentParser(description='Syncs images from a public docker registry to a private registry. Use '
                                              'this to populate private registries in a closed off environment. Must be '
