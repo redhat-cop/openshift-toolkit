@@ -7,9 +7,6 @@ spec:
     matchLabels:
       docker-registry: default
   ingress:
-    - from:
-      - namespaceSelector:
-          matchLabels: {}
-      ports:
+    - ports:
         - port: 5000
           protocol: TCP
