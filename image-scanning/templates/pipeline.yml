@@ -132,8 +132,15 @@ objects:
                   }
 
                 cluster_images=\$(oc get pod --all-namespaces -o jsonpath='{range .items[?(@.status.phase=="Running")]}{range .status.containerStatuses[*]}{.imageID}{"\\n"}{end}{end}' | sed 's/docker-pullable:\\/\\///g' | awk '!seen[\$0]++')
+                num_images=\$(echo "\${cluster_images}" | wc -w)
+                echo "Beginning Scan of \${num_images} images..."
+                images_complete=0
                 for image in \${cluster_images}; do
                   scan_image \$image
+                  images_complete=\$((images_complete+1))
+                  echo "Scanned \${images_complete} of \${num_images} Images."
+                  percent=\$(echo "scale=2; \$images_complete / \$num_images * 100" | bc)
+                  echo "\${percent}% Complete!"
                 done
 
                   """, returnStatus: true)

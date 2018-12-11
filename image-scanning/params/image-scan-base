@@ -1,1 +1,1 @@
-FROM_IMAGE=rhel7:7.5
+FROM_IMAGE=rhel7:7.6
