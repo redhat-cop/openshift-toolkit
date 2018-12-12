@@ -2,6 +2,9 @@
 # This playbook and the roles follows OCP Day-2 Operation Guide
 # Tested on OCP 3.10
 # Commented out - The last tasks send backed up files to S3 bucket
+# Run this playbook from a control host:
+# $ ansible-playbook -i inventory ocp_backup.yml
+#
 - name: backup master hosts
   hosts: masters
   roles:
