@@ -1,0 +1,25 @@
+---
+# Save a list of installed packages and capture subscription information
+- name: backup directory {{ MYBACKUPDIR }}/rhsm exists
+  file:
+    path: "{{ MYBACKUPDIR }}/etc/rhsm"
+    state: directory
+
+- name: save a list of installed packages
+  shell: rpm -qa | sort > {{ MYBACKUPDIR }}/installed_packages.txt
+
+- name: save rhsm.conf
+  shell: cp -a /etc/rhsm/rhsm.conf {{ MYBACKUPDIR }}/etc/rhsm/
+
+- name: subscription-manager command available
+  stat: 
+    path: /sbin/subscription-manager
+  register: is_subman
+
+- name: subscription-manager identity output
+  shell: /sbin/subscription-manager identity > {{ MYBACKUPDIR }}/subscription-identity.txt
+  when: is_subman.stat.exists == True
+
+- name: save list of subscribed repositories
+  shell: /sbin/subscription-manager repos --list-enabled | grep 'Repo ID:' | awk '{print $3}' > {{ MYBACKUPDIR }}/enabled-repositories.txt
+  when: is_subman.stat.exists == True

@@ -1,0 +1,36 @@
+---
+# Backup of the master host configuration files
+- name: backup directory {{ MYBACKUPDIR }}/etc/sysconfig exists
+  file:
+    path: "{{ MYBACKUPDIR }}/etc/pki/ca-trust/source/anchors"
+    state: directory
+
+- name: save /etc/origin
+  shell: cp -aR /etc/dnsmasq* {{ MYBACKUPDIR }}/etc
+
+- name: save /etc/sysconfig
+  shell: cp -aR /etc/sysconfig/{{ item }} {{ MYBACKUPDIR }}/etc/sysconfig/
+  with_items:
+    - iptables
+    - docker-*
+
+- name: save ca-trust certs
+  shell: cp -aR /etc/pki/ca-trust/source/anchors/* {{ MYBACKUPDIR }}/etc/pki/ca-trust/source/anchors/
+
+- name: check if flanneld exists
+  stat:
+    path: /etc/sysconfig/flanneld
+  register: is_flanneld
+
+- name: save flannel configururation file (if used)
+  shell: cp -a /etc/sysconfig/flanneld {{ MYBACKUPDIR }}/etc/sysconfig/
+  when: is_flanneld.stat.exists == True
+
+- name: check for /etc/cni
+  stat:
+    path: /etc/cni
+  register: is_cni
+
+- name: saving CNI config (if used)
+  shell: cp -aR /etc/cni {{ MYBACKUPDIR }}/etc/
+  when: is_cni.stat.isdir == True

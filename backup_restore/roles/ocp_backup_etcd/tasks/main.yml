@@ -1,0 +1,8 @@
+---
+# tasks file for ocp_backup_etcd
+- name: pre_check tasks
+  import_tasks: pre_check.yml
+
+- name: save etcd data
+  import_tasks: save_etcd.yml
+

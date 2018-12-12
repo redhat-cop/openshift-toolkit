@@ -1,0 +1,63 @@
+----
+# This playbook and the roles follows OCP Day-2 Operation Guide
+# Tested on OCP 3.10
+# Commented out - The last tasks send backed up files to S3 bucket
+- name: backup master hosts
+  hosts: masters
+  roles:
+  - ocp_backup_etcd
+  - ocp_backup_masters
+  - ocp_backup_compress_backup
+
+- name: ocp backup of node hosts
+  hosts: nodes,!masters
+  roles:
+  - ocp_backup_nodes
+  - ocp_backup_compress_backup
+
+- name: Set up directory for fetching tar files
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Create local temp directory for fetching files 
+      file:
+        path: "/tmp/ocp_backup_{{ ansible_date_time.date }}"
+        state: directory
+      register: local_dir
+  
+- name: fetch tar files from all hosts
+  hosts: OSEv3
+  tasks:
+    - name: fetch tar files
+      fetch:
+        src: "/root/ocp_backup/{{ inventory_hostname }}.tar.gz"
+        dest: "{{ hostvars['localhost'].local_dir.path }}/"
+        flat: yes
+
+    - name: remove compressed file from remote dir
+      file:
+        path: "/root/ocp_backup"
+        state: absent
+
+### NOTES ####
+# To enable sync to s3, need the following:
+# yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+# yum -y install python-pip python-wheel
+# pip install boto3
+### END NOTES ####
+### Send to S3 ####
+#- name: prepare files and send backup to S3
+#  hosts: localhost
+#  connection: local
+#  tasks:
+#    - name: sync files to S3
+#      s3_sync:
+#        bucket: my-s3-bucket
+#        key_prefix: "ocp_backup_{{ ansible_date_time.date }}"
+#        file_root: "{{ hostvars['localhost'].local_dir.path }}/"
+#
+#    - name: remove temp files
+#      file:
+#        path: "{{ hostvars['localhost'].local_dir.path }}"
+#        state: absent
+### Send to S3 END ###

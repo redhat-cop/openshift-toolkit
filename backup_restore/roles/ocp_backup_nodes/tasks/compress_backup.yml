@@ -1,0 +1,9 @@
+---
+# Compress backup
+- name: compress backup directory
+  archive:
+    path: "{{ MYBACKUPDIR }}"
+    dest: "{{ MYBACKUPDIR }}.tar.gz"
+    format: gz
+    remove: yes
+
