@@ -99,7 +99,7 @@ objects:
                     IMAGE_CONTENT=\${WORKING_DIR}/image-content
                     RESULTS=\${WORKING_DIR}/results
                     JENKINS_WORKSPACE=$WORKSPACE
-                    DOCKER_CFG_HOME=/tmp/dockercfg
+                    DOCKER_CFG_HOME=/tmp/.docker
                     EXPORT_TO=\${JENKINS_WORKSPACE}/\${IMAGE_NAMESPACE}/\${IMAGE_NAME}
 
                     echo "Starting scan of image \$IMAGE_TO_SCAN"
@@ -112,7 +112,7 @@ objects:
                     NAMESPACE=\$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
                     DOCKERCFG_SECRET_NAME=\$(oc get sa -n \$NAMESPACE \$SA_NAME -o jsonpath='{range .secrets[*]}{.name}{"\\n"}{end}' | grep dockercfg)
 
-                    oc get secret -n \$NAMESPACE \$DOCKERCFG_SECRET_NAME -o jsonpath='{.data.\\.dockercfg}' | base64 --decode > \$DOCKER_CFG_HOME/.dockercfg
+                    oc get secret -n \$NAMESPACE \$DOCKERCFG_SECRET_NAME -o jsonpath='{.data.\\.dockercfg}' | base64 --decode > \$DOCKER_CFG_HOME/config.json
 
                     { # try
                       image-inspector --path=\${IMAGE_CONTENT} --scan-results-dir=\${RESULTS} --scan-type=openscap --openscap-html-report --image=\$IMAGE_TO_SCAN --dockercfg=\$DOCKER_CFG_HOME/.dockercfg
