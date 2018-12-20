@@ -90,10 +90,10 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
         for tag in image_tag_dictionary['tags']:
             # check to see if there is a 'v' in the version tag:
             if tag.startswith('v'):
-               # Ensures taht a valid version is being parsed and searched for
+               # Ensures that a valid version is being parsed and searched for
                # release based on a two series release (i.e. 3.9 or 3.10)
               temp_tag = tag.split('.')
-              req_tag = temp_tag[0] +'.'+ temp_tag[1]
+              req_tag = ".".join(temp_tag[:2]
             else:
               req_tag = ''
             if release_version in req_tag or not 'openshift' in url:
@@ -121,7 +121,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
         else:
             tag_list.append("%s:%s" % (image_name, latest_tag_minus_hyphon))
 
-        #If package is an rhgs3 package grabe the version and 'latest', discovered trying to deploy 3.10 disconnected
+        #If package is an rhgs3 package grab the version and 'latest', discovered trying to deploy 3.10 disconnected
         if 'rhgs3/' in image_name:
             tag_list.append("%s:%s" % (image_name, 'latest'))
 
