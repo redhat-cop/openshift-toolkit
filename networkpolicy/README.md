@@ -85,7 +85,7 @@ openshift_project_request_template_edits:
     action: append
     value:
       kind: NetworkPolicy
-      apiVersion: extensions/v1beta1
+      apiVersion: networking.k8s.io/v1
       metadata:
         name: default-deny
       spec:
@@ -93,7 +93,7 @@ openshift_project_request_template_edits:
   - key: objects
     action: append
     value:
-      apiVersion: v1
+      apiVersion: network.openshift.io/v1
       kind: EgressNetworkPolicy
       metadata:
         name: deny-external-egress
@@ -105,7 +105,7 @@ openshift_project_request_template_edits:
   - key: objects
     action: append
     value:
-      apiVersion: extensions/v1beta1
+      apiVersion: networking.k8s.io/v1
       kind: NetworkPolicy
       metadata:
         name: allow-from-same-namespace
@@ -118,7 +118,7 @@ openshift_project_request_template_edits:
     action: append
     value:
       kind: NetworkPolicy
-      apiVersion: extensions/v1beta1
+      apiVersion: networking.k8s.io/v1
       metadata:
         name: allow-from-default-namespace
       spec:
