@@ -3,4 +3,4 @@ apiVersion: extensions/v1beta1
 metadata:
   name: default-deny
 spec:
-  podSelector:
+  podSelector: []
