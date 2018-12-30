@@ -84,16 +84,20 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
             sys.exit()
         # Get the latest version for a given release
         latest_tag = ''
+	temp_tag = ''
+        req_tag = ''
         image_name = image_tag_dictionary['name']
         for tag in image_tag_dictionary['tags']:
             # check to see if there is a 'v' in the version tag:
             if tag.startswith('v'):
-                # This tracks the position of the splice. It assumes that you are trying to get the latest
-                # release based on a two digit release (i.e. 3.4 or 3.7)
-                splice_position = 4
+               # Ensures that a valid version is being parsed and searched for
+               # release based on a two series release (i.e. 3.9 or 3.10)
+              temp_tag = tag.split('.')
+              req_tag = ".".join(temp_tag[:2]
             else:
-                splice_position = 3
-            if release_version in tag[:splice_position] or not 'openshift' in url:
+              req_tag = ''
+            if release_version in req_tag or not 'openshift' in url:
+            #if release_version in tag[:splice_position] or not 'openshift' in url:
                 # There may be a better way of getting the highest tag for a release
                 # but the list may potentially have a higher release version than what you are looking for
                 if parse_version(tag) > parse_version(latest_tag):
@@ -108,11 +112,18 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
         latest_tag_minus_hyphon = latest_tag.split('-')[0]
         # If the tag has successfully removed a hyphen, it will be unicode, otherwise it will be a string
         if type(latest_tag_minus_hyphon) is not unicode:
-            logging.error("Unable to properly parse the version for image: %s" % image_name)
+            logging.error("Unable to match the version for image: %s" % image_name)
             logging.error("Are you sure that the version exists in the RedHat registry?")
-            failed_image_list.append(image_name)
+            logging.info("Attempting to pull image tag 'latest' instead")
+            #insted of failing we will try to pull the tag 'latest'
+            #failed_image_list.append(image_name)
+            tag_list.append("%s:%s" % (image_name, 'latest'))
         else:
             tag_list.append("%s:%s" % (image_name, latest_tag_minus_hyphon))
+
+        #If package is an rhgs3 package grab the version and 'latest', discovered trying to deploy 3.10 disconnected
+        if 'rhgs3/' in image_name:
+            tag_list.append("%s:%s" % (image_name, 'latest'))
 
 
 def generate_realtime_output(cmd):
@@ -210,4 +221,4 @@ if failed_images:
     number_of_failures = len(failed_images)
     number_of_images_attempted = total_number_of_images_to_download + number_of_failures
     logging.warn("")
-    logging.warn("%s/%s failed to download: %s" % (number_of_failures, number_of_images_attempted, failed_images))
+    logging.warn("%s/%s failed to download version requested fell back to 'latest': %s" % (number_of_failures, number_of_images_attempted, failed_images))

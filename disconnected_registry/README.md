@@ -16,13 +16,33 @@
   systemctl enable docker-distribution
   systemctl start docker-distribution
   ```
+2. We also need to set our internal registry up as an insecure registry. Add the following line to /etc/sysconfig/docker on the box from which you will sync images.
+  
+   a. Edit for your server and add to file
+  
+  ```
+  INSECURE_REGISTRY='--insecure-registry registry.c1-ocp.myorg.com:5000'
+  ```
+  
+   b. Or edit for your server and run
+  
+  ```
+  echo "INSECURE_REGISTRY='--insecure-registry registry.c1-ocp.myorg.com:5000'" >> /etc/sysconfig/docker
+  ```
 
-2. Run the `docker-registry-sync.py` script:
+
+  And then restart docker with:
+  
+  ```
+  systemctl restart docker
+  ```
+
+3. Run the `docker-registry-sync.py` script:
    
    a. To sync Red Hat images to private registry.
 
   ```
-  ./docker-registry-sync.py --from=registry.access.redhat.com --to=<registry-server-ip>:5000 --file=./docker_tags.json
+  ./docker-registry-sync.py --from=registry.access.redhat.com --to=<registry-server-ip>:5000 --file=./docker_tags.json --openshift-version=3.10
   ```
 
    b. To sync Red Hat images to ose-images.tar
