@@ -37,7 +37,7 @@ cluster_color=`curl -sk "${public_url}/api/status" \
   -H "Accept-Language: en-US,en;q=0.8" \
   -H "Accept: application/json" \
   -H "User-Agent: health-checker" \
-  -H "Authorization: Bearer $(oc whoami -t)" \
+  -H "Authorization: Bearer ${token}" \
   -H "Connection: keep-alive" --compressed | \
   python -c 'import sys, json; print json.dumps(json.load(sys.stdin)["status"]["overall"]["state"], sort_keys=True, indent=4)'`
 
