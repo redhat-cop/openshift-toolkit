@@ -93,7 +93,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type 
                # Ensures that a valid version is being parsed and searched for
                # release based on a two series release (i.e. 3.9 or 3.10)
               temp_tag = tag.split('.')
-              req_tag = ".".join(temp_tag[:2]
+              req_tag = ".".join(temp_tag[:2])
             else:
               req_tag = ''
             if release_version in req_tag or not 'openshift' in url:
