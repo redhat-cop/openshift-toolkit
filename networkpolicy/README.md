@@ -50,7 +50,7 @@ Execute the following commands to label the namespaces which traffic will be ori
 
 ```
 oc label namespace default name=default
-oc label namespace default name=kube-service-catalog
+oc label namespace kube-service-catalog name=kube-service-catalog
 ```
 
 Additional namespaces may be configured if desired.
