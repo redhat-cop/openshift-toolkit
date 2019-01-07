@@ -80,7 +80,6 @@ objects:
     labels:
       quota-tier: Small
     name: quota
-    namespace: ${PROJECT_NAME}
   spec:
     hard:
       cpu: "1"
@@ -95,7 +94,6 @@ objects:
     labels:
       quota-tier: Small
     name: burst-quota
-    namespace: ${PROJECT_NAME}
   spec:
     hard:
       cpu: "2"
@@ -108,24 +106,23 @@ objects:
     labels:
       quota-tier: Small
     name: limits
-    namespace: ${PROJECT_NAME}
   spec:
     limits:
     - max:
-        cpu: 100m
+        cpu: 1000m
         memory: 1Gi
       min:
         cpu: 10m
         memory: 128Mi
       type: Pod
     - default:
-        cpu: 50m
+        cpu: 100m
         memory: 256Mi
       defaultRequest:
         cpu: 50m
         memory: 256Mi
       max:
-        cpu: 100m
+        cpu: 1000m
         memory: 1Gi
       min:
         cpu: 10m

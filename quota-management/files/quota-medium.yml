@@ -39,20 +39,20 @@ items:
   spec:
     limits:
     - max:
-        cpu: 200m
+        cpu: 2000m
         memory: 2Gi
       min:
         cpu: 10m
         memory: 128Mi
       type: Pod
     - default:
-        cpu: 50m
+        cpu: 250m
         memory: 256Mi
       defaultRequest:
-        cpu: 50m
+        cpu: 100m
         memory: 256Mi
       max:
-        cpu: 200m
+        cpu: 2000m
         memory: 2Gi
       min:
         cpu: 20m

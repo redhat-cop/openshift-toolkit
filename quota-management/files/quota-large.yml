@@ -12,8 +12,8 @@ items:
     name: quota
   spec:
     hard:
-      cpu: "2"
-      memory: 8Gi
+      cpu: "4"
+      memory: 24Gi
     scopes:
     - NotTerminating
 - apiVersion: v1
@@ -26,8 +26,8 @@ items:
     name: burst-quota
   spec:
     hard:
-      cpu: "2"
-      memory: 9Gi
+      cpu: "8"
+      memory: 32Gi
 - apiVersion: v1
   kind: LimitRange
   metadata:
@@ -39,20 +39,20 @@ items:
   spec:
     limits:
     - max:
-        cpu: 200m
+        cpu: 2000m
         memory: 2Gi
       min:
         cpu: 20m
         memory: 256Mi
       type: Pod
     - default:
-        cpu: 100m
-        memory: 512Mi
+        cpu: 500m
+        memory: 1024Mi
       defaultRequest:
         cpu: 100m
         memory: 512Mi
       max:
-        cpu: 200m
+        cpu: 2000m
         memory: 2Gi
       min:
         cpu: 20m
