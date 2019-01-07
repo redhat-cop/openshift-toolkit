@@ -80,7 +80,8 @@ objects:
     labels:
       quota-tier: Small
     name: quota
-  spec:
+    namespace: ${PROJECT_NAME}
+   spec:
     hard:
       cpu: "1"
       memory: 6Gi
@@ -94,6 +95,7 @@ objects:
     labels:
       quota-tier: Small
     name: burst-quota
+    namespace: ${PROJECT_NAME}
   spec:
     hard:
       cpu: "2"
@@ -106,6 +108,7 @@ objects:
     labels:
       quota-tier: Small
     name: limits
+    namespace: ${PROJECT_NAME}
   spec:
     limits:
     - max:
