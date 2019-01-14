@@ -41,8 +41,9 @@ objects:
 
         RUN yum repolist > /dev/null && \
             yum clean all && \
-            INSTALL_PKGS="docker atomic jq atomic-openshift-clients image-inspector tar bc" && \
-            yum install -y --enablerepo=rhel-7-server-ose-${OCP_VERSION}-rpms --enablerepo=rhel-7-server-extras-rpms --setopt=tsflags=nodocs $INSTALL_PKGS && \
+            yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && \
+            INSTALL_PKGS="docker atomic atomic-openshift-clients image-inspector tar bc jq" && \
+            yum install -y --enablerepo=rhel-7-server-ose-${OCP_VERSION}-rpms --enablerepo=rhel-7-server-extras-rpms --enablerepo=rhel-7-server-rpms --setopt=tsflags=nodocs $INSTALL_PKGS && \
             yum clean all
     strategy:
       dockerStrategy:
