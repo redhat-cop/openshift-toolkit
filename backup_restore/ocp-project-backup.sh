@@ -1,17 +1,24 @@
-#!/bin/bash
+#!/bin/bash 
 
-# Date: 04/18/2017
+set -Exeuo pipefail
+
+# Date: 08/01/2018
 #
 # Script Purpose: Create a backup of all projects on the OCP cluster.
-# Version       : 1.0
+# Version       : 1.01
 #
 
 #===============================================================================
 #This script must be executed on cluster master node.
 #===============================================================================
 
+
+for pid in $(pidof -x `basename "$0"`); do
+    [ $pid != $$ ] && echo "[$(date)] : `basename "$0"` : Process is already running with PID $pid" && exit 1
+done
+
 #Update this path to point to the backup location.
-readonly ARCHIVE_LOCATION="/tmp"
+readonly ARCHIVE_LOCATION="/opt/backups/master" && [ ! -d $ARCHIVE_LOCATION ] && mkdir -p $ARCHIVE_LOCATION
 
 # Check if executed as root
 if [[ $EUID -ne 0 ]]; then
@@ -20,7 +27,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Check if executed on OSE master
-if ! systemctl status atomic-openshift-master-api >/dev/null 2>&1; then
+if ! systemctl status `systemctl list-units --plain  -t service | egrep master-api |cut -d. -f1` >/dev/null 2>&1; then
   echo "ERROR: This script must be run on an OpenShift master. Aborting."
   exit 1
 fi
@@ -81,6 +88,7 @@ do
     #Make the project directory
     mkdir -p ${yaml_dir}
 
+    set +e
     #Export all bc,dc,is,route,svc yamls
     oc export all -n ${project} -o yaml > ${yaml_dir}/project.yaml
 
@@ -95,7 +103,7 @@ do
 
     #Export any project pvc
     oc get pvc -n ${project} -o yaml --export=true > ${yaml_dir}/pvc.yaml
-
+    set -e
   else
 
     #Found an invalid project name, somehting bad may have happened, but we'll

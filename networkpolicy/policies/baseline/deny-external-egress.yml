@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: network.openshift.io/v1
 kind: EgressNetworkPolicy
 metadata:
   name: deny-external-egress
