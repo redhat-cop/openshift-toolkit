@@ -4,5 +4,5 @@
 # From 'openshift-applier'
 - name: openshift-applier
   scm: git
-  src: https://github.com/etsauer/openshift-applier
-  version: patch-containing-strings
+  src: https://github.com/redhat-cop/openshift-applier
+  version: v2.0.9
