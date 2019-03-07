@@ -1,0 +1,15 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  annotations:
+    openshift.io/display-name: Red Hat JBoss EAP 7.0
+    openshift.io/image.dockerRepositoryCheck: 2019-02-14T06:50:28Z
+    openshift.io/provider-display-name: Red Hat, Inc.
+    version: 1.4.14
+  creationTimestamp: null
+  generation: 2
+  name: jboss-eap70-openshift
+spec:
+  lookupPolicy:
+    local: false
+  tags:
