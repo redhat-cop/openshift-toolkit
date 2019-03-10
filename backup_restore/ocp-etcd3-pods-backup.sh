@@ -38,7 +38,7 @@ fi
 
 # Vars
 HOSTNAME=$(hostnamectl --static)
-TS=$(date +"%Y%m%d_%H%M%S")
+TS=$(date +"%Y%m%d-%H%M%S")
 
 MASTER_EXEC="/usr/local/bin/master-exec"
 ETCD_POD_MANIFEST="/etc/origin/node/pods/etcd.yaml"
