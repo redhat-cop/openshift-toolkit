@@ -1,0 +1,5 @@
+spec:
+  tags:
+    - name: "1.7"
+      importPolicy:
+        scheduled: true

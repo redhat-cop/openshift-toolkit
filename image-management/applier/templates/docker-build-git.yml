@@ -53,6 +53,7 @@ objects:
   kind: ImageStream
   metadata:
     annotations:
+      openshift.io/display-name: ${IS_DISPLAY_NAME}
     generation: 1
     labels:
       build: ${IMAGE_NAME}
@@ -74,3 +75,5 @@ parameters:
   value: webhook123
 - name: GENERIC_WEBHOOK_SECRET
   value: webhook123
+- name: IS_DISPLAY_NAME
+  value: MyOrg.com Sample Image

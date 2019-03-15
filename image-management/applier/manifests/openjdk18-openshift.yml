@@ -1,0 +1,102 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  annotations:
+    openshift.io/display-name: Red Hat OpenJDK 8
+    openshift.io/image.dockerRepositoryCheck: 2019-02-14T06:50:40Z
+    openshift.io/provider-display-name: Red Hat, Inc.
+    version: 1.4.14
+  creationTimestamp: null
+  generation: 2
+  name: redhat-openjdk18-openshift
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+  - annotations:
+      description: Build and run Java applications using Maven and OpenJDK 8.
+      iconClass: icon-rh-openjdk
+      openshift.io/display-name: Red Hat OpenJDK 8
+      sampleContextDir: undertow-servlet
+      sampleRepo: https://github.com/jboss-openshift/openshift-quickstarts
+      supports: java:8
+      tags: builder,java,openjdk,hidden
+      version: "1.0"
+    from:
+      kind: DockerImage
+      name: docker-registry.default.svc:5000/openshift/redhat-openjdk18-openshift:1.0
+    generation: 2
+    importPolicy: {}
+    name: "1.0"
+    referencePolicy:
+      type: Local
+  - annotations:
+      description: Build and run Java applications using Maven and OpenJDK 8.
+      iconClass: icon-rh-openjdk
+      openshift.io/display-name: Red Hat OpenJDK 8
+      sampleContextDir: undertow-servlet
+      sampleRepo: https://github.com/jboss-openshift/openshift-quickstarts
+      supports: java:8
+      tags: builder,java,openjdk,hidden
+      version: "1.1"
+    from:
+      kind: DockerImage
+      name: docker-registry.default.svc:5000/openshift/redhat-openjdk18-openshift:1.1
+    generation: 2
+    importPolicy: {}
+    name: "1.1"
+    referencePolicy:
+      type: Local
+  - annotations:
+      description: Build and run Java applications using Maven and OpenJDK 8.
+      iconClass: icon-rh-openjdk
+      openshift.io/display-name: Red Hat OpenJDK 8
+      sampleContextDir: undertow-servlet
+      sampleRepo: https://github.com/jboss-openshift/openshift-quickstarts
+      supports: java:8
+      tags: builder,java,openjdk,hidden
+      version: "1.2"
+    from:
+      kind: DockerImage
+      name: docker-registry.default.svc:5000/openshift/redhat-openjdk18-openshift:1.2
+    generation: 2
+    importPolicy: {}
+    name: "1.2"
+    referencePolicy:
+      type: Local
+  - annotations:
+      description: Build and run Java applications using Maven and OpenJDK 8.
+      iconClass: icon-rh-openjdk
+      openshift.io/display-name: Red Hat OpenJDK 8
+      sampleContextDir: undertow-servlet
+      sampleRepo: https://github.com/jboss-openshift/openshift-quickstarts
+      supports: java:8
+      tags: builder,java,openjdk,hidden
+      version: "1.3"
+    from:
+      kind: DockerImage
+      name: docker-registry.default.svc:5000/openshift/redhat-openjdk18-openshift:1.3
+    generation: 2
+    importPolicy: {}
+    name: "1.3"
+    referencePolicy:
+      type: Local
+  - annotations:
+      description: Build and run Java applications using Maven and OpenJDK 8.
+      iconClass: icon-rh-openjdk
+      openshift.io/display-name: Red Hat OpenJDK 8
+      sampleContextDir: undertow-servlet
+      sampleRepo: https://github.com/jboss-openshift/openshift-quickstarts
+      supports: java:8
+      tags: builder,java,openjdk,hidden
+      version: "1.4"
+    from:
+      kind: DockerImage
+      name: docker-registry.default.svc:5000/openshift/redhat-openjdk18-openshift:1.4
+    generation: 2
+    importPolicy: {}
+    name: "1.4"
+    referencePolicy:
+      type: Local
+status:
+  dockerImageRepository: ""
