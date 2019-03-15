@@ -79,6 +79,10 @@ objects:
               hostPathVolume(
                 hostPath: '/var/run/docker.sock',
                 mountPath: '/var/run/docker.sock'
+              ),
+              hostPathVolume(
+                hostPath: '/root/.docker/config.json',
+                mountPath: '/var/run/.docker/config.json'
               )
           ]) {
 
@@ -112,7 +116,11 @@ objects:
                     NAMESPACE=\$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
                     DOCKERCFG_SECRET_NAME=\$(oc get sa -n \$NAMESPACE \$SA_NAME -o jsonpath='{range .secrets[*]}{.name}{"\\n"}{end}' | grep dockercfg)
 
-                    oc get secret -n \$NAMESPACE \$DOCKERCFG_SECRET_NAME -o jsonpath='{.data.\\.dockercfg}' | base64 --decode > \$DOCKER_CFG_HOME/config.json
+                    # Write SA docker config
+                    oc get secret -n \$NAMESPACE \$DOCKERCFG_SECRET_NAME -o jsonpath='{.data.\\.dockercfg}' | base64 --decode > \$DOCKER_CFG_HOME/config-sa.json
+
+                    # Generate final docker config
+                    jq -s '.[0] * .[1]' \$DOCKER_CFG_HOME/config-sa.json /var/run/.docker/config.json > \$DOCKER_CFG_HOME/config.json
 
                     { # try
                       image-inspector --path=\${IMAGE_CONTENT} --scan-results-dir=\${RESULTS} --scan-type=openscap --openscap-html-report --image=\$IMAGE_TO_SCAN --dockercfg=\$DOCKER_CFG_HOME/config.json
