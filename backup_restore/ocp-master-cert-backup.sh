@@ -29,7 +29,7 @@ if ! systemctl status atomic-openshift-master-api >/dev/null 2>&1; then
 fi
 
 #Variable to hold path to tar
-base_file="${DEST_BACKUP_DIR}/${TAR_FILE_PREFIX}-$HOSTNAME-$(date -u '+%Y%m%d-%k%M%S')"
+base_file="${DEST_BACKUP_DIR}/${TAR_FILE_PREFIX}-$HOSTNAME-$(date -u '+%Y%m%d-%H%M%S')"
 tar_name="${base_file}.tar"
 gz_name="${base_file}.tar.gz"
 
