@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import requests
+import requests, base64
 import json
 from pkg_resources import parse_version
 import argparse
@@ -29,6 +29,9 @@ parser.add_argument('--dry-run', action='store_true', dest='dry_run', help='If t
                                                                          'dumped to stdout instead of run')
 parser.add_argument('--openshift-version', action='store', dest='ocp_version', help='The version of OpenShift which you '
                                                                               'want to sync images for')
+parser.add_argument('--remote-registry-user', action='store', dest='remote_registry_user', help='The user for source registry')
+parser.add_argument('--remote-registry-pass', action='store', dest='remote_registry_pass', help='The password for source registry, e.g user token for registry.redhat.io')
+parser.add_argument('--remote-registry-auth-url', action='store', dest='remote_registry_auth_url', help='The registry WWW-authenticate auth challenge URL')
 
 options = parser.parse_args()
 
@@ -52,6 +55,12 @@ logging.getLogger('').addHandler(console)
 # Set the default release version incase unspecified
 release_version = '3.7'
 
+# Set registry.redhat.io auth as default
+remote_registry_auth_url = 'https://registry.redhat.io/auth/realms/rhcc/protocol/redhat-docker-v2/auth?service=docker-registry'
+
+# List of auth-required registry
+auth_required_registry = ['registry.redhat.io', 'quay.io']
+
 if options.ocp_version is not None:
     release_version = options.ocp_version
 
@@ -61,18 +70,39 @@ retrieve_non_v_tags_from_redhat_list = []
 latest_tag_list = []
 failed_images = []
 
+# Authenticate with docker v2 compatible registry, return access token response by auth server to the caller.
+def get_registry_access_token(user, tokenpass, auth_url):
+    auth_session = requests.Session()
+    b64_userpass = base64.b64encode("%s:%s" % (user, tokenpass))
+    auth_header = {'Authorization': 'Basic ' + b64_userpass}
+    if not options.remote_registry_auth_url:
+        remote_auth_url = remote_registry_auth_url
+    else:
+        remote_auth_url = options.remote_registry_auth_url
+    try:
+        get_auth_token = auth_session.get(remote_auth_url, headers = auth_header)
+        resp_json_parse = json.loads(get_auth_token.text)
+        reg_auth_token = resp_json_parse['access_token']
+        return reg_auth_token
+    except Exception as e:
+        return e
 
-def generate_url_list(dictionary_key, list_to_populate):
+def generate_url_list(dictionary_key, list_to_populate, remote_registry):
     for namespace in config_file_dict[dictionary_key]:
         for image in config_file_dict[dictionary_key][namespace]:
-            docker_json_link = "https://registry.access.redhat.com/v2/%s/%s/tags/list" % (namespace, image)
+            docker_json_link = "https://%s/v2/%s/%s/tags/list" % (remote_registry, namespace, image)
             list_to_populate.append(docker_json_link)
 
-
-def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type = None):
+def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type = None, registry_access_token = None):
     session = requests.Session()
     for url in url_list:
-        redhat_registry = session.get(url)
+        logging.info("Getting tags from image endpoint: %s\n" % url)
+        # If registry_access_token supplied add authorization bearer header to GET request.
+        if registry_access_token:
+            remote_access_auth_header = {'Authorization': 'Bearer %s' % registry_access_token }
+            redhat_registry = session.get(url, headers=remote_access_auth_header)
+        else:
+            redhat_registry = session.get(url)
         try:
             # The object is returned as a string so it needs to be converted to a json object
             image_tag_dictionary = json.loads(redhat_registry.text)
@@ -173,11 +203,21 @@ config_file = options.json_file
 with open(config_file) as json_data:
     config_file_dict = json.load(json_data)
 
-generate_url_list('core_components', retrieve_v_tags_from_redhat_list)
-generate_url_list('hosted_components', retrieve_non_v_tags_from_redhat_list)
+generate_url_list('core_components', retrieve_v_tags_from_redhat_list, options.remote_registry)
+generate_url_list('hosted_components', retrieve_non_v_tags_from_redhat_list, options.remote_registry)
 
-get_latest_tag_from_api(retrieve_v_tags_from_redhat_list, latest_tag_list, failed_images)
-get_latest_tag_from_api(retrieve_non_v_tags_from_redhat_list, latest_tag_list, failed_images, 'v')
+if options.remote_registry in auth_required_registry:
+    # For authentication required registry get access token and supply it to next function.
+    remote_registry_access_token = get_registry_access_token(options.remote_registry_user, options.remote_registry_pass, options.remote_registry_auth_url)
+    get_latest_tag_from_api(retrieve_v_tags_from_redhat_list, latest_tag_list, failed_images, registry_access_token=remote_registry_access_token)
+    get_latest_tag_from_api(retrieve_non_v_tags_from_redhat_list, latest_tag_list, failed_images, 'v', registry_access_token=remote_registry_access_token)
+
+    #Now attempt to docker login to the registry.
+    logging.info("Attempting to login to %s...\n" % options.remote_registry)
+    os.system("docker login -u '%s' -p '%s' %s" % (options.remote_registry_user, options.remote_registry_pass, options.remote_registry))
+else:
+    get_latest_tag_from_api(retrieve_v_tags_from_redhat_list, latest_tag_list, failed_images)
+    get_latest_tag_from_api(retrieve_non_v_tags_from_redhat_list, latest_tag_list, failed_images, 'v')
 
 total_number_of_images_to_download = len(latest_tag_list)
 counter = 1
@@ -192,6 +232,7 @@ if options.local_registry == 'tar':
     cmd = ['docker','save','-o', 'ose3-images.tar']
 
 for namespace_and_image in latest_tag_list:
+    logging.info("Processing: %s"  % namespace_and_image)
     if options.dry_run:
         logging.info("Dry run mode activated. Docker commands were outputted to the screen")
         dry_run_print_docker_commands(options.remote_registry, options.local_registry, namespace_and_image)
