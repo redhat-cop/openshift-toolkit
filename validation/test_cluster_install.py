@@ -44,4 +44,4 @@ def test_master_controllers():
 
 def test_fluentd():
     assert getRunningPodsByLabel(
-        'openshift-logging', 'component=fluentd') == getNodeCount()
+        'openshift-logging', 'component=fluentd') == getNodeCount(), "Should have one fluentd pod for every node in the cluster"
