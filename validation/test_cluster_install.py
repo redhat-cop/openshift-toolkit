@@ -1,9 +1,19 @@
 from kubernetes import client, config
+from jsonpath_ng.ext import parse
+
 
 # Configs can be set in Configuration class directly or using helper utility
 config.load_kube_config()
 
 v1 = client.CoreV1Api()
+cv1 = client.CustomObjectsApi()
+
+
+def getRouteByName(namespace, name):
+    routes = cv1.list_namespaced_custom_object('route.openshift.io', 'v1',
+                                               namespace, 'routes')
+    jsonpath_expr = parse('items[?metadata.name == {}].$'.format(name))
+    return [match.value for match in jsonpath_expr.find(routes)][0]
 
 
 def getRunningPodsByLabel(namespace, label):
