@@ -250,7 +250,7 @@ if auth_challenge_url is False:
     logging.info("Registry did not return challenge, continue...")
     get_latest_tag_from_api(retrieve_v_tags_from_redhat_list, latest_tag_list, failed_images,
                             registry_access_token=None)
-    get_latest_tag_from_api(retrieve_non_v_tags_from_redhat_list, latest_tag_list, failed_images,
+    get_latest_tag_from_api(retrieve_non_v_tags_from_redhat_list, latest_tag_list, failed_images, 'v',
                             registry_access_token=None)
 else:
     logging.info("Registry asking for challenge, authenticating (ensure you already run docker login!)...")
@@ -259,7 +259,7 @@ else:
     get_latest_tag_from_api(retrieve_v_tags_from_redhat_list, latest_tag_list, failed_images,
                             registry_access_token=reg_access_token)
 
-    get_latest_tag_from_api(retrieve_non_v_tags_from_redhat_list, latest_tag_list, failed_images,
+    get_latest_tag_from_api(retrieve_non_v_tags_from_redhat_list, latest_tag_list, failed_images, 'v',
                             registry_access_token=reg_access_token)
 
 total_number_of_images_to_download = len(latest_tag_list)
