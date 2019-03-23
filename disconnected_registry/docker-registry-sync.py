@@ -11,7 +11,6 @@ import time
 import sys
 import re
 
-# TODO: PEP-8
 parser = argparse.ArgumentParser(description='Syncs images from a public docker registry to a private registry. Use '
                                              'this to populate private registries in a closed off environment. Must be '
                                              'run from a linux host capable of running docker commands which has '
@@ -33,6 +32,7 @@ parser.add_argument('--openshift-version', action='store', dest='ocp_version',
                     help='The version of OpenShift which you want to sync images for')
 
 options = parser.parse_args()
+
 
 # Set up the logger
 todays_date = str(datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d--%H_%M'))
@@ -80,7 +80,7 @@ def get_registry_auth_mechanism(url_list):
         # TODO: parse and normalize header response. redhat.io Apache has 'WWW-' while quay.io nginx using 'www-'.
         auth_challenge_realm = remote_auth_session.headers['WWW-Authenticate']
         # TODO: Fix this ugly re.compile REGEX to transform object into group.
-        match = re.compile(r"\=(.*)")
+        match = re.compile(r"=(.*)")
         header_match = match.search(auth_challenge_realm)
         challenge_url_join = header_match.group(1).replace('",', "?").replace('"', '')
         challenge_url = challenge_url_join.replace('"', '')
@@ -131,8 +131,7 @@ def generate_url_list(dictionary_key, list_to_populate, remote_registry):
             list_to_populate.append(docker_json_link)
 
 
-def get_latest_tag_from_api(url_list, tag_list, version_type=None, **kwargs):
-    registry_access_token = kwargs['registry_access_token']
+def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=None, registry_access_token=None):
     session = requests.Session()
     for url in url_list:
         logging.info("Processing tags for: %s" % url)
@@ -150,11 +149,9 @@ def get_latest_tag_from_api(url_list, tag_list, version_type=None, **kwargs):
             logging.error("  URL: %s" % url)
             logging.error("  Response Code: %s" % remote_registry_resp.code)
             logging.error("  Response: %s" % remote_registry_resp.text)
-            sys.exit()
+            raise e
         # Get the latest version for a given release
         latest_tag = ''
-        temp_tag = ''
-        req_tag = ''
         image_name = image_tag_dictionary['name']
         for tag in image_tag_dictionary['tags']:
             # check to see if there is a 'v' in the version tag:
@@ -179,12 +176,11 @@ def get_latest_tag_from_api(url_list, tag_list, version_type=None, **kwargs):
                         latest_tag = tag
         # We want to remove everything after the hyphen because we don't care about release versions
         latest_tag_minus_hyphon = latest_tag.split('-')[0]
-        print latest_tag_minus_hyphon
         # If the tag has successfully removed a hyphen, it will be unicode, otherwise it will be a string
         if type(latest_tag_minus_hyphon) is not unicode:
             logging.error("Unable to match the version for image: %s" % image_name)
             logging.error("Are you sure that the version exists in the RedHat registry?")
-            logging.info("Attempting to pull image tag 'latest' instead\n")
+            logging.info("Attempting to pull image tag 'latest' instead")
             # insted of failing we will try to pull the tag 'latest'
             # failed_image_list.append(image_name)
             tag_list.append("%s:%s" % (image_name, 'latest'))
@@ -212,7 +208,8 @@ def generate_realtime_output(cmd):
 def dry_run_print_docker_commands(remote_registry, local_registry, image_name):
     print("docker pull %s/%s" % (remote_registry, image_name))
     print("docker tag %s/%s %s/%s" % (remote_registry, image_name, local_registry, image_name))
-    print("docker push %s/%s\n" % (local_registry, image_name))
+    print("docker push %s/%s" % (local_registry, image_name))
+    print("")
 
 
 def pull_images(remote_registry, image_name):
@@ -221,7 +218,7 @@ def pull_images(remote_registry, image_name):
     for pulled_image in generate_realtime_output(["docker", "pull", "%s/%s" % (remote_registry,
                                                                                image_name)]):
         if pulled_image:
-            logging.info(pulled_image)
+            logging.info(pulled_image),
         else:
             exit_with_error = True
             break
@@ -240,13 +237,14 @@ def push_images(local_registry, image_name):
 
 
 config_file = options.json_file
+
+
 with open(config_file) as json_data:
     config_file_dict = json.load(json_data)
 
 generate_url_list('core_components', retrieve_v_tags_from_redhat_list, options.remote_registry)
 generate_url_list('hosted_components', retrieve_non_v_tags_from_redhat_list, options.remote_registry)
 
-# TODO: Check for get_registry_auth_mechanism then check for present token.
 auth_challenge_url = get_registry_auth_mechanism(retrieve_v_tags_from_redhat_list)
 
 if auth_challenge_url is False:
@@ -268,16 +266,16 @@ else:
 total_number_of_images_to_download = len(latest_tag_list)
 counter = 1
 
-print("")
+logging.info("")
 logging.info("Total images to download: %s" % total_number_of_images_to_download)
 
+#
 # Generate initial array list if local registry is a tar file
-
+#
 if options.local_registry == 'tar':
     cmd = ['docker', 'save', '-o', 'ose3-images.tar']
 
 for namespace_and_image in latest_tag_list:
-    logging.info("Processing: %s" % namespace_and_image)
     if options.dry_run:
         logging.info("Dry run mode activated. Docker commands were outputted to the screen")
         dry_run_print_docker_commands(options.remote_registry, options.local_registry, namespace_and_image)
@@ -296,14 +294,16 @@ for namespace_and_image in latest_tag_list:
             logging.info("Pushing into the local registry...")
             push_images(options.local_registry, namespace_and_image)
 
+##
 # create tar file of images
+#
 if options.local_registry == 'tar':
     for output in generate_realtime_output(cmd):
-        logging.info(output)
+        logging.info(output),
 
 if failed_images:
     number_of_failures = len(failed_images)
     number_of_images_attempted = total_number_of_images_to_download + number_of_failures
     logging.warning("")
-    logging.warning("%s/%s failed to download version requested fell back to 'latest': %s" % (
-        number_of_failures, number_of_images_attempted, failed_images))
+    logging.warning("%s/%s failed to download version requested fell back to 'latest': %s"
+                    % (number_of_failures, number_of_images_attempted, failed_images))

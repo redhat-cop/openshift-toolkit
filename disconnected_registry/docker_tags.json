@@ -1,76 +1,8 @@
 {
     "core_components": {
         "openshift3": [
-            "apb-base",
-            "apb-tools",
-            "csi-attacher",
-            "csi-driver-registrar",
-            "csi-livenessprobe",
-            "csi-provisioner",
-            "container-engine",
-            "image-inspector",
-            "jenkins-1-rhel7",
-            "jenkins-2-rhel7",
-            "jenkins-agent-maven-35-rhel7",
-            "jenkins-agent-nodejs-8-rhel7",
-            "jenkins-slave-base-rhel7",
-            "jenkins-slave-maven-rhel7",
-            "jenkins-slave-nodejs-rhel7",
-            "local-storage-provisioner",
-            "logging-auth-proxy",
-            "logging-curator",
-            "logging-elasticsearch",
-            "logging-eventrouter",
-            "logging-fluentd",
-            "logging-kibana",
-            "manila-provisioner",
-            "mariadb-apb",
-            "mediawiki-apb",
-            "mysql-apb", 
-            "node",
-            "oauth-proxy",
-            "openvswitch",
-            "ose",
-            "ose-ansible",
-            "ose-ansible-service-broker",
-            "ose-cli",
-            "ose-cluster-capacity",
-            "ose-control-plane",
-            "ose-deployer",
-            "ose-descheduler",
-            "ose-docker-builder",
-            "ose-docker-registry",
-            "ose-egress-dns-proxy",
-            "ose-egress-http-proxy",
-            "ose-egress-router",
-            "ose-f5-router",
-            "ose-federation",
-            "ose-haproxy-router",
-            "ose-hyperkube",
-            "ose-hypershift",
-            "ose-keepalived-ipfailover",
-            "ose-pod",
-            "ose-node-problem-detector",
-            "ose-recycler",
-            "ose-service-catalog",
-            "ose-sti-builder",
-            "ose-template-service-broker",
-            "ose-web-console",
-            "ose-node",
-            "postgresql-apb",
-            "prometheus",
-            "prometheus-alertmanager",
-            "prometheus-alert-buffer",
-            "prometheus-node-exporter",
-            "mediawiki-apb",
-            "metrics-cassandra",
-            "metrics-hawkular-metrics",
-            "metrics-hawkular-openshift-agent",
-            "metrics-heapster",
             "metrics-schema-installer",
-            "registry-console",
-            "snapshot-controller",
-            "snapshot-provisioner"
+            "registry-console"
         ]
     },
     "hosted_components": {
@@ -78,62 +10,6 @@
         ],
         "rhel7": [
             "etcd"
-        ],
-        "cloudforms46": [
-            "cfme-openshift-postgresql",
-            "cfme-openshift-memcached",
-            "cfme-openshift-app-ui",
-            "cfme-openshift-app",
-            "cfme-openshift-embedded-ansible",
-            "cfme-openshift-httpd",
-            "cfme-httpd-configmap-generator"
-        ],
-        "rhgs3": [
-            "rhgs-server-rhel7",
-            "rhgs-volmanager-rhel7",
-            "rhgs-gluster-block-prov-rhel7",
-            "rhgs-s3-server-rhel7"
-        ],
-        "jboss-amq-6": [
-            "amq63-openshift"
-        ],
-        "jboss-datagrid-7": [
-            "datagrid71-openshift",
-            "datagrid71-client-openshift"
-        ],
-        "jboss-datavirt-6": [
-            "datavirt63-openshift",
-            "datavirt63-driver-openshift"
-        ],
-        "jboss-decisionserver-6": [
-            "decisionserver64-openshift"
-        ],
-        "jboss-processserver-6": [
-            "processserver64-openshift"
-        ],
-        "jboss-eap-6": [
-            "eap64-openshift"
-        ],
-        "jboss-eap-7": [
-            "eap70-openshift"
-        ],
-        "jboss-webserver-3": [
-            "webserver31-tomcat7-openshift",
-            "webserver31-tomcat8-openshift"
-        ],
-        "rhscl": [
-            "mariadb-101-rhel7",
-            "mongodb-32-rhel7",
-            "mysql-57-rhel7",
-            "nodejs-6-rhel7",
-            "perl-524-rhel7",
-            "php-56-rhel7",
-            "postgresql-95-rhel7",
-            "python-35-rhel7",
-            "ruby-24-rhel7"
-        ],
-        "redhat-openjdk-18": [
-            "openjdk18-openshift"
         ],
         "redhat-sso-7": [
             "sso70-openshift",
