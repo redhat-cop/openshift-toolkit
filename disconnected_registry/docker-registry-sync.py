@@ -153,6 +153,8 @@ def get_latest_tag_from_api(url_list, tag_list, version_type=None, **kwargs):
             sys.exit()
         # Get the latest version for a given release
         latest_tag = ''
+        temp_tag = ''
+        req_tag = ''
         image_name = image_tag_dictionary['name']
         for tag in image_tag_dictionary['tags']:
             # check to see if there is a 'v' in the version tag:
@@ -177,6 +179,7 @@ def get_latest_tag_from_api(url_list, tag_list, version_type=None, **kwargs):
                         latest_tag = tag
         # We want to remove everything after the hyphen because we don't care about release versions
         latest_tag_minus_hyphon = latest_tag.split('-')[0]
+        print latest_tag_minus_hyphon
         # If the tag has successfully removed a hyphen, it will be unicode, otherwise it will be a string
         if type(latest_tag_minus_hyphon) is not unicode:
             logging.error("Unable to match the version for image: %s" % image_name)
@@ -250,7 +253,7 @@ if auth_challenge_url is False:
     logging.info("Registry did not return challenge, continue...")
     get_latest_tag_from_api(retrieve_v_tags_from_redhat_list, latest_tag_list, failed_images,
                             registry_access_token=None)
-    get_latest_tag_from_api(retrieve_non_v_tags_from_redhat_list, latest_tag_list, failed_images, 'v',
+    get_latest_tag_from_api(retrieve_non_v_tags_from_redhat_list, latest_tag_list, failed_images,
                             registry_access_token=None)
 else:
     logging.info("Registry asking for challenge, authenticating (ensure you already run docker login!)...")
@@ -259,7 +262,7 @@ else:
     get_latest_tag_from_api(retrieve_v_tags_from_redhat_list, latest_tag_list, failed_images,
                             registry_access_token=reg_access_token)
 
-    get_latest_tag_from_api(retrieve_non_v_tags_from_redhat_list, latest_tag_list, failed_images, 'v',
+    get_latest_tag_from_api(retrieve_non_v_tags_from_redhat_list, latest_tag_list, failed_images,
                             registry_access_token=reg_access_token)
 
 total_number_of_images_to_download = len(latest_tag_list)
