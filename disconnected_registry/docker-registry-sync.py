@@ -131,6 +131,7 @@ def generate_url_list(dictionary_key, list_to_populate, remote_registry):
             list_to_populate.append(docker_json_link)
 
 
+# TODO: failed_image_list is not being called in this function. Might be removed in future.
 def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=None, registry_access_token=None):
     session = requests.Session()
     for url in url_list:
@@ -147,7 +148,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=
         except ValueError as e:
             logging.error("ERROR: Unable to parse response from registry")
             logging.error("  URL: %s" % url)
-            logging.error("  Response Code: %s" % remote_registry_resp.code)
+            logging.error("  Response Code: %s" % remote_registry_resp.status_code)
             logging.error("  Response: %s" % remote_registry_resp.text)
             raise e
         # Get the latest version for a given release
@@ -162,7 +163,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=
                 req_tag = ".".join(temp_tag[:2])
             else:
                 req_tag = ''
-            if release_version in req_tag or not 'openshift' in url:
+            if release_version in req_tag or 'openshift' not in url:
                 # if release_version in tag[:splice_position] or not 'openshift' in url:
                 # There may be a better way of getting the highest tag for a release
                 # but the list may potentially have a higher release version than what you are looking for
@@ -192,14 +193,14 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=
             tag_list.append("%s:%s" % (image_name, 'latest'))
 
 
-def generate_realtime_output(cmd):
-    output = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, stderr=subprocess.STDOUT)
-    for stdout_line in iter(output.stdout.readline, ""):
+def generate_realtime_output(args):
+    response = subprocess.Popen(args, stdout=subprocess.PIPE, universal_newlines=True, stderr=subprocess.STDOUT)
+    for stdout_line in iter(response.stdout.readline, ""):
         yield stdout_line.strip()
-    output.stdout.close()
-    return_code = output.wait()
+    response.stdout.close()
+    return_code = response.wait()
     if return_code:
-        logging.error("There appears to be a problem contacting %s" % cmd[2])
+        logging.error("There appears to be a problem contacting %s" % args[2])
         logging.error("Skipping...")
         yield False
         return
