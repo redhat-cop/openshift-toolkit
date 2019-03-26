@@ -4,12 +4,12 @@ This directory contains scripts specific to cluster managment intended to be run
 
 ## Cluster Capacity Report (cluster_capacity.py)
 
-The `cluster_capacity.py` script generates a report showing how full a kubernetes cluster is. It can be run from anywhere there is an active `~/.kube/config` context and requires at least `cluster-reader` or equivalent permissions.
+The `capacity/cluster_capacity.py` script generates a report showing how full a kubernetes cluster is. It can be run from anywhere there is an active `~/.kube/config` context and requires at least `cluster-reader` or equivalent permissions.
 
 The script can be run with no arguments, but must be run with Python 3.
 
 ```
-python3 cluster_capacity.py
+capacity/cluster_capacity.py
 ```
 
 The script will total the allocatable CPU and Memory from all nodes (via `status.allocatable`), and the total of all configured `resources.requests` and `resources.limits` from pods in the cluster, and calculated to total allocated resources. The report generated looks like the following:

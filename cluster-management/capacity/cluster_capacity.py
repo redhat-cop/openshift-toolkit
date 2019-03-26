@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from kubernetes import client, config
 
 k8s_sizing = {
