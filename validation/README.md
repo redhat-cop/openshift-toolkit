@@ -1,8 +1,11 @@
-# validate-pre-install.py
+# OpenShift Cluster Validation
+
+## Pre Install Validation
 
 A script that is used to check that the prerequisites for OpenShift Container Platform are present within the target environment
 
-```Usage: validate-pre-install.py [options]
+```
+Usage: validate-pre-install.py [options]
 
 Options:
   -h, --help            show this help message and exit
@@ -43,8 +46,34 @@ Attempting to forward lookup of master02.ose.example.com...
 Attempting to reverse lookup of master02.ose.example.com...
 ```
 
-After the script has completed a colourized, text based, tab formatted report is generated. 
+After the script has completed a colourized, text based, tab formatted report is generated.
 
 * Words in YELLOW are warnings, these are no show stoppers but are worth paying attention to.
 * Words in GREEN have passed the checks appropriately
 * Words in RED are failures that need to be addressed before the installation may proceed
+
+## Post Install State Validation
+
+For validating that an installed cluster is in the expected state, we've written a set of [Pytest](https://docs.pytest.org/en/latest/) test cases. They can be run with the following:
+
+```
+pip install -r requirements.txt
+oc login ...
+pytest
+```
+
+The tests will output test successes and failures, for example...
+```
+____________________________________ test_masters ____________________________________
+
+    def test_etcd():
+>       assert getRunningPodsByLabel(
+            'kube-system', 'openshift.io/component=etcd') == 3, "Should have 3 etcd pods"
+E       AssertionError: Should have 3 etcd pods
+E       assert 1 == 3
+E        +  where 1 = getRunningPodsByLabel('kube-system', 'openshift.io/component=etcd')
+
+test_cluster_install.py:31: AssertionError
+
+======================= 3 failed, 1 passed, 1 warnings in 1.12 seconds =======================
+```
