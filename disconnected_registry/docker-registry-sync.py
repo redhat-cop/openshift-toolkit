@@ -145,6 +145,16 @@ def generate_url_list(dictionary_key, list_to_populate, remote_registry):
 # TODO: failed_image_list is not being called in this function. Might be removed in future.
 def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=None, registry_access_token=None):
     session = requests.Session()
+
+    # Attempt a retry when server returned listed status code.
+    # urllib3 will sleep for (backoff_factor)*(2**((total_retries -1)) between each retry.
+    req_retries = Retry(total=5, status_forcelist=retry_status_code, backoff_factor=0.5)
+
+    # Now we create HTTP transport adapter for http and https:
+    # http://docs.python-requests.org/en/master/user/advanced/#transport-adapters
+    session.mount('https://', HTTPAdapter(max_retries=req_retries))
+    session.mount('http://', HTTPAdapter(max_retries=req_retries))
+
     for url in url_list:
         logging.info("Processing tags for: %s" % url)
         # If registry_access_token supplied add authorization bearer header to GET request.
@@ -156,7 +166,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=
         try:
             # The object is returned as a string so it needs to be converted to a json object
             image_tag_dictionary = json.loads(remote_registry_resp.text)
-        except ValueError as e:
+        except requests.exceptions as e:
             logging.error("ERROR: Unable to parse response from registry")
             logging.error("  URL: %s" % url)
             logging.error("  Response Code: %s" % remote_registry_resp.status_code)
@@ -203,7 +213,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=
         if 'rhgs3/' in image_name:
             tag_list.append("%s:%s" % (image_name, 'latest'))
 
-
+# TODO: There are still 504 Gateway Time-out here sometimes. Try loop should be implemented here as well.
 def generate_realtime_output(args):
     response = subprocess.Popen(args, stdout=subprocess.PIPE, universal_newlines=True, stderr=subprocess.STDOUT)
     for stdout_line in iter(response.stdout.readline, ""):
