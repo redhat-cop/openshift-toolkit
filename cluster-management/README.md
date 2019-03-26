@@ -9,6 +9,8 @@ The `capacity/cluster_capacity.py` script generates a report showing how full a 
 The script can be run with no arguments, but must be run with Python 3.
 
 ```
+pip install -r requirements.txt
+oc login ...
 capacity/cluster_capacity.py
 ```
 
