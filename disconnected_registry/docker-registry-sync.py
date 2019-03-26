@@ -2,6 +2,8 @@
 import requests
 import json
 from pkg_resources import parse_version
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 import argparse
 import os
 import subprocess
@@ -53,6 +55,9 @@ logging.getLogger('').addHandler(console)
 # Set the default release version incase unspecified
 release_version = '3.7'
 
+# We going to retry when server return one of these status code.
+retry_status_code = [500, 502, 503, 504]
+
 # Set the default registry auth file location
 docker_auth_config_json = "/root/.docker/config.json"
 
@@ -71,6 +76,13 @@ def get_registry_auth_mechanism(url_list):
     auth_session = requests.Session()
     test_api_url = url_list[1]
     logging.debug("Test if authentication mechanism configured for URL: %s" % test_api_url)
+    # Attempt a retry when server returned listed status code.
+    # urllib3 will sleep for (backoff_factor)*(2**((total_retries -1)) between each retry.
+    req_retries = Retry(total=5, status_forcelist=retry_status_code, backoff_factor=0.5)
+    # Now we create HTTP transport adapter for http and https:
+    # http://docs.python-requests.org/en/master/user/advanced/#transport-adapters
+    auth_session.mount('https://', HTTPAdapter(max_retries=req_retries))
+    auth_session.mount('http://', HTTPAdapter(max_retries=req_retries))
     remote_auth_session = auth_session.get(test_api_url)
     remote_auth_resp_code = remote_auth_session.status_code
     if remote_auth_resp_code == 200:
@@ -87,8 +99,7 @@ def get_registry_auth_mechanism(url_list):
         logging.info("Received www-authenticate challenge at: %s" % challenge_url)
         return challenge_url
     else:
-        # TODO: Sometime CDN gateway will return 504: Gateway timeout.
-        #  Should do retry for count=x and failed when try=x for better experience"
+        # When retries above failed. Killing ourself.
         print("Upstream registry malfunction when getting %s with HTTP response: %s" % (test_api_url,
                                                                                         remote_auth_resp_code))
         print("Terminating program, please retry again...")
