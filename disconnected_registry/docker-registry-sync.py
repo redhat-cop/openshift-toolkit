@@ -74,7 +74,12 @@ failed_images = []
 # Take first value of api list generated and attempt a GET to see if upstream server challenge us back for auth.
 def get_registry_auth_mechanism(url_list):
     auth_session = requests.Session()
-    test_api_url = url_list[1]
+    # Get first URL from the list to test the authentication mechanism.
+    if len(url_list) == 0:
+        logging.error("No URL found in the file to fetch from upstream! Exiting.")
+        logging.error("Filename: %s" % options.json_file)
+        sys.exit(1)
+    test_api_url = url_list[0]
     logging.debug("Test if authentication mechanism configured for URL: %s" % test_api_url)
     # Attempt a retry when server returned listed status code.
     # urllib3 will sleep for (backoff_factor)*(2**((total_retries -1)) between each retry.
@@ -96,7 +101,7 @@ def get_registry_auth_mechanism(url_list):
         header_match = match.search(auth_challenge_realm)
         challenge_url_join = header_match.group(1).replace('",', "?")
         challenge_url = challenge_url_join.replace('"', '')
-        logging.info("Received www-authenticate challenge at: %s" % challenge_url)
+        logging.info("Received WWW-Authenticate challenge at: %s" % challenge_url)
         return challenge_url
     else:
         # When retries above failed. Killing ourself.
@@ -199,7 +204,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=
         # If the tag has successfully removed a hyphen, it will be unicode, otherwise it will be a string
         if type(latest_tag_minus_hyphon) is not unicode:
             logging.error("Unable to match the version for image: %s" % image_name)
-            logging.error("Are you sure that the version exists in the RedHat registry?")
+            logging.error("Are you sure that the version exists in the Red Hat registry?")
             logging.info("Attempting to pull image tag 'latest' instead")
             # insted of failing we will try to pull the tag 'latest'
             # failed_image_list.append(image_name)
@@ -266,7 +271,11 @@ with open(config_file) as json_data:
 generate_url_list('core_components', retrieve_v_tags_from_redhat_list, options.remote_registry)
 generate_url_list('hosted_components', retrieve_non_v_tags_from_redhat_list, options.remote_registry)
 
-auth_challenge_url = get_registry_auth_mechanism(retrieve_v_tags_from_redhat_list)
+#Ensure that if core_components is empty, try with hosted_components.
+if len(retrieve_v_tags_from_redhat_list) == 0:
+    auth_challenge_url = get_registry_auth_mechanism(retrieve_non_v_tags_from_redhat_list)
+else:
+    auth_challenge_url = get_registry_auth_mechanism(retrieve_v_tags_from_redhat_list)
 
 if auth_challenge_url is False:
     logging.info("Registry did not return challenge, continue...")
