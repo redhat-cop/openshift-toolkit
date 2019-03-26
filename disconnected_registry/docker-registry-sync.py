@@ -89,12 +89,12 @@ def get_registry_auth_mechanism(url_list):
         return False
     elif remote_auth_resp_code == 401:
         # Get header for auth challenge, transform and return back to caller.
-        # TODO: parse and normalize header response. redhat.io Apache has 'WWW-' while quay.io nginx using 'www-'.
+        # This header conform with https://tools.ietf.org/html/rfc7235#page-7
         auth_challenge_realm = remote_auth_session.headers['WWW-Authenticate']
-        # TODO: Fix this ugly re.compile REGEX to transform object into group.
+        # This re.compile should matches all challenge URL based on RFC7235.
         match = re.compile(r"=(.*)")
         header_match = match.search(auth_challenge_realm)
-        challenge_url_join = header_match.group(1).replace('",', "?").replace('"', '')
+        challenge_url_join = header_match.group(1).replace('",', "?")
         challenge_url = challenge_url_join.replace('"', '')
         logging.info("Received www-authenticate challenge at: %s" % challenge_url)
         return challenge_url
@@ -145,11 +145,9 @@ def generate_url_list(dictionary_key, list_to_populate, remote_registry):
 # TODO: failed_image_list is not being called in this function. Might be removed in future.
 def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=None, registry_access_token=None):
     session = requests.Session()
-
     # Attempt a retry when server returned listed status code.
     # urllib3 will sleep for (backoff_factor)*(2**((total_retries -1)) between each retry.
     req_retries = Retry(total=5, status_forcelist=retry_status_code, backoff_factor=0.5)
-
     # Now we create HTTP transport adapter for http and https:
     # http://docs.python-requests.org/en/master/user/advanced/#transport-adapters
     session.mount('https://', HTTPAdapter(max_retries=req_retries))
@@ -212,6 +210,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=
         # If package is an rhgs3 package grab the version and 'latest', discovered trying to deploy 3.10 disconnected
         if 'rhgs3/' in image_name:
             tag_list.append("%s:%s" % (image_name, 'latest'))
+
 
 # TODO: There are still 504 Gateway Time-out here sometimes. Try loop should be implemented here as well.
 def generate_realtime_output(args):
