@@ -169,7 +169,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=
         try:
             # The object is returned as a string so it needs to be converted to a json object
             image_tag_dictionary = json.loads(remote_registry_resp.text)
-        except requests.exceptions as e:
+        except (requests.exceptions,ValueError) as e:
             logging.error("ERROR: Unable to parse response from registry")
             logging.error("  URL: %s" % url)
             logging.error("  Response Code: %s" % remote_registry_resp.status_code)
