@@ -77,14 +77,14 @@ def get_registry_auth_mechanism(url_list):
         return False
     elif remote_auth_resp_code == 401:
         # Get header for auth challenge, transform and return back to caller.
-        # TODO: parse and normalize header response. redhat.io Apache has 'WWW-' while quay.io nginx using 'www-'.
+        # This check fully conform with https://tools.ietf.org/html/rfc7235#page-7
         auth_challenge_realm = remote_auth_session.headers['WWW-Authenticate']
-        # TODO: Fix this ugly re.compile REGEX to transform object into group.
+
         match = re.compile(r"=(.*)")
         header_match = match.search(auth_challenge_realm)
-        challenge_url_join = header_match.group(1).replace('",', "?").replace('"', '')
+        challenge_url_join = header_match.group(1).replace('",', "?")
         challenge_url = challenge_url_join.replace('"', '')
-        logging.info("Received www-authenticate challenge at: %s" % challenge_url)
+        logging.info("Received WWW-Authenticate challenge at: %s" % challenge_url)
         return challenge_url
     else:
         # TODO: Sometime CDN gateway will return 504: Gateway timeout.
