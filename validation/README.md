@@ -56,10 +56,19 @@ After the script has completed a colourized, text based, tab formatted report is
 
 For validating that an installed cluster is in the expected state, we've written a set of [Pytest](https://docs.pytest.org/en/latest/) test cases. They can be run with the following:
 
+Below pre-req must be run first before the pytest framework being executed:
+
 ```
 pip install -r requirements.txt
 oc login ...
-pytest
+```
+
+To run test that include `master` and `infra`:
+
+Edit pytest.ini  or run `pytest` with following options
+
+```
+pytest  --etcd-node-count=3 --router-node-count=2 --registry-pod-count=3 --master-node-count=3  -k "master or infra"
 ```
 
 The tests will output test successes and failures, for example...
