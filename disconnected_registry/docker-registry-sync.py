@@ -1,5 +1,7 @@
 #!/usr/bin/python
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 import json
 from pkg_resources import parse_version
 import argparse
@@ -66,33 +68,53 @@ latest_tag_list = []
 failed_images = []
 
 
+# Retry if upstream CDN return listed 50x response.
+def session_with_retry(
+    retries=3,
+    backoff_factor=0.3,
+    status_forcelist=(500, 502, 504),
+    session=None,
+):
+    session = session or requests.Session()
+    retry = Retry(
+        total=retries,
+        read=retries,
+        connect=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
+
+
 # Take first value of api list generated and attempt a GET to see if upstream server challenge us back for auth.
 def get_registry_auth_mechanism(url_list):
-    auth_session = requests.Session()
-    test_api_url = url_list[1]
-    logging.debug("Test if authentication mechanism configured for URL: %s" % test_api_url)
-    remote_auth_session = auth_session.get(test_api_url)
-    remote_auth_resp_code = remote_auth_session.status_code
-    if remote_auth_resp_code == 200:
-        return False
-    elif remote_auth_resp_code == 401:
-        # Get header for auth challenge, transform and return back to caller.
-        # TODO: parse and normalize header response. redhat.io Apache has 'WWW-' while quay.io nginx using 'www-'.
-        auth_challenge_realm = remote_auth_session.headers['WWW-Authenticate']
-        # TODO: Fix this ugly re.compile REGEX to transform object into group.
+    try:
+        auth_session = requests.Session()
+        test_api_url = url_list[1]
+        logging.debug("Test if authentication mechanism configured for URL: %s" % test_api_url)
+        remote_auth_session = session_with_retry(session=auth_session).get(test_api_url)
+        remote_auth_resp_code = remote_auth_session.status_code
+        if remote_auth_resp_code == 200:
+            return False
+        elif remote_auth_resp_code == 401:
+            # Get header for auth challenge, transform and return back to caller.
+            # This check fully conform with https://tools.ietf.org/html/rfc7235#page-7
+            auth_challenge_realm = remote_auth_session.headers['WWW-Authenticate']
+
         match = re.compile(r"=(.*)")
         header_match = match.search(auth_challenge_realm)
-        challenge_url_join = header_match.group(1).replace('",', "?").replace('"', '')
+        challenge_url_join = header_match.group(1).replace('",', "?")
         challenge_url = challenge_url_join.replace('"', '')
-        logging.info("Received www-authenticate challenge at: %s" % challenge_url)
+        logging.info("Received WWW-Authenticate challenge at: %s" % challenge_url)
         return challenge_url
-    else:
-        # TODO: Sometime CDN gateway will return 504: Gateway timeout.
-        #  Should do retry for count=x and failed when try=x for better experience"
+    except (ValueError, requests.Exception) as e:
         print("Upstream registry malfunction when getting %s with HTTP response: %s" % (test_api_url,
                                                                                         remote_auth_resp_code))
         print("Terminating program, please retry again...")
-        sys.exit(1)
+        raise e
 
 
 # Authenticate with docker v2 compatible registry, read from config.json as auth token input,
@@ -120,7 +142,7 @@ def get_registry_access_token(registry_name, challenge_url, remote_registry_auth
         parse_get_resp = json.loads(get_auth_token.text)
         reg_upstream_access_token = parse_get_resp['access_token']
         return reg_upstream_access_token
-    except Exception as e:
+    except ValueError as e:
         return e
 
 
@@ -139,13 +161,13 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=
         # If registry_access_token supplied add authorization bearer header to GET request.
         if registry_access_token:
             remote_access_auth_header = {'Authorization': 'Bearer %s' % registry_access_token}
-            remote_registry_resp = session.get(url, headers=remote_access_auth_header)
+            remote_registry_resp = session_with_retry(session=session).get(url, headers=remote_access_auth_header)
         else:
-            remote_registry_resp = session.get(url)
+            remote_registry_resp = session_with_retry(session=session).get(url)
         try:
             # The object is returned as a string so it needs to be converted to a json object
             image_tag_dictionary = json.loads(remote_registry_resp.text)
-        except ValueError as e:
+        except (requests.Except, ValueError) as e:
             logging.error("ERROR: Unable to parse response from registry")
             logging.error("  URL: %s" % url)
             logging.error("  Response Code: %s" % remote_registry_resp.status_code)
