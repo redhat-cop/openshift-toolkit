@@ -63,26 +63,196 @@ pip install -r requirements.txt
 oc login ...
 ```
 
-To run test that include `master` and `infra`:
-
-Edit pytest.ini  or run `pytest` with following options
+If the cluster console being self-signed, ensure .kube/config has below entry
+(`oc login --insecure-skip-tls-verify=true...`):
+```
+clusters:
+- cluster:
+    insecure-skip-tls-verify: true
+    server: https://console.example.com:8443
+  name: console-example-com:8443
 
 ```
-pytest  --etcd-node-count=3 --router-node-count=2 --registry-pod-count=3 --master-node-count=3  -k "master or infra"
+
+Selection of test run:
+1. Run all (default).
+2. Skip selected test.
+3. Run selected test.
+
+
+#### 1. Run all (default)
+
+* Run below command:
+
+```
+[root@mzali-fedora validation]# pytest -rs -v
+=========================================================================================================================== test session starts ============================================================================================================================
+platform linux2 -- Python 2.7.15, pytest-3.8.0, py-1.6.0, pluggy-0.7.1 -- /usr/bin/python2
+cachedir: .pytest_cache
+rootdir: /home/mzali/PycharmProjects/openshift-toolkit/validation, inifile: pytest.ini
+collected 6 items
+
+test_cluster_install.py::test_master_controllers PASSED                                                                                                                                                                                                              [ 16%]
+test_cluster_install.py::test_master_api PASSED                                                                                                                                                                                                                      [ 33%]
+test_cluster_install.py::test_etcd PASSED                                                                                                                                                                                                                            [ 50%]
+test_cluster_install.py::test_router PASSED                                                                                                                                                                                                                          [ 66%]
+test_cluster_install.py::test_registry PASSED                                                                                                                                                                                                                        [ 83%]
+test_cluster_install.py::test_fluentd FAILED                                                                                                                                                                                                                         [100%]
+
+================================================================================================================================= FAILURES =================================================================================================================================
+_______________________________________________________________________________________________________________________________ test_fluentd _______________________________________________________________________________________________________________________________
+
+    @pytest.mark.logging
+    def test_fluentd():
+>       assert k8s_client.get_running_pods_by_label(
+            'openshift-logging', 'component=fluentd') == k8s_client.get_node_count(), \
+            "Should have one fluentd pod for every node in the cluster"
+E       AssertionError: Should have one fluentd pod for every node in the cluster
+E       assert 0 == 3
+E        +  where 0 = <bound method k8s_helper.get_running_pods_by_label of <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>>('openshift-logging', 'component=fluentd')
+E        +    where <bound method k8s_helper.get_running_pods_by_label of <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>> = <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>.get_running_pods_by_label
+E        +  and   3 = <bound method k8s_helper.get_node_count of <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>>()
+E        +    where <bound method k8s_helper.get_node_count of <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>> = <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>.get_node_count
+
+test_cluster_install.py:45: AssertionError
+============================================================================================================================= warnings summary =============================================================================================================================
+/usr/lib/python2.7/site-packages/urllib3/connectionpool.py:857: InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning)
+
+-- Docs: https://docs.pytest.org/en/latest/warnings.html
+============================================================================================================== 1 failed, 5 passed, 1 warnings in 0.46 seconds ==============================================================================================================
+Exception TypeError: "'NoneType' object is not callable" in <bound method ApiClient.__del__ of <kubernetes.client.api_client.ApiClient object at 0x7f9cd1392650>> ignored
+Exception TypeError: "'NoneType' object is not callable" in <bound method ApiClient.__del__ of <kubernetes.client.api_client.ApiClient object at 0x7f9cd13b0ad0>> ignored
+[root@mzali-fedora validation]#
+
 ```
 
-The tests will output test successes and failures, for example...
+
+#### 2. Skip selected test.
+
+To skip some test, as this example, we want to skip `logging`.
+
+* Edit pytest.ini, comment all `addopts` and left below addopts enabled:
+
 ```
-____________________________________ test_masters ____________________________________
+[pytest]
+# 1. Run all tests by default.
+#addopts = --etcd-node-count=3 --router-node-count=2 --registry-pod-count=3 --master-node-count=3
 
-    def test_etcd():
->       assert getRunningPodsByLabel(
-            'kube-system', 'openshift.io/component=etcd') == 3, "Should have 3 etcd pods"
-E       AssertionError: Should have 3 etcd pods
-E       assert 1 == 3
-E        +  where 1 = getRunningPodsByLabel('kube-system', 'openshift.io/component=etcd')
+# 2. Deselect test using marker. E.g skip logging test.
+addopts = --etcd-node-count=3 --router-node-count=2 --registry-pod-count=3 --master-node-count=3 -k "not logging"
 
-test_cluster_install.py:31: AssertionError
+# 3. Run only test what marked with master or infra keyword. Ability to select certain test to run.
+#addopts = --etcd-node-count=3 --router-node-count=3 --registry-pod-count=3 --master-node-count=3  -k "master or infra"
 
-======================= 3 failed, 1 passed, 1 warnings in 1.12 seconds =======================
+# 4. Debug purposes. To see which test will be selected to run
+#addopts = --etcd-node-count=1 --router-node-count=1 --registry-pod-count=1 --master-node-count=1 --collect-only
+
+```
+
+* Run the test suite and we will see no `logging` test function will be called:
+```
+[root@mzali-fedora validation]# pytest -rs -v
+=========================================================================================================================== test session starts ============================================================================================================================
+platform linux2 -- Python 2.7.15, pytest-3.8.0, py-1.6.0, pluggy-0.7.1 -- /usr/bin/python2
+cachedir: .pytest_cache
+rootdir: /home/mzali/PycharmProjects/openshift-toolkit/validation, inifile: pytest.ini
+collected 6 items / 1 deselected
+
+test_cluster_install.py::test_master_controllers PASSED                                                                                                                                                                                                              [ 20%]
+test_cluster_install.py::test_master_api PASSED                                                                                                                                                                                                                      [ 40%]
+test_cluster_install.py::test_etcd PASSED                                                                                                                                                                                                                            [ 60%]
+test_cluster_install.py::test_router PASSED                                                                                                                                                                                                                          [ 80%]
+test_cluster_install.py::test_registry PASSED                                                                                                                                                                                                                        [100%]
+
+============================================================================================================================= warnings summary =============================================================================================================================
+/usr/lib/python2.7/site-packages/urllib3/connectionpool.py:857: InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning)
+
+-- Docs: https://docs.pytest.org/en/latest/warnings.html
+============================================================================================================ 5 passed, 1 deselected, 1 warnings in 0.33 seconds ============================================================================================================
+Exception TypeError: "'NoneType' object is not callable" in <bound method ApiClient.__del__ of <kubernetes.client.api_client.ApiClient object at 0x7f077f229650>> ignored
+Exception TypeError: "'NoneType' object is not callable" in <bound method ApiClient.__del__ of <kubernetes.client.api_client.ApiClient object at 0x7f077f247ad0>> ignored
+[root@mzali-fedora validation]#
+
+```
+
+#### 3. Run selected test.
+
+* There are occasion we want just to run selected test. As example here we want only test has being
+marked as `master` and `infra` test function.
+
+* Edit pytest.ini and only enable below line:
+```
+[pytest]
+# 1. Run all tests by default.
+#addopts = --etcd-node-count=1 --router-node-count=1 --registry-pod-count=1 --master-node-count=1
+
+# 2. Deselect test using marker. E.g skip logging test.
+#addopts = --etcd-node-count=1 --router-node-count=1 --registry-pod-count=1 --master-node-count=1 -k "not logging"
+
+# 3. Run only test what marked with master or infra keyword. Ability to select certain test to run.
+addopts = --etcd-node-count=3 --router-node-count=3 --registry-pod-count=3 --master-node-count=3  -k "master or infra"
+
+# 4. Debug purposes. To see which test will be selected to run
+#addopts = --etcd-node-count=1 --router-node-count=1 --registry-pod-count=1 --master-node-count=1 --collect-only
+```
+
+* Run the test:
+```
+[root@mzali-fedora validation]# pytest -rs -v
+=========================================================================================================================== test session starts ============================================================================================================================
+platform linux2 -- Python 2.7.15, pytest-3.8.0, py-1.6.0, pluggy-0.7.1 -- /usr/bin/python2
+cachedir: .pytest_cache
+rootdir: /home/mzali/PycharmProjects/openshift-toolkit/validation, inifile: pytest.ini
+collected 6 items / 3 deselected
+
+test_cluster_install.py::test_master_controllers PASSED                                                                                                                                                                                                              [ 33%]
+test_cluster_install.py::test_master_api PASSED                                                                                                                                                                                                                      [ 66%]
+test_cluster_install.py::test_etcd PASSED                                                                                                                                                                                                                            [100%]
+
+============================================================================================================================= warnings summary =============================================================================================================================
+/usr/lib/python2.7/site-packages/urllib3/connectionpool.py:857: InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning)
+
+-- Docs: https://docs.pytest.org/en/latest/warnings.html
+============================================================================================================ 3 passed, 3 deselected, 1 warnings in 0.32 seconds ============================================================================================================
+Exception TypeError: "'NoneType' object is not callable" in <bound method ApiClient.__del__ of <kubernetes.client.api_client.ApiClient object at 0x7fed4014a650>> ignored
+Exception TypeError: "'NoneType' object is not callable" in <bound method ApiClient.__del__ of <kubernetes.client.api_client.ApiClient object at 0x7fed40168ad0>> ignored
+[root@mzali-fedora validation]#
+
+```
+
+#### How to determined if test failed?
+
+1.Look for assertion error:
+```
+_______________________________________________________________________________________________________________________________ test_fluentd _______________________________________________________________________________________________________________________________
+
+    @pytest.mark.logging
+    def test_fluentd():
+>       assert k8s_client.get_running_pods_by_label(
+            'openshift-logging', 'component=fluentd') == k8s_client.get_node_count(), \
+            "Should have one fluentd pod for every node in the cluster"
+E       AssertionError: Should have one fluentd pod for every node in the cluster
+E       assert 0 == 3
+E        +  where 0 = <bound method k8s_helper.get_running_pods_by_label of <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>>('openshift-logging', 'component=fluentd')
+E        +    where <bound method k8s_helper.get_running_pods_by_label of <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>> = <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>.get_running_pods_by_label
+E        +  and   3 = <bound method k8s_helper.get_node_count of <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>>()
+E        +    where <bound method k8s_helper.get_node_count of <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>> = <validation.lib.k8s_helper.k8s_helper instance at 0x7f9cd1427b00>.get_node_count
+
+test_cluster_install.py:45: AssertionError
+============================================================================================================================= warnings summary =============================================================================================================================
+```
+
+or,
+
+2.Look at the summary:
+```
+test_cluster_install.py::test_master_controllers PASSED                                                                                                                                                                                                              [ 16%]
+test_cluster_install.py::test_master_api PASSED                                                                                                                                                                                                                      [ 33%]
+test_cluster_install.py::test_etcd PASSED                                                                                                                                                                                                                            [ 50%]
+test_cluster_install.py::test_router PASSED                                                                                                                                                                                                                          [ 66%]
+test_cluster_install.py::test_registry PASSED                                                                                                                                                                                                                        [ 83%]
+test_cluster_install.py::test_fluentd FAILED
 ```
