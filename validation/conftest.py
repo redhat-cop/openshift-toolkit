@@ -3,17 +3,18 @@ import pytest
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--master-node-count", action="store", default=3, help = "Master node count."
+        "--master-node-count", action="store", default=3, help="Master node count."
     )
     parser.addoption(
         "--etcd-node-count", action="store", default=3, help="ectd node count."
     )
     parser.addoption(
-        "--router-node-count", action="store", default=3, help = "Router node count."
+        "--router-node-count", action="store", default=3, help="Router node count."
     )
     parser.addoption(
-        "--registry-pod-count", action="store", default=3, help = "Registry pod count."
+        "--registry-pod-count", action="store", default=3, help="Registry pod count."
     )
+
 
 @pytest.fixture
 def master_node_count(request):
@@ -33,5 +34,3 @@ def router_node_count(request):
 @pytest.fixture
 def registry_pod_count(request):
     return request.config.getoption("--registry-pod-count")
-
-
