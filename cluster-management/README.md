@@ -17,10 +17,25 @@ capacity/cluster_capacity.py
 The script will total the allocatable CPU and Memory from all nodes (via `status.allocatable`), and the total of all configured `resources.requests` and `resources.limits` from pods in the cluster, and calculated to total allocated resources. The report generated looks like the following:
 
 ```
+Total Cluster Size:
+----
+	Memory:	151.23707342147827 Gi
+	CPU:	37.2 Cores
 
-CPU Requests                   CPU Limits                     Memory Requests                Memory Limits                 
-------------                   ----------                     ---------------                -------------                 
-8.274999999999984 Cores (22%)  3.6550000000000002 Cores (10%) 54.84904270991683Gi (36%)      57.365921119228005Gi (38%)    
+Amount Claimed By Quota:
+----
+	Memory:	0.0 Gi (0.0%)
+	CPU:	0 Cores (0.0%)
+
+Total Limits:
+----
+	Memory:	107.326858619228 Gi (70.96597163059474%)
+	CPU:	10.894999999999996 Cores (29.287634408602138%)
+
+Total Requests:
+----
+	Memory:	41.29272060096264 Gi (27.30330577469265%)
+	CPU:	9.074999999999985 Cores (24.39516129032254%)
 
 ```
 
