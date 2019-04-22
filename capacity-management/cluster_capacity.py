@@ -25,8 +25,9 @@ def get_cluster_resource_quota():
 
     ret = v1.list_resource_quota_for_all_namespaces()
     for quota in ret.items:
-        cpu += convert.cpu_to_cores(quota.spec.hard["cpu"])
-        mem += convert.mem_to_bytes(quota.spec.hard["mempry"])
+        if quota.spec.scopes and "NotTerminating" in quota.spec.scopes:
+            cpu += convert.cpu_to_cores(quota.spec.hard["cpu"])
+            mem += convert.mem_to_bytes(quota.spec.hard["memory"])
 
     return cpu, mem
 
