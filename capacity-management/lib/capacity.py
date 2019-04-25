@@ -10,7 +10,7 @@ try:
     config.load_kube_config()
 except FileNotFoundError:
     # Try to set auth key
-    f = open("/var/run/secrets/kubernetes.io/token", "r")
+    f = open("/var/run/secrets/kubernetes.io/serviceaccount/token", "r")
     if f.mode == 'r':
         client.configuration.api_key['authorization'] = f.read()
 
