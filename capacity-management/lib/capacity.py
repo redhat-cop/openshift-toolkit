@@ -3,10 +3,17 @@ from lib import convert
 import warnings
 import collections.abc
 
-
+# Load token or kubeconfig
 # Configs can be set in Configuration class directly or using helper utility
 warnings.simplefilter("ignore")
-config.load_kube_config()
+try:
+    config.load_kube_config()
+except FileNotFoundError:
+    # Try to set auth key
+    f = open("/var/run/secrets/kubernetes.io/token", "r")
+    if f.mode == 'r':
+        client.configuration.api_key['authorization'] = f.read()
+
 v1 = client.CoreV1Api()
 
 
