@@ -76,24 +76,28 @@ def get_cluster_resource_quota():
         q_mem = convert.mem_to_bytes(quota.spec.hard["memory"])
 
         # Ensure we only count one quota for a namesapce
-        if namespace not in data:
+        if namespace not in data["namespaces"]:
             cpu += q_cpu
             mem += q_mem
             data["namespaces"][namespace] = {
                 "quota": {
                     "cpu": q_cpu,
-                    "memory_quota": q_mem
+                    "memory": q_mem
                 }
             }
+            print("new namespace quota")
+            print(data)
             continue
 
         # There are multiple quotas, let's count the one for non terminating pods
         #  we also need to remember to subtract the value we're replacing from the totals
         if quota.spec.scopes and "NotTerminating" in quota.spec.scopes:
-            cpu += q_cpu - data[namespace]["cpu_quota"]
-            mem += q_mem - data[namespace]["memory_quota"]
+            cpu += q_cpu - data["namespaces"][namespace]["quota"]["cpu"]
+            mem += q_mem - data["namespaces"][namespace]["quota"]["memory"]
             dict_merge(data["namespaces"][namespace]["quota"], {
                        "cpu": q_cpu, "memory": q_mem})
+            print("existing namespace quota")
+            print(data)
 
     dict_merge(data["cluster"]["quota"], {"cpu": cpu, "memory": mem})
     return data
