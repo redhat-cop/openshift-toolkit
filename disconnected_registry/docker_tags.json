@@ -3,78 +3,82 @@
         "openshift3": [
             "apb-base",
             "apb-tools",
+            "automation-broker-apb",
             "csi-attacher",
             "csi-driver-registrar",
             "csi-livenessprobe",
             "csi-provisioner",
-            "container-engine",
-            "image-inspector",
-            "jenkins-1-rhel7",
-            "jenkins-2-rhel7",
-            "jenkins-agent-maven-35-rhel7",
-            "jenkins-agent-nodejs-8-rhel7",
-            "jenkins-slave-base-rhel7",
-            "jenkins-slave-maven-rhel7",
-            "jenkins-slave-nodejs-rhel7",
+            "grafana",
             "local-storage-provisioner",
-            "logging-auth-proxy",
-            "logging-curator",
-            "logging-elasticsearch",
-            "logging-eventrouter",
-            "logging-fluentd",
-            "logging-kibana",
             "manila-provisioner",
             "mariadb-apb",
+            "mediawiki",
             "mediawiki-apb",
             "mysql-apb",
-            "node",
-            "oauth-proxy",
-            "openvswitch",
-            "ose",
-            "ose-ansible",
             "ose-ansible-service-broker",
             "ose-cli",
+            "ose-cluster-autoscaler",
             "ose-cluster-capacity",
+            "ose-cluster-monitoring-operator",
+            "ose-console",
+            "ose-configmap-reloader",
             "ose-control-plane",
             "ose-deployer",
             "ose-descheduler",
             "ose-docker-builder",
             "ose-docker-registry",
+            "ose-efs-provisioner",
             "ose-egress-dns-proxy",
             "ose-egress-http-proxy",
             "ose-egress-router",
-            "ose-f5-router",
-            "ose-federation",
             "ose-haproxy-router",
             "ose-hyperkube",
             "ose-hypershift",
             "ose-keepalived-ipfailover",
-            "ose-pod",
+            "ose-kube-rbac-proxy",
+            "ose-kube-state-metrics",
+            "ose-metrics-server",
+            "ose-node",
             "ose-node-problem-detector",
+            "ose-operator-lifecycle-manager",
+            "ose-ovn-kubernetes",
+            "ose-pod",
+            "prometheus-alert-buffer",
+            "ose-prometheus-config-reloader",
+            "ose-prometheus-operator",
             "ose-recycler",
             "ose-service-catalog",
-            "ose-sti-builder",
             "ose-template-service-broker",
+            "ose-tests",
             "ose-web-console",
-            "ose-node",
             "postgresql-apb",
-            "prometheus",
-            "prometheus-alertmanager",
-            "prometheus-alert-buffer",
-            "prometheus-node-exporter",
-            "mediawiki-apb",
+            "registry-console",
+            "snapshot-controller",
+            "ose-efs-provisioner"
+        ]
+    },
+    "hosted_components": {
+        "openshift3": [
             "metrics-cassandra",
             "metrics-hawkular-metrics",
             "metrics-hawkular-openshift-agent",
             "metrics-heapster",
             "metrics-schema-installer",
-            "registry-console",
-            "snapshot-controller",
-            "snapshot-provisioner"
-        ]
-    },
-    "hosted_components": {
-        "openshift3": [
+            "oauth-proxy",
+            "ose-logging-curator5",
+            "ose-logging-elasticsearch5",
+            "ose-logging-eventrouter",
+            "ose-logging-fluentd",
+            "ose-logging-kibana5",
+            "prometheus",
+            "prometheus-alertmanager",
+            "prometheus-node-exporter",
+            "jenkins-2-rhel7",
+            "jenkins-agent-maven-35-rhel7",
+            "jenkins-agent-nodejs-8-rhel7",
+            "jenkins-slave-base-rhel7",
+            "jenkins-slave-maven-rhel7",
+            "jenkins-slave-nodejs-rhel7"
         ],
         "rhel7": [
             "etcd"
@@ -115,29 +119,29 @@
             "eap64-openshift"
         ],
         "jboss-eap-7": [
-            "eap70-openshift"
+            "eap71-openshift"
         ],
         "jboss-webserver-3": [
             "webserver31-tomcat7-openshift",
-            "webserver31-tomcat8-openshift"
+            "webserver31-tomcat8-openshift" 
         ],
         "rhscl": [
-            "mariadb-101-rhel7",
             "mongodb-32-rhel7",
             "mysql-57-rhel7",
-            "nodejs-6-rhel7",
             "perl-524-rhel7",
             "php-56-rhel7",
             "postgresql-95-rhel7",
             "python-35-rhel7",
-            "ruby-24-rhel7"
+            "ruby-24-rhel7",
+            "nodejs-6-rhel7",
+            "mariadb-101-rhel7"
         ],
         "redhat-openjdk-18": [
-            "openjdk18-openshift"
+            "openjdk18-openshift" 
         ],
         "redhat-sso-7": [
-            "sso70-openshift",
-            "sso71-openshift"
+            "sso71-openshift",
+            "sso70-openshift"
         ]
     }
 }
