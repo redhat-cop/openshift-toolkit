@@ -5,14 +5,14 @@ from lib import capacity, convert
 
 
 def do_print(capacity):
-    cluster_memory = capacity["cluster"]["totals"]["memory"]
-    cluster_cpu = capacity["cluster"]["totals"]["cpu"]
-    quota_memory = capacity["quota"]["memory"]
-    quota_cpu = capacity["quota"]["cpu"]
-    total_cpu_requests = capacity["requests"]["totals"]["cpu"]
-    total_cpu_limits = capacity["limits"]["totals"]["cpu"]
-    total_mem_requests = capacity["requests"]["totals"]["memory"]
-    total_mem_limits = capacity["limits"]["totals"]["memory"]
+    cluster_memory = capacity["cluster"]["allocatable"]["memory"]
+    cluster_cpu = capacity["cluster"]["allocatable"]["cpu"]
+    quota_memory = capacity["cluster"]["quota"]["memory"]
+    quota_cpu = capacity["cluster"]["quota"]["cpu"]
+    total_cpu_requests = capacity["cluster"]["requests"]["cpu"]
+    total_cpu_limits = capacity["cluster"]["limits"]["cpu"]
+    total_mem_requests = capacity["cluster"]["requests"]["memory"]
+    total_mem_limits = capacity["cluster"]["limits"]["memory"]
     memory_unit = 'Gi'
 
     print()

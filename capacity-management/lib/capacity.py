@@ -85,8 +85,6 @@ def get_cluster_resource_quota():
                     "memory": q_mem
                 }
             }
-            print("new namespace quota")
-            print(data)
             continue
 
         # There are multiple quotas, let's count the one for non terminating pods
@@ -96,8 +94,6 @@ def get_cluster_resource_quota():
             mem += q_mem - data["namespaces"][namespace]["quota"]["memory"]
             dict_merge(data["namespaces"][namespace]["quota"], {
                        "cpu": q_cpu, "memory": q_mem})
-            print("existing namespace quota")
-            print(data)
 
     dict_merge(data["cluster"]["quota"], {"cpu": cpu, "memory": mem})
     return data
