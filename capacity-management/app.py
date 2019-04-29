@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import json
-from flask import Flask
+from flask import Flask, Response
 from lib import capacity
 
 app = Flask(__name__)
@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def get_capacity():
-    return json.dumps(capacity.get_capacity_data())
+    return Response(json.dumps(capacity.get_capacity_data()), mimetype='application/json')
 
 
 @app.route('/health')
@@ -17,7 +17,7 @@ def hello_world():
     health = {
         "status": "UP"
     }
-    return json.dumps(health)
+    return Response(json.dumps(health), mimetype='application/json')
 
 
 if __name__ == "__main__":
