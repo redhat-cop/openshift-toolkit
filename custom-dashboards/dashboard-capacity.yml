@@ -190,7 +190,7 @@ data:
          "tableColumn": "",
          "targets": [
            {
-             "expr": "sum(node_memory_MemFree + node_memory_Cached + node_memory_Buffers) / sum(node_memory_MemTotal)",
+             "expr": "1- sum(node_memory_MemFree + node_memory_Cached + node_memory_Buffers) / sum(node_memory_MemTotal)",
              "format": "time_series",
              "instant": true,
              "intervalFactor": 2,
