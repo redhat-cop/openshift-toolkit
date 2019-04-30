@@ -1,4 +1,4 @@
-import convert
+from lib import convert
 
 
 def test_cpu():
