@@ -26,9 +26,9 @@ Options:
 
 ### Sample Usage:
 
-Use the default ansible hosts file, don't show the docker SHA256SUM, use the root user to make ssh connections, check the repositories for OpenShift 3.3, check the nfs SELinux booleans and check that the default docker file has been edited because a private registry is being used
+Use the default ansible hosts file, don't show the docker SHA256SUM, use the root user, or one with passwordless sudo to make ssh connections, check the repositories for OpenShift 3.11, check the nfs SELinux booleans and check that the default docker file has been edited because a private registry is being used
 
-```./validate-pre-install.py --ansible-host-file=/etc/ansible/hosts --show-sha-sums=no --ansible-ssh-user=root --openshift-version=3.3 --nfs-booleans --private-registry```
+```./validate-pre-install.py --ansible-host-file=/etc/ansible/hosts --show-sha-sums=no --ansible-ssh-user=root --openshift-version=3.11 --nfs-booleans --private-registry```
 
 
 The script will output the follow information during runtime:
