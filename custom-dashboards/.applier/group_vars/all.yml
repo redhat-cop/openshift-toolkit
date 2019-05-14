@@ -1,0 +1,6 @@
+openshift_cluster_content:
+  - object: Grafana
+    content:
+      - name: Deploy Resources
+        file: "{{ inventory_dir }}/../.openshift/manifests/"
+        namespace: openshift-monitoring
