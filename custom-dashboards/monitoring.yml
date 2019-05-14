@@ -1,6 +1,6 @@
 ---
-- import_playbook: roles/openshift-ansible/playbooks/openshift-monitoring/config.yml
+- import_playbook: galaxy/openshift-ansible/playbooks/openshift-monitoring/config.yml
   vars:
     openshift_release: 3.11
-    openshift_image_tag: 3.11.98
+    openshift_image_tag: v3.11.98
     openshift_cluster_monitoring_operator_install: "{{ dashboard_deploy | default(true) }}"

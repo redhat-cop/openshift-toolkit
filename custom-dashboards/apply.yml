@@ -3,4 +3,4 @@
   vars:
     provision: "{{ dashboard_deploy | default(true) }}"
   roles:
-     - roles/openshift-applier/roles/openshift-applier
+     - galaxy/openshift-applier/roles/openshift-applier
