@@ -61,6 +61,11 @@ original_docker_file_hashes_docker_1_12 = \
      "/etc/sysconfig/docker-storage": "709dca62ac8150aa280fdb4d49d122d78a6a2f4f46ff3f04fe8d698b7035f3a0",
      "/etc/sysconfig/docker-storage-setup": "bf3e1056e8df0dd4fc170a89ac2358f872a17509efa70a3bc56733a488a1e4b2"}
 
+original_docker_file_hashes_docker_1_13 = \
+    {"/etc/sysconfig/docker": "f991967b56ab5c2e08ad2b61b0333a99c59b82ec28bffe1d75c6744b07cd8c70",
+     "/etc/sysconfig/docker-storage": "709dca62ac8150aa280fdb4d49d122d78a6a2f4f46ff3f04fe8d698b7035f3a0",
+     "/etc/sysconfig/docker-storage-setup": "55f5f1472a6ddb0c9ecfb008b658cfc3ba1f5a81f472d94a3de5cd18bec50d7c"}
+
 selinux_boolean_list = ["virt_sandbox_use_nfs", "virt_use_nfs"]
 selinux_boolean_dict = {}
 forward_lookup_dict = {}
@@ -74,31 +79,49 @@ etcd_partition_dict = {}
 ssh_connection = HandleSSHConnections()
 selinux_dict = {}
 if options.openshift_version:
-    if "3.2" in options.openshift_version:
-        openshift_server_repo = "rhel-7-server-ose-3.2-rpms"
-        default_docker_hashes = original_docker_file_hashes_docker_1_8
-    elif "3.1" in options.openshift_version:
+    if "3.1" == options.openshift_version:
         openshift_server_repo = "rhel-7-server-ose-3.1-rpms"
         default_docker_hashes = original_docker_file_hashes_docker_1_8
-    elif "3.3" in options.openshift_version:
+    elif "3.2" == options.openshift_version:
+        openshift_server_repo = "rhel-7-server-ose-3.2-rpms"
+        default_docker_hashes = original_docker_file_hashes_docker_1_8
+    elif "3.3" == options.openshift_version:
         openshift_server_repo ="rhel-7-server-ose-3.3-rpms"
         default_docker_hashes = original_docker_file_hashes_docker_1_10
-    elif "3.4" in options.openshift_version:
+    elif "3.4" == options.openshift_version:
         openshift_server_repo ="rhel-7-server-ose-3.4-rpms"
         default_docker_hashes = original_docker_file_hashes_docker_1_12
-    elif "3.5" in options.openshift_version:
+    elif "3.5" == options.openshift_version:
         openshift_server_repo ="rhel-7-server-ose-3.5-rpms rhel-7-fast-datapath-rpms"
         default_docker_hashes = original_docker_file_hashes_docker_1_12
-    elif "3.6" in options.openshift_version:
+    elif "3.6" == options.openshift_version:
         openshift_server_repo ="rhel-7-server-ose-3.6-rpms rhel-7-fast-datapath-rpms"
         default_docker_hashes = original_docker_file_hashes_docker_1_12        
-else:
-    print(textColors.WARNING + "Unable to find ose rpm repo for the version you specifiied. Defaulting to 3.4..."
-          + textColors.ENDC)
-    openshift_server_repo = "rhel-7-server-ose-3.4-rpms"
+    elif "3.7" == options.openshift_version:
+        openshift_server_repo ="rhel-7-server-ose-3.7-rpms rhel-7-fast-datapath-rpms"
+        default_docker_hashes = original_docker_file_hashes_docker_1_12        
+    elif "3.9" == options.openshift_version:
+        openshift_server_repo ="rhel-7-server-ose-3.9-rpms rhel-7-fast-datapath-rpms rhel-7-server-ansible-2.4-rpms"
+        default_docker_hashes = original_docker_file_hashes_docker_1_12        
+    elif "3.10" == options.openshift_version:
+        openshift_server_repo ="rhel-7-server-ose-3.10-rpms rhel-7-server-ansible-2.4-rpms"
+        default_docker_hashes = original_docker_file_hashes_docker_1_13        
+    elif "3.11" == options.openshift_version:
+        openshift_server_repo ="rhel-7-server-ose-3.11-rpms rhel-7-server-ansible-2.6-rpms"
+        default_docker_hashes = original_docker_file_hashes_docker_1_13        
+    else:
+        print(textColors.WARNING + "Unable to find ose rpm repo for the version you specified (" + options.openshift_version + "). Defaulting to 3.11..."
+              + textColors.ENDC)
+        openshift_server_repo ="rhel-7-server-ose-3.11-rpms rhel-7-server-ansible-2.6-pms"
+        default_docker_hashes = original_docker_file_hashes_docker_1_13
+        options.openshift_version = "3.11"
 ose_repos = ["rhel-7-server-rpms", "rhel-7-server-extras-rpms", openshift_server_repo]
 ose_required_packages_list = ["wget", "git", "net-tools", "bind-utils", "iptables-services", "bridge-utils",
                               "bash-completion", "atomic-openshift-utils", "docker"]
+if options.openshift_version:
+    if "3.10" == options.openshift_version or "3.11" == options.openshift_version:
+        ose_required_packages_list = ["wget", "git", "net-tools", "bind-utils", "iptables-services", "bridge-utils",
+                              "bash-completion", "kexec-tools", "sos", "psacct", "openshift-ansible", "docker"]
 
 # We only want to evaluate the default docker file if we are using a private regristry.
 # The file is assumed to be modified by hand only if we are using a private registry.
@@ -398,14 +421,14 @@ if __name__ == "__main__":
             print(textColors.HEADER + "Running 'sestatus' on %s" % server + textColors.ENDC)
             is_selinux_enabled(server, ssh_connection, selinux_dict)
             print(textColors.HEADER + "Running 'systemctl status docker' on %s..." % server + textColors.ENDC)
-            systemctl_output = HandleSSHConnections.run_remote_commands(ssh_connection, "systemctl status docker")
+            systemctl_output = HandleSSHConnections.run_remote_commands(ssh_connection, "sudo systemctl status docker")
             is_docker_enabled(server, systemctl_output, docker_service_check_dict)
             is_docker_running(server, systemctl_output, docker_service_check_dict)
             print(textColors.HEADER + "Running 'subscription-manager status' on %s..." % server + textColors.ENDC)
-            sub_status = HandleSSHConnections.run_remote_commands(ssh_connection, "subscription-manager status")
+            sub_status = HandleSSHConnections.run_remote_commands(ssh_connection, "sudo subscription-manager status")
             is_host_subscribed(server, subscription_dict, sub_status)
             print(textColors.HEADER + "Running 'subscription-manager repos' on %s..." % server + textColors.ENDC)
-            repo_information = HandleSSHConnections.run_remote_commands(ssh_connection, "subscription-manager repos")
+            repo_information = HandleSSHConnections.run_remote_commands(ssh_connection, "sudo subscription-manager repos")
             which_repos_are_enabled(server, repo_dict, repo_information, ose_repos)
             ssh_connection.close_ssh()
         print(textColors.HEADER + "Attempting to forward lookup of %s..." % server + textColors.ENDC)
