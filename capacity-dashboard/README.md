@@ -2,10 +2,10 @@
 
 
 Resource Quota management is necessary to properly utilize resources across OpenShift cluster. This can be achieved by two ways:
-1. Creating Resource Quota per Project
-2. Creating Cluster Resource Quota
+1. Creating **Resource Quota** per Project.
+2. Creating **Cluster Resource Quota** across OpenShift cluster.
 
-However, using both types of quota management at the same time will not provide proper resource accountinng and management.
+However, using both types of quota management at the same time will not provide proper resource accountinng and management. Follow only one method listed below:
 
 ## Resource Quota
 
@@ -52,7 +52,7 @@ Openshift cluster has following labels in place:
   * lob=lob2
 * Also a node-selector for the project
 
-A typical project will be provisioned as:
+In summery, a typical project will be provisioned as:
 ```
 oc patch namespace test-quota-1 -p '{"metadata": {"labels": {"lob": "lob1"}}}'
 oc patch namespace test-quota-1 -p '{"metadata": {"labels": {"zone": "dev"}}}'
