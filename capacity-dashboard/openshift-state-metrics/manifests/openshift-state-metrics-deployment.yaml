@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+# Kubernetes versions after 1.9.0 should use apps/v1
+# Kubernetes versions before 1.8.0 should use apps/v1beta1 or extensions/v1beta1
+kind: Deployment
+metadata:
+  name: openshift-state-metrics
+  namespace: openshift-monitoring
+spec:
+  selector:
+    matchLabels:
+      k8s-app: openshift-state-metrics
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: openshift-state-metrics
+    spec:
+      serviceAccountName: openshift-state-metrics
+      containers:
+      - name: openshift-state-metrics
+        image: docker.io/szobair/openshift-state-metrics:v1
+        ports:
+        - name: http-metrics
+          containerPort: 8080
+        - name: telemetry
+          containerPort: 8081
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+      - name: addon-resizer
+        image: docker.io/szobair/addon-resizer:1.7
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 30Mi
+        env:
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        command:
+          - /pod_nanny
+          - --container=openshift-state-metrics
+          - --cpu=100m
+          - --extra-cpu=1m
+          - --memory=100Mi
+          - --extra-memory=2Mi
+          - --threshold=5
+          - --deployment=openshift-state-metrics

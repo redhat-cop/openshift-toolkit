@@ -1,0 +1,19 @@
+apiVersion: quota.openshift.io/v1
+kind: ClusterResourceQuota
+metadata:
+  name: lob1-dev
+  labels:
+    zone: dev
+spec:
+  quota:
+    hard:
+      glusterfs.storageclass.storage.k8s.io/requests.storage: 10Gi
+      requests.cpu: "1"
+      requests.memory: 1Gi
+  selector:
+    labels:
+      matchLabels:
+        lob: lob1
+        zone: dev
+  scopes:
+  - NotTerminating

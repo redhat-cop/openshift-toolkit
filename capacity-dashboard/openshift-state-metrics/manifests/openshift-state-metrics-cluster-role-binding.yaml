@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1 
+# kubernetes versions before 1.8.0 should use rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: openshift-state-metrics
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: openshift-state-metrics
+subjects:
+- kind: ServiceAccount
+  name: openshift-state-metrics
+  namespace: openshift-monitoring
+

@@ -34,7 +34,7 @@ spec:
 
 
 **Implementation:** 
-Import the "Capacity Planning (ResourceQuota).json" Dashboard in [custom grafana](https://github.com/redhat-cop/openshift-toolkit/tree/master/custom-dashboards). Necessary labels are required to work the dashboard. If the cluster has different types of labels, please change the variables from dashboard settings.
+Import the "Capacity_Planning_ResourceQuota.json" Dashboard in [custom grafana](https://github.com/redhat-cop/openshift-toolkit/tree/master/custom-dashboards). Necessary labels are required to work the dashboard. If the cluster has different types of labels, please change the variables from dashboard settings.
 
 
 ## Cluster Resource Quota
@@ -56,10 +56,10 @@ A typical project will be provisioned as:
 ```
 oc patch namespace test-quota-1 -p '{"metadata": {"labels": {"lob": "lob1"}}}'
 oc patch namespace test-quota-1 -p '{"metadata": {"labels": {"zone": "dev"}}}'
-oc patch namespace test-quota-1 -p '{"metadata": {"labels": {"router": "dev"}}}'
+
 oc patch namespace test-quota-1 -p '{"metadata": {"annotations": {"openshift.io/node-selector": "node-role.kubernetes.io/compute=true"}}}'
 ```
-##### (One additional label is shown here to utilize router sharding)
+
 
 * ClusterResourceQuota Object is created:
 ```
@@ -84,5 +84,10 @@ spec:
   - NotTerminating
   ```
 
+* kube-state-metrics does not scrape ClustreResourceQuota as of version 3.11.98. We have to deploy [openshift-state-metrics](https://github.com/shah-zobair/openshift-state-metrics) to address this issue. An RFE has been submitted to enable this feature. 
+To deploy openshift-state-metrics:
+```oc apply -f openshift-state-metrics/manifests/ -n openshift-monitoring```
+
+
 **Implementation:** 
-Import the "Capacity Planning (ClusterResourceQuota).json" Dashboard in [custom grafana](https://github.com/redhat-cop/openshift-toolkit/tree/master/custom-dashboards). Necessary labels are required to work the dashboard. If the cluster has different types of labels, please change the variables from dashboard settings.
+Import the "Capacity_Planning_ClusterResourceQuota.json" Dashboard in [custom grafana](https://github.com/redhat-cop/openshift-toolkit/tree/master/custom-dashboards). Necessary labels are required to work the dashboard. If the cluster has different types of labels, please change the variables from dashboard settings.

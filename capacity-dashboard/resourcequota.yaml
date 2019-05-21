@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: core-object-counts
+spec:
+  hard:
+    requests.cpu: "1800m"
+    requests.memory: "1024Mi"
+    glusterfs.storageclass.storage.k8s.io/requests.storage: "10Gi"
+  scopes:
+  - NotTerminating
