@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 11,
-  "iteration": 1558389401390,
+  "iteration": 1559064321338,
   "links": [],
   "panels": [
     {
@@ -256,7 +256,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(\n  sum(kube_pod_info) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{$noderole}) by (node)\n   *\n  on(pod)\n  group_right(node)\n  label_replace(\n    sum by (pod_name) (\n      container_memory_usage_bytes{namespace!~\"default|openshift-.*|kube-.*|cert-manager\", namespace!=\"\"}\n    ), \"pod\", \"$1\", \"pod_name\", \"(.+)\"\n  )\n)\n/\nsum(\n  max(kube_node_labels{$noderole}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
+          "expr": "sum(\n  sum(kube_pod_info) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{$noderole}) by (node)\n   *\n  on(pod)\n  group_right(node)\n  label_replace(\n    sum by (pod_name) (\n      container_memory_usage_bytes{namespace!~\"default|openshift-.*|kube-.*|cert-manager\", namespace!=\"\", image!=''}\n    ), \"pod\", \"$1\", \"pod_name\", \"(.+)\"\n  )\n)\n/\nsum(\n  max(kube_node_labels{$noderole}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -332,7 +332,7 @@
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
         "lineColor": "rgb(31, 120, 193)",
-        "show": false
+        "show": true
       },
       "tableColumn": "",
       "targets": [
@@ -493,7 +493,7 @@
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
         "lineColor": "rgb(31, 120, 193)",
-        "show": false
+        "show": true
       },
       "tableColumn": "",
       "targets": [
@@ -1600,7 +1600,6 @@
       {
         "allValue": null,
         "current": {
-          "tags": [],
           "text": "node-role.kubernetes.io/compute=true",
           "value": "node-role.kubernetes.io/compute=true"
         },
@@ -1611,20 +1610,9 @@
         "label": "Project Node Selector",
         "multi": false,
         "name": "nodeselector",
-        "options": [
-          {
-            "selected": false,
-            "text": "node-role.kubernetes.io/compute-special=true",
-            "value": "node-role.kubernetes.io/compute-special=true"
-          },
-          {
-            "selected": true,
-            "text": "node-role.kubernetes.io/compute=true",
-            "value": "node-role.kubernetes.io/compute=true"
-          }
-        ],
+        "options": [],
         "query": "label_values(kube_namespace_annotations,annotation_openshift_io_node_selector)",
-        "refresh": 0,
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -1637,30 +1625,27 @@
       {
         "allValue": null,
         "current": {
-          "tags": [],
           "text": "label_node_role_kubernetes_io_compute=\"true\"",
           "value": "label_node_role_kubernetes_io_compute=\"true\""
         },
+        "datasource": "$datasource",
+        "definition": "kube_node_labels",
         "hide": 0,
         "includeAll": false,
         "label": "Node Role",
         "multi": false,
         "name": "noderole",
-        "options": [
-          {
-            "selected": true,
-            "text": "label_node_role_kubernetes_io_compute=\"true\"",
-            "value": "label_node_role_kubernetes_io_compute=\"true\""
-          },
-          {
-            "selected": false,
-            "text": "label_node_role_kubernetes_io_compute_special=\"true\"",
-            "value": "label_node_role_kubernetes_io_compute_special=\"true\""
-          }
-        ],
-        "query": "label_node_role_kubernetes_io_compute=\"true\",label_node_role_kubernetes_io_compute_special=\"true\"",
+        "options": [],
+        "query": "kube_node_labels",
+        "refresh": 1,
+        "regex": "/(label_node_role_kubernetes_io.[a-zA-Z0-9_\\.]+=\"true\")/",
         "skipUrlSync": false,
-        "type": "custom"
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
       }
     ]
   },
@@ -1696,5 +1681,5 @@
   "timezone": "",
   "title": "Capacity Planning (ResourceQuota)",
   "uid": "2F8dmomZk",
-  "version": 13
+  "version": 20
 }

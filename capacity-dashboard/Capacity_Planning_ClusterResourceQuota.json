@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 10,
-  "iteration": 1558387270038,
+  "iteration": 1558995008748,
   "links": [],
   "panels": [
     {
@@ -253,7 +253,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(\n  sum(kube_pod_info) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{label_zone=\"$zone\"}) by (node)\n   *\n  on(pod)\n  group_right(node)\n  label_replace(\n    sum by (pod_name) (\n      container_memory_usage_bytes{namespace!~\"default|openshift-.*|kube-.*|cert-manager\", namespace!=\"\"}\n    ), \"pod\", \"$1\", \"pod_name\", \"(.+)\"\n  )\n)\n/\nsum(\n  max(kube_node_labels{label_zone=\"$zone\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
+          "expr": "sum(\n  sum(kube_pod_info) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{label_zone=\"$zone\"}) by (node)\n   *\n  on(pod)\n  group_right(node)\n  label_replace(\n    sum by (pod_name) (\n      container_memory_usage_bytes{namespace!~\"default|openshift-.*|kube-.*|cert-manager\", namespace!=\"\",image!=''}\n    ), \"pod\", \"$1\", \"pod_name\", \"(.+)\"\n  )\n)\n/\nsum(\n  max(kube_node_labels{label_zone=\"$zone\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -1112,7 +1112,6 @@
     "list": [
       {
         "current": {
-          "selected": true,
           "text": "prometheus",
           "value": "prometheus"
         },
@@ -1129,7 +1128,6 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
           "text": "main",
           "value": "main"
         },
@@ -1140,20 +1138,9 @@
         "label": "Zone",
         "multi": false,
         "name": "zone",
-        "options": [
-          {
-            "selected": true,
-            "text": "main",
-            "value": "main"
-          },
-          {
-            "selected": false,
-            "text": "special",
-            "value": "special"
-          }
-        ],
+        "options": [],
         "query": "label_values(kube_node_labels,label_zone)",
-        "refresh": 0,
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -1197,5 +1184,5 @@
   "timezone": "",
   "title": "Capacity Planning (ClusterResourceQuota)",
   "uid": "YWKe9gZWk",
-  "version": 15
+  "version": 17
 }
