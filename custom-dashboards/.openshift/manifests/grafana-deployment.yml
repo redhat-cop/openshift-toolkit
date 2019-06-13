@@ -70,6 +70,8 @@ spec:
           name: grafana-dashboard-pods
         - mountPath: /grafana-dashboard-definitions/0/traffic
           name: grafana-dashboard-traffic
+        - mountPath: /grafana-dashboard-definitions/0/devops
+          name: grafana-dashboard-devops
         - mountPath: /etc/grafana
           name: grafana-config
       - args:
@@ -159,6 +161,10 @@ spec:
           defaultMode: 420
           name: grafana-dashboard-traffic
         name: grafana-dashboard-traffic
+      - configMap:
+          defaultMode: 420
+          name: grafana-dashboard-devops
+        name: grafana-dashboard-devops
       - name: grafana-config
         secret:
           defaultMode: 420
