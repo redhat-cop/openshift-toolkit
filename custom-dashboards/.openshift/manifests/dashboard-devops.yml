@@ -18,7 +18,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1560477857061,
+      "iteration": 1560480872979,
       "links": [],
       "panels": [
         {
@@ -309,7 +309,7 @@ data:
           "tableColumn": "Value",
           "targets": [
             {
-              "expr": "openshift_apps_deploymentconfigs_complete_rollouts_total{phase=\"available\"}[$interval]",
+              "expr": "sum(delta(openshift_apps_deploymentconfigs_complete_rollouts_total{phase=\"available\"}[$interval]))",
               "format": "time_series",
               "instant": true,
               "intervalFactor": 1,
@@ -327,7 +327,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "delta"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -767,8 +767,8 @@ data:
             "auto_min": "10s",
             "current": {
               "tags": [],
-              "text": "30m",
-              "value": "30m"
+              "text": "12h",
+              "value": "12h"
             },
             "hide": 0,
             "label": "Interval",
@@ -785,7 +785,7 @@ data:
                 "value": "10m"
               },
               {
-                "selected": true,
+                "selected": false,
                 "text": "30m",
                 "value": "30m"
               },
@@ -800,7 +800,7 @@ data:
                 "value": "6h"
               },
               {
-                "selected": false,
+                "selected": true,
                 "text": "12h",
                 "value": "12h"
               },
