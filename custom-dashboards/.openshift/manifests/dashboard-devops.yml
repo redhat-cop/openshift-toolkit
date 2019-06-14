@@ -18,7 +18,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1560448290850,
+      "iteration": 1560477857061,
       "links": [],
       "panels": [
         {
@@ -306,11 +306,12 @@ data:
             "lineColor": "rgb(31, 120, 193)",
             "show": false
           },
-          "tableColumn": "",
+          "tableColumn": "Value",
           "targets": [
             {
-              "expr": "sum(delta(openshift_apps_deploymentconfigs_complete_rollouts_total{phase=\"available\"}[$interval]))",
+              "expr": "openshift_apps_deploymentconfigs_complete_rollouts_total{phase=\"available\"}[$interval]",
               "format": "time_series",
+              "instant": true,
               "intervalFactor": 1,
               "refId": "A"
             }
@@ -326,7 +327,7 @@ data:
               "value": "null"
             }
           ],
-          "valueName": "current"
+          "valueName": "delta"
         },
         {
           "cacheTimeout": null,
@@ -343,7 +344,7 @@ data:
           "format": "percentunit",
           "gauge": {
             "maxValue": 2,
-            "minValue": 0,
+            "minValue": -2,
             "show": true,
             "thresholdLabels": false,
             "thresholdMarkers": true
@@ -400,7 +401,7 @@ data:
               "refId": "A"
             }
           ],
-          "thresholds": "0.9,1,1",
+          "thresholds": "0,0.2",
           "title": "Change % in Last $interval",
           "type": "singlestat",
           "valueFontSize": "80%",
@@ -409,14 +410,9 @@ data:
               "op": "=",
               "text": "N/A",
               "value": "null"
-            },
-            {
-              "op": "=",
-              "text": "None",
-              "value": "0"
             }
           ],
-          "valueName": "delta"
+          "valueName": "current"
         },
         {
           "cacheTimeout": null,
@@ -771,8 +767,8 @@ data:
             "auto_min": "10s",
             "current": {
               "tags": [],
-              "text": "7d",
-              "value": "7d"
+              "text": "30m",
+              "value": "30m"
             },
             "hide": 0,
             "label": "Interval",
@@ -789,7 +785,7 @@ data:
                 "value": "10m"
               },
               {
-                "selected": false,
+                "selected": true,
                 "text": "30m",
                 "value": "30m"
               },
@@ -814,7 +810,7 @@ data:
                 "value": "1d"
               },
               {
-                "selected": true,
+                "selected": false,
                 "text": "7d",
                 "value": "7d"
               },
@@ -868,7 +864,7 @@ data:
       "timezone": "",
       "title": "K8s / Custom / DevOps",
       "uid": "IxBzgcqmz",
-      "version": 2
+      "version": 1
     }
 kind: ConfigMap
 metadata:
