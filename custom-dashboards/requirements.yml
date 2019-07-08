@@ -1,6 +1,6 @@
 - src: https://github.com/redhat-cop/openshift-applier
   scm: git
-  version: v2.0.9
+  version: v2.0.10
   name: openshift-applier
 
 - src: https://github.com/openshift/openshift-ansible
