@@ -18,7 +18,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1562688552794,
+      "iteration": 1562689602280,
       "links": [],
       "panels": [
         {
@@ -383,7 +383,7 @@ data:
           "tableColumn": "Value",
           "targets": [
             {
-              "expr": "",
+              "expr": "(sum(delta(openshift_apps_deploymentconfigs_complete_rollouts_total{phase=\"available\"}[$interval]))-sum(delta(openshift_apps_deploymentconfigs_complete_rollouts_total{phase=\"available\"}[$interval] offset $interval)))/sum(delta(openshift_apps_deploymentconfigs_complete_rollouts_total{phase=\"available\"}[$interval] offset $interval))",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -643,6 +643,7 @@ data:
             }
           ],
           "thresholds": "",
+          "timeFrom": null,
           "title": "This Month",
           "type": "singlestat",
           "valueFontSize": "80%",
@@ -1102,9 +1103,8 @@ data:
       "timezone": "",
       "title": "K8s / Custom / DevOps",
       "uid": "IxBzgcqmz",
-      "version": 3
-    }
-
+      "version": 4
+      }
 kind: ConfigMap
 metadata:
   creationTimestamp: null
