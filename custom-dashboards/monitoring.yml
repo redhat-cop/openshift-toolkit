@@ -2,6 +2,13 @@
 - import_playbook: galaxy/openshift-ansible/playbooks/openshift-monitoring/config.yml
   vars:
     openshift_release: 3.11
-    openshift_image_tag: v3.11.98
+    openshift_image_tag: v3.11.43
     openshift_cluster_monitoring_operator_install: "{{ dashboard_deploy | default(true) }}"
+    skip_sanity_checks: True
+
+- import_playbook: galaxy/openshift-ansible/playbooks/metrics-server/config.yml
+  vars:
+    openshift_release: 3.11
+    openshift_image_tag: v3.11.43
+    openshift_metrics_server_install: "{{ dashboard_deploy | default(true) }}"
     skip_sanity_checks: True

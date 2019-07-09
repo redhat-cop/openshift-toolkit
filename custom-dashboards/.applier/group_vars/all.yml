@@ -4,3 +4,6 @@ openshift_cluster_content:
       - name: Deploy Resources
         file: "{{ inventory_dir }}/../.openshift/manifests/"
         namespace: openshift-monitoring
+      - name: Deploy OpenShift State Metrics
+        file: "{{ inventory_dir }}/../.openshift/manifests/openshift-state-metrics"
+        namespace: openshift-monitoring
