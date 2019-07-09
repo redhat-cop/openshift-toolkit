@@ -18,7 +18,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1562350750444,
+      "iteration": 1562688552794,
       "links": [],
       "panels": [
         {
@@ -67,7 +67,7 @@ data:
           "content": "# Change Failure Rate",
           "gridPos": {
             "h": 2,
-            "w": 5,
+            "w": 8,
             "x": 15,
             "y": 0
           },
@@ -145,6 +145,7 @@ data:
             }
           ],
           "thresholds": "",
+          "timeFrom": null,
           "title": "This Month",
           "type": "singlestat",
           "valueFontSize": "80%",
@@ -218,7 +219,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "(scalar(avg((openshift_build_complete{build=~\".+pipeline.+\"} offset 30m != 0) - openshift_build_start{build=~\".+pipeline.+\"} offset 30m) - scalar(avg((openshift_build_complete{build=~\".+pipeline.+\"} != 0) - openshift_build_start{build=~\".+pipeline.+\"} ))) / scalar(avg((openshift_build_complete{build=~\".+pipeline.+\"} offset 30m != 0) - openshift_build_start{build=~\".+pipeline.+\"} offset 30m )))",
+              "expr": "(scalar(avg((openshift_build_complete{build=~\".+pipeline.+\"} offset $interval != 0) - openshift_build_start{build=~\".+pipeline.+\"} offset $interval) - scalar(avg((openshift_build_complete{build=~\".+pipeline.+\"} != 0) - openshift_build_start{build=~\".+pipeline.+\"} ))) / scalar(avg((openshift_build_complete{build=~\".+pipeline.+\"} offset $interval != 0) - openshift_build_start{build=~\".+pipeline.+\"} offset $interval   )))",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -635,7 +636,7 @@ data:
           "tableColumn": "endpoint",
           "targets": [
             {
-              "expr": "",
+              "expr": "sum(openshift_build_status_phase{build_phase=\"cancelled\"}) / sum(openshift_build_status_phase{build_phase=\"complete\"})",
               "format": "heatmap",
               "intervalFactor": 1,
               "refId": "A"
@@ -745,6 +746,86 @@ data:
           "valueName": "delta"
         },
         {
+          "cacheTimeout": null,
+          "colorBackground": false,
+          "colorValue": false,
+          "colors": [
+            "#299c46",
+            "rgba(237, 129, 40, 0.89)",
+            "#d44a3a"
+          ],
+          "datasource": "prometheus",
+          "format": "none",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": false,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 20,
+            "y": 2
+          },
+          "id": 58,
+          "interval": null,
+          "links": [],
+          "mappingType": 1,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
+            },
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [
+            {
+              "from": "null",
+              "text": "N/A",
+              "to": "null"
+            }
+          ],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "sum(openshift_build_status_phase)",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "",
+          "title": "Total Builds / Changes",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "avg"
+        },
+        {
           "aliasColors": {},
           "bars": false,
           "dashLength": 10,
@@ -788,7 +869,7 @@ data:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
+          "timeFrom": "$interval",
           "timeRegions": [],
           "timeShift": null,
           "title": "Lead Time for Change",
@@ -807,7 +888,91 @@ data:
           },
           "yaxes": [
             {
+              "format": "s",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
               "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "prometheus",
+          "fill": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 15,
+            "y": 6
+          },
+          "id": 56,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(openshift_build_status_phase{build_phase=\"cancelled\"}) / sum(openshift_build_status_phase{build_phase=\"complete\"})",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": "$interval",
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Change Failure Rate",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percentunit",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -937,8 +1102,9 @@ data:
       "timezone": "",
       "title": "K8s / Custom / DevOps",
       "uid": "IxBzgcqmz",
-      "version": 1
+      "version": 3
     }
+
 kind: ConfigMap
 metadata:
   creationTimestamp: null
