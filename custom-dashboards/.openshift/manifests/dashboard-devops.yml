@@ -18,7 +18,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1562689602280,
+      "iteration": 1562695076269,
       "links": [],
       "panels": [
         {
@@ -636,14 +636,13 @@ data:
           "tableColumn": "endpoint",
           "targets": [
             {
-              "expr": "sum(openshift_build_status_phase{build_phase=\"cancelled\"}) / sum(openshift_build_status_phase{build_phase=\"complete\"})",
+              "expr": "\ncount(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed\"} [$interval] ) > 0) / count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed|complete\"} [$interval] ) > 0)",
               "format": "heatmap",
               "intervalFactor": 1,
               "refId": "A"
             }
           ],
           "thresholds": "",
-          "timeFrom": null,
           "title": "This Month",
           "type": "singlestat",
           "valueFontSize": "80%",
@@ -729,6 +728,7 @@ data:
             }
           ],
           "thresholds": "30,100",
+          "timeFrom": null,
           "title": "From Last Month",
           "type": "singlestat",
           "valueFontSize": "80%",
@@ -947,7 +947,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(openshift_build_status_phase{build_phase=\"cancelled\"}) / sum(openshift_build_status_phase{build_phase=\"complete\"})",
+              "expr": "sum(openshift_build_status_phase{build_phase=~\"cancelled|failed|error\"}) / sum(openshift_build_status_phase{build_phase=~\"cancelled|error|failed|complete\"})",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -1104,7 +1104,7 @@ data:
       "title": "K8s / Custom / DevOps",
       "uid": "IxBzgcqmz",
       "version": 4
-      }
+    }
 kind: ConfigMap
 metadata:
   creationTimestamp: null
