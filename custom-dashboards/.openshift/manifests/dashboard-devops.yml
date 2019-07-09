@@ -18,7 +18,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1562706219271,
+      "iteration": 1562706971070,
       "links": [],
       "panels": [
         {
@@ -656,79 +656,79 @@ data:
           "valueName": "current"
         },
         {
-            "type": "singlestat",
-            "title": "Change since previous $interval",
-            "gridPos": {
-              "x": 17,
-              "y": 2,
-              "w": 3,
-              "h": 4
+          "cacheTimeout": null,
+          "colorBackground": true,
+          "colorPostfix": false,
+          "colorValue": false,
+          "colors": [
+            "#d44a3a",
+            "rgba(237, 129, 40, 0.89)",
+            "#299c46"
+          ],
+          "datasource": "prometheus",
+          "format": "percentunit",
+          "gauge": {
+            "maxValue": 100,
+            "minValue": 0,
+            "show": false,
+            "thresholdLabels": false,
+            "thresholdMarkers": true
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 17,
+            "y": 2
+          },
+          "id": 60,
+          "interval": null,
+          "links": [],
+          "mappingType": 2,
+          "mappingTypes": [
+            {
+              "name": "value to text",
+              "value": 1
             },
-            "id": 60,
-            "datasource": "prometheus",
-            "targets": [
-              {
-                "refId": "A",
-                "expr": "((count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed\"} [$interval] ) > 0) / count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed|complete\"} [$interval] ) > 0)) - (count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed\"} [$interval] offset $interval ) > 0) / count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed|complete\"} [$interval] offset $interval ) > 0))) / (count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed\"} [$interval] offset $interval ) > 0) / count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed|complete\"} [$interval] offset $interval ) > 0))",
-                "intervalFactor": 1,
-                "format": "time_series"
-              }
-            ],
-            "links": [],
-            "maxDataPoints": 100,
-            "interval": null,
-            "cacheTimeout": null,
-            "format": "percentunit",
-            "prefix": "",
-            "postfix": "",
-            "nullText": null,
-            "valueMaps": [
-              {
-                "value": "null",
-                "op": "=",
-                "text": "N/A"
-              }
-            ],
-            "mappingTypes": [
-              {
-                "name": "value to text",
-                "value": 1
-              },
-              {
-                "name": "range to text",
-                "value": 2
-              }
-            ],
-            "rangeMaps": [],
-            "mappingType": 2,
-            "nullPointMode": "connected",
-            "valueName": "avg",
-            "prefixFontSize": "50%",
-            "valueFontSize": "80%",
-            "postfixFontSize": "50%",
-            "thresholds": "-.05,.05",
-            "colorBackground": true,
-            "colorValue": false,
-            "colors": [
-              "#d44a3a",
-              "rgba(237, 129, 40, 0.89)",
-              "#299c46"
-            ],
-            "sparkline": {
-              "show": false,
-              "full": false,
-              "lineColor": "rgb(31, 120, 193)",
-              "fillColor": "rgba(31, 118, 189, 0.18)"
-            },
-            "gauge": {
-              "show": false,
-              "minValue": 0,
-              "maxValue": 100,
-              "thresholdMarkers": true,
-              "thresholdLabels": false
-            },
-            "tableColumn": "",
-            "colorPostfix": false
+            {
+              "name": "range to text",
+              "value": 2
+            }
+          ],
+          "maxDataPoints": 100,
+          "nullPointMode": "connected",
+          "nullText": null,
+          "postfix": "",
+          "postfixFontSize": "50%",
+          "prefix": "",
+          "prefixFontSize": "50%",
+          "rangeMaps": [],
+          "sparkline": {
+            "fillColor": "rgba(31, 118, 189, 0.18)",
+            "full": false,
+            "lineColor": "rgb(31, 120, 193)",
+            "show": false
+          },
+          "tableColumn": "",
+          "targets": [
+            {
+              "expr": "((count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed\"} [$interval] ) > 0) / count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed|complete\"} [$interval] ) > 0)) - (count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed\"} [$interval] offset $interval ) > 0) / count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed|complete\"} [$interval] offset $interval ) > 0))) / (count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed\"} [$interval] offset $interval ) > 0) / count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed|complete\"} [$interval] offset $interval ) > 0))",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
+          "thresholds": "-.05,.05",
+          "title": "Change since previous $interval",
+          "type": "singlestat",
+          "valueFontSize": "80%",
+          "valueMaps": [
+            {
+              "op": "=",
+              "text": "N/A",
+              "value": "null"
+            }
+          ],
+          "valueName": "avg"
         },
         {
           "cacheTimeout": null,
@@ -1087,7 +1087,7 @@ data:
       "timezone": "",
       "title": "K8s / Custom / DevOps",
       "uid": "IxBzgcqmz",
-      "version": 9
+      "version": 11
     }
 kind: ConfigMap
 metadata:
