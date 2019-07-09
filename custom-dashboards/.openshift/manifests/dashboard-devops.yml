@@ -18,7 +18,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "iteration": 1562695076269,
+      "iteration": 1562706971070,
       "links": [],
       "panels": [
         {
@@ -657,21 +657,20 @@ data:
         },
         {
           "cacheTimeout": null,
-          "colorBackground": false,
-          "colorValue": true,
+          "colorBackground": true,
+          "colorPostfix": false,
+          "colorValue": false,
           "colors": [
-            "#299c46",
+            "#d44a3a",
             "rgba(237, 129, 40, 0.89)",
-            "#d44a3a"
+            "#299c46"
           ],
           "datasource": "prometheus",
-          "decimals": 0,
-          "description": "",
-          "format": "percent",
+          "format": "percentunit",
           "gauge": {
             "maxValue": 100,
             "minValue": 0,
-            "show": true,
+            "show": false,
             "thresholdLabels": false,
             "thresholdMarkers": true
           },
@@ -681,10 +680,10 @@ data:
             "x": 17,
             "y": 2
           },
-          "id": 50,
+          "id": 60,
           "interval": null,
           "links": [],
-          "mappingType": 1,
+          "mappingType": 2,
           "mappingTypes": [
             {
               "name": "value to text",
@@ -702,34 +701,24 @@ data:
           "postfixFontSize": "50%",
           "prefix": "",
           "prefixFontSize": "50%",
-          "rangeMaps": [
-            {
-              "from": "null",
-              "text": "N/A",
-              "to": "null"
-            }
-          ],
+          "rangeMaps": [],
           "sparkline": {
             "fillColor": "rgba(31, 118, 189, 0.18)",
             "full": false,
             "lineColor": "rgb(31, 120, 193)",
             "show": false
           },
-          "tableColumn": "Value",
+          "tableColumn": "",
           "targets": [
             {
-              "expr": "",
-              "format": "table",
-              "hide": false,
-              "instant": false,
-              "interval": "",
+              "expr": "((count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed\"} [$interval] ) > 0) / count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed|complete\"} [$interval] ) > 0)) - (count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed\"} [$interval] offset $interval ) > 0) / count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed|complete\"} [$interval] offset $interval ) > 0))) / (count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed\"} [$interval] offset $interval ) > 0) / count(sum_over_time(openshift_build_status_phase{build_phase=~\"cancelled|error|failed|complete\"} [$interval] offset $interval ) > 0))",
+              "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
             }
           ],
-          "thresholds": "30,100",
-          "timeFrom": null,
-          "title": "From Last Month",
+          "thresholds": "-.05,.05",
+          "title": "Change since previous $interval",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -737,14 +726,9 @@ data:
               "op": "=",
               "text": "N/A",
               "value": "null"
-            },
-            {
-              "op": "=",
-              "text": "None",
-              "value": "0"
             }
           ],
-          "valueName": "delta"
+          "valueName": "avg"
         },
         {
           "cacheTimeout": null,
@@ -1103,7 +1087,7 @@ data:
       "timezone": "",
       "title": "K8s / Custom / DevOps",
       "uid": "IxBzgcqmz",
-      "version": 4
+      "version": 11
     }
 kind: ConfigMap
 metadata:
