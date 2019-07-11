@@ -27,7 +27,7 @@ An [OpenShift Applier](https://github.com/redhat-cop/openshift-applier) inventor
 
 3. Finally, run the apply.yml playbook to deploy Grafana and all of the Dashboards.
 
-        ansible-playbook -i .applier/ apply.yml
+        ansible-playbook -i .applier/ galaxy/openshift-applier/playbooks/openshift-cluster-seed.yml
 
 ## Selectively Deploying Dashboards
 
@@ -35,4 +35,5 @@ The above automation deploys everything in this project. If you would like to de
 
 The following command is equivalent to the above:
 
-    ansible-playbook -i .applier/ apply.yml -e include_tags=infrastructure,dashbard-cluster-status,dashboard-capacity,dashboard-sdm
+    ansible-playbook -i .applier/ galaxy/openshift-applier/playbooks/openshift-cluster-seed.yml \
+      -e include_tags=infrastructure,dashbard-cluster-status,dashboard-capacity,dashboard-sdm
