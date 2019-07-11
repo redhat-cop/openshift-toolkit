@@ -1,0 +1,6 @@
+spec:
+  endpoints:
+    - port: https-main
+      tlsConfig: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+    - port: https-self
+      tlsConfig: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt

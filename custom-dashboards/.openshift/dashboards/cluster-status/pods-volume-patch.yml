@@ -1,0 +1,13 @@
+spec:
+  template:
+    spec:
+      containers:
+      - name: grafana
+        volumeMounts:
+        - mountPath: /grafana-dashboard-definitions/0/pods
+          name: grafana-dashboard-pods
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: grafana-dashboard-pods
+        name: grafana-dashboard-pods

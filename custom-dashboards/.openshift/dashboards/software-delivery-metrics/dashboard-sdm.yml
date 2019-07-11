@@ -1085,11 +1085,11 @@ data:
         ]
       },
       "timezone": "",
-      "title": "K8s / Custom / DevOps",
-      "uid": "IxBzgcqmz",
+      "title": "DevOps / Software Delivery Metrics",
+      "uid": "",
       "version": 11
     }
 kind: ConfigMap
 metadata:
   creationTimestamp: null
-  name: grafana-dashboard-devops
+  name: grafana-dashboard-sdm

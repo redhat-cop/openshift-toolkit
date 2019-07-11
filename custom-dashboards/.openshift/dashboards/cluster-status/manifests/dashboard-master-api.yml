@@ -1,6 +1,6 @@
 apiVersion: v1
 data:
-  traffic.json: |    
+  master-api.json: |
     {
      "annotations": {
        "list": [
@@ -18,7 +18,7 @@ data:
      "editable": true,
      "gnetId": null,
      "graphTooltip": 0,
-     "id": 2,
+     "id": 7,
      "links": [],
      "panels": [
        {
@@ -33,98 +33,6 @@ data:
            "w": 24,
            "x": 0,
            "y": 0
-         },
-         "id": 4,
-         "legend": {
-           "avg": false,
-           "current": false,
-           "max": false,
-           "min": false,
-           "show": true,
-           "total": false,
-           "values": false
-         },
-         "lines": true,
-         "linewidth": 1,
-         "links": [],
-         "nullPointMode": "null",
-         "percentage": false,
-         "pointradius": 5,
-         "points": false,
-         "renderer": "flot",
-         "seriesOverrides": [],
-         "spaceLength": 10,
-         "stack": false,
-         "steppedLine": false,
-         "targets": [
-           {
-             "expr": "topk(5, sum(rate(container_network_receive_bytes_total{pod_name!=\"\"}[5m])) by (pod_name))",
-             "format": "time_series",
-             "intervalFactor": 1,
-             "legendFormat": "RX: {{pod_name}} ",
-             "refId": "A"
-           },
-           {
-             "expr": "topk(5, sum(rate(container_network_transmit_bytes_total{pod_name!=\"\"}[5m])) by (pod_name))",
-             "format": "time_series",
-             "intervalFactor": 1,
-             "legendFormat": "TX: {{pod_name}}",
-             "refId": "B"
-           }
-         ],
-         "thresholds": [],
-         "timeFrom": null,
-         "timeRegions": [],
-         "timeShift": null,
-         "title": "Top 5 Network Usage",
-         "tooltip": {
-           "shared": true,
-           "sort": 0,
-           "value_type": "individual"
-         },
-         "type": "graph",
-         "xaxis": {
-           "buckets": null,
-           "mode": "time",
-           "name": null,
-           "show": true,
-           "values": []
-         },
-         "yaxes": [
-           {
-             "format": "Bps",
-             "label": null,
-             "logBase": 1,
-             "max": null,
-             "min": null,
-             "show": true
-           },
-           {
-             "format": "short",
-             "label": null,
-             "logBase": 1,
-             "max": null,
-             "min": null,
-             "show": true
-           }
-         ],
-         "yaxis": {
-           "align": false,
-           "alignLevel": null
-         }
-       },
-       {
-         "aliasColors": {},
-         "bars": false,
-         "dashLength": 10,
-         "dashes": false,
-         "datasource": "prometheus",
-         "fill": 1,
-         "gridPos": {
-           "h": 5,
-           "w": 24,
-           "x": 0,
-           "y": 5
          },
          "id": 2,
          "legend": {
@@ -150,10 +58,10 @@ data:
          "steppedLine": false,
          "targets": [
            {
-             "expr": "sum(rate(container_network_receive_bytes_total{pod_name!=\"\"}[5m])) by (pod_name)",
+             "expr": "sum(rate(apiserver_request_count[10m]))",
              "format": "time_series",
              "intervalFactor": 1,
-             "legendFormat": "{{pod_name}}",
+             "legendFormat": "Number of API calls",
              "refId": "A"
            }
          ],
@@ -161,7 +69,7 @@ data:
          "timeFrom": null,
          "timeRegions": [],
          "timeShift": null,
-         "title": "Pod Traffic (Receive)",
+         "title": "Total API Calls",
          "tooltip": {
            "shared": true,
            "sort": 0,
@@ -177,7 +85,7 @@ data:
          },
          "yaxes": [
            {
-             "format": "Bps",
+             "format": "short",
              "label": null,
              "logBase": 1,
              "max": null,
@@ -207,11 +115,11 @@ data:
          "fill": 1,
          "gridPos": {
            "h": 5,
-           "w": 24,
+           "w": 12,
            "x": 0,
-           "y": 10
+           "y": 5
          },
-         "id": 3,
+         "id": 4,
          "legend": {
            "avg": false,
            "current": false,
@@ -235,10 +143,10 @@ data:
          "steppedLine": false,
          "targets": [
            {
-             "expr": "sum(rate(container_network_transmit_bytes_total{pod_name!=\"\"}[5m])) by (pod_name)",
+             "expr": "sum(rate(apiserver_request_count{verb=~\"GET|LIST|WATCH\"}[5m])) by (instance)",
              "format": "time_series",
              "intervalFactor": 1,
-             "legendFormat": "{{pod_name}}",
+             "legendFormat": "API calls (View) {{instance}}",
              "refId": "A"
            }
          ],
@@ -246,7 +154,7 @@ data:
          "timeFrom": null,
          "timeRegions": [],
          "timeShift": null,
-         "title": "Pod Traffic (Sent)",
+         "title": "API Calls (View)",
          "tooltip": {
            "shared": true,
            "sort": 0,
@@ -262,7 +170,92 @@ data:
          },
          "yaxes": [
            {
-             "format": "Bps",
+             "format": "short",
+             "label": null,
+             "logBase": 1,
+             "max": null,
+             "min": null,
+             "show": true
+           },
+           {
+             "format": "short",
+             "label": null,
+             "logBase": 1,
+             "max": null,
+             "min": null,
+             "show": true
+           }
+         ],
+         "yaxis": {
+           "align": false,
+           "alignLevel": null
+         }
+       },
+       {
+         "aliasColors": {},
+         "bars": false,
+         "dashLength": 10,
+         "dashes": false,
+         "datasource": "prometheus",
+         "fill": 1,
+         "gridPos": {
+           "h": 5,
+           "w": 12,
+           "x": 12,
+           "y": 5
+         },
+         "id": 6,
+         "legend": {
+           "avg": false,
+           "current": false,
+           "max": false,
+           "min": false,
+           "show": true,
+           "total": false,
+           "values": false
+         },
+         "lines": true,
+         "linewidth": 1,
+         "links": [],
+         "nullPointMode": "null",
+         "percentage": false,
+         "pointradius": 5,
+         "points": false,
+         "renderer": "flot",
+         "seriesOverrides": [],
+         "spaceLength": 10,
+         "stack": false,
+         "steppedLine": false,
+         "targets": [
+           {
+             "expr": "sum(rate(apiserver_request_count{verb=~\"POST|PUT|DELETE|PATCH\"}[5m])) by (instance)",
+             "format": "time_series",
+             "intervalFactor": 1,
+             "legendFormat": "API calls (Update) {{instance}}",
+             "refId": "A"
+           }
+         ],
+         "thresholds": [],
+         "timeFrom": null,
+         "timeRegions": [],
+         "timeShift": null,
+         "title": "API Calls (Update)",
+         "tooltip": {
+           "shared": true,
+           "sort": 0,
+           "value_type": "individual"
+         },
+         "type": "graph",
+         "xaxis": {
+           "buckets": null,
+           "mode": "time",
+           "name": null,
+           "show": true,
+           "values": []
+         },
+         "yaxes": [
+           {
+             "format": "short",
              "label": null,
              "logBase": 1,
              "max": null,
@@ -320,11 +313,11 @@ data:
        ]
      },
      "timezone": "",
-     "title": "Traffic",
-     "uid": "Yj-RoP9iz",
+     "title": "Cluster Status / Master-API",
+     "uid": "",
      "version": 1
     }
 kind: ConfigMap
 metadata:
   creationTimestamp: null
-  name: grafana-dashboard-traffic
+  name: grafana-dashboard-master-api
