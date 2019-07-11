@@ -24,7 +24,7 @@ data:
         {
           "aliasColors": {},
           "bars": false,
-          "dashLenVJ465E9mkgth": 10,
+          "dashLength": 10,
           "dashes": false,
           "datasource": "Prometheus",
           "fill": 1,
