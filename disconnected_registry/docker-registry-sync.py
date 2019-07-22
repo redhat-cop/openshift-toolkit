@@ -198,9 +198,9 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=
                     else:
                         latest_tag = tag
         # We want to remove everything after the hyphen because we don't care about release versions
-        latest_tag_minus_hyphon = latest_tag.split('-')[0]
+        latest_tag_minus_hyphen = latest_tag.split('-')[0]
         # If the tag has successfully removed a hyphen, it will be unicode, otherwise it will be a string
-        if type(latest_tag_minus_hyphon) is not unicode:
+        if type(latest_tag_minus_hyphen) is not unicode:
             logging.error("Unable to match the version for image: %s" % image_name)
             logging.error("Are you sure that the version exists in the RedHat registry?")
             logging.info("Attempting to pull image tag 'latest' instead")
@@ -208,7 +208,7 @@ def get_latest_tag_from_api(url_list, tag_list, failed_image_list, version_type=
             # failed_image_list.append(image_name)
             tag_list.append("%s:%s" % (image_name, 'latest'))
         else:
-            tag_list.append("%s:%s" % (image_name, latest_tag_minus_hyphon))
+            tag_list.append("%s:%s" % (image_name, latest_tag_minus_hyphen))
 
         # If package is an rhgs3 package grab the version and 'latest', discovered trying to deploy 3.10 disconnected
         if 'rhgs3/' in image_name:

@@ -1,0 +1,13 @@
+apiVersion: authorization.openshift.io/v1
+groupNames: null
+kind: ClusterRoleBinding
+metadata:
+  name: grafana-custom
+roleRef:
+  name: grafana
+subjects:
+- kind: ServiceAccount
+  name: grafana-custom
+  namespace: openshift-monitoring
+userNames:
+- system:serviceaccount:openshift-monitoring:grafana-custom

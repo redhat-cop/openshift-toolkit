@@ -1,0 +1,6 @@
+---
+- hosts: seed-hosts[0]
+  vars:
+    provision: "{{ dashboard_deploy | default(true) }}"
+  roles:
+     - galaxy/openshift-applier/roles/openshift-applier
