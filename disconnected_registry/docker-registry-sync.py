@@ -110,7 +110,7 @@ def get_registry_auth_mechanism(url_list):
         challenge_url = challenge_url_join.replace('"', '')
         logging.info("Received WWW-Authenticate challenge at: %s" % challenge_url)
         return challenge_url
-    except (ValueError, requests.Exception) as e:
+    except (ValueError) as e:
         print("Upstream registry malfunction when getting %s with HTTP response: %s" % (test_api_url,
                                                                                         remote_auth_resp_code))
         print("Terminating program, please retry again...")
