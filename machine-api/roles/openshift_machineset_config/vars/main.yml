@@ -1,0 +1,55 @@
+---
+config_domain: "{{ openshift_machineset_config_domain }}"
+
+disable_default_worker_machinesets: >-
+  {{ openshift_machineset_config_disable_default_worker_machinesets | bool }}
+
+machineset_group_label: "{{ openshift_machineset_config_group_label }}"
+machineset_groups: "{{ openshift_machineset_config_groups }}"
+
+#
+# AWS variables
+#
+default_aws_instance_type: >-
+  {{ openshift_machineset_config_aws_instance_type }}
+default_aws_root_volume_size: >-
+  {{ openshift_machineset_config_aws_root_volume_size }}
+
+# 
+default_aws_availability_zones: >-
+  {{ openshift_machineset_config_aws_availability_zones
+   | default(queried_aws_availability_zones)
+  }}
+
+# AWS availability zone information process from aws cli output
+queried_aws_availability_zones: >-
+  {{ openshift_machineset_config_aws_availability_zone_data
+   | default({})
+   | json_query(aws_availability_zones_query)
+  }}
+
+# JMESpath query to convert aws cli output to required configuration format
+aws_availability_zones_query: >-
+  Subnets[*].{
+    "name": AvailabilityZone,
+    "subnet_search_key": 'subnet-id',
+    "subnet_search_value": SubnetId
+  }
+# List of coreos ami ids:
+# https://docs.openshift.com/container-platform/4.1/installing/installing_aws_user_infra/installing-aws-user-infra.html#installation-aws-user-infra-rhcos-ami_installing-aws-user-infra
+aws_coreos_ami_id_by_region:
+  ap-northeast-1: ami-0c63b39219b8123e5
+  ap-northeast-2: ami-073cba0913d2250a4
+  ap-south-1: ami-0270be11430101040
+  ap-southeast-1: ami-06eb9d35ede4f08a3
+  ap-southeast-2: ami-0d980796ce258b5d5
+  ca-central-1: ami-0f907257d1686e3f7
+  eu-central-1: ami-02fdd627029c0055b
+  eu-west-1: ami-0d4839574724ed3fa
+  eu-west-2: ami-053073b95aa285347
+  eu-west-3: ami-09deb5deb6567bcd5
+  sa-east-1: ami-068a2000546e1889d
+  us-east-1: ami-046fe691f52a953f9
+  us-east-2: ami-0649fd5d42859bdfc
+  us-west-1: ami-0c1d2b5606111ac8c
+  us-west-2: ami-00745fcbb14a863ed

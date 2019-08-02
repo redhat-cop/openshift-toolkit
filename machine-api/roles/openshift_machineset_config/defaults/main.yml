@@ -1,0 +1,39 @@
+---
+
+# Required if no default worker machinesets found
+#openshift_machineset_config_cloud_provider: ...
+#openshift_machineset_config_cluster_infra_id: ...
+
+openshift_machineset_config_domain: openshift-machineset-config.gpte.redhat.com
+openshift_machineset_config_group_label: "{{ openshift_machineset_config_domain }}/machineset-group"
+openshift_machineset_config_groups: []
+openshift_machineset_config_disable_default_worker_machinesets: false
+
+openshift_cluster_autoscaler_spec:
+  scaleDown:
+    enabled: true
+
+#
+# AWS configuration
+#
+
+# Default ist of availability zones for machinesets
+#openshift_machineset_config_aws_availability_zones
+
+# JSON output of `aws ec2 describe-subnets --region=$REGION --subnet-ids ...`
+#openshift_machineset_config_aws_availability_zone_data:
+
+# List of availability zones with configuration
+#openshift_machineset_config_aws_availability_zones:
+
+# Must be set globally or on machineset groups as `aws_iam_instance_profile_id`
+#openshift_machineset_config_aws_iam_instance_profile_id: ...
+
+# Default instance type for machinesets
+openshift_machineset_config_aws_instance_type: m4.large
+
+# Default root volume size for machines
+openshift_machineset_config_aws_root_volume_size: 120
+
+# Must be set globally or on machineset groups as `aws_tags`
+#openshift_machineset_config_aws_tags: ...
