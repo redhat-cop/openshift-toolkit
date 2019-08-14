@@ -1,9 +1,9 @@
 apiVersion: quota.openshift.io/v1
 kind: ClusterResourceQuota
 metadata:
-  name: lob1-default
+  name: lob2-special
   labels:
-    nodegroup: default
+    nodegroup: special
 spec:
   quota:
     hard:
@@ -13,7 +13,7 @@ spec:
   selector:
     labels:
       matchLabels:
-        lob: lob1
-        nodegroup: default
+        lob: lob2
+        nodegroup: special
   scopes:
   - NotTerminating

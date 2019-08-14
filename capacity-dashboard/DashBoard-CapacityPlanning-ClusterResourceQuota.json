@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 11,
-  "iteration": 1559064321338,
+  "id": 19,
+  "iteration": 1565810664479,
   "links": [],
   "panels": [
     {
@@ -27,9 +27,9 @@
         "x": 0,
         "y": 0
       },
-      "id": 6,
+      "id": 9,
       "panels": [],
-      "title": "Memory",
+      "title": "Cluster Memory Quota",
       "type": "row"
     },
     {
@@ -37,12 +37,12 @@
       "colorBackground": false,
       "colorValue": false,
       "colors": [
-        "#3f6833",
-        "#99440a",
-        "#890f02"
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
       ],
       "datasource": "prometheus",
-      "description": "For Zone Main only\n\nNode Label>> label_node_role_kubernetes_io_compute=\"true\"\n\nProject Annotation>> annotation_openshift_io_node_selector=\"node-role.kubernetes.io/compute=true\"",
+      "description": "",
       "format": "percentunit",
       "gauge": {
         "maxValue": 1,
@@ -52,12 +52,12 @@
         "thresholdMarkers": true
       },
       "gridPos": {
-        "h": 7,
+        "h": 5,
         "w": 8,
         "x": 0,
         "y": 1
       },
-      "id": 17,
+      "id": 7,
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -94,14 +94,14 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(\n  max(kube_namespace_annotations{annotation_openshift_io_node_selector=\"$nodeselector\"}) by (namespace)\n  *\n  max(kube_resourcequota{resource=~\".*memory\",type=\"hard\"}) by (namespace)\n)\n/\nsum(\n  max(kube_node_labels{$noderole}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*memory\",type=\"hard\"}) by (name)\n)\n\n/\nsum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
         }
       ],
-      "thresholds": "0.6,0.9",
-      "title": "Memory allocation ratio",
+      "thresholds": ".60,.90",
+      "title": "Quota / Allocatable in Node Group: $nodegroup",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -118,12 +118,11 @@
       "colorBackground": false,
       "colorValue": false,
       "colors": [
-        "#3f6833",
-        "#99440a",
-        "#890f02"
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
       ],
-      "datasource": "prometheus",
-      "description": "",
+      "datasource": "$datasource",
       "format": "percentunit",
       "gauge": {
         "maxValue": 1,
@@ -133,12 +132,12 @@
         "thresholdMarkers": true
       },
       "gridPos": {
-        "h": 7,
+        "h": 5,
         "w": 8,
         "x": 8,
         "y": 1
       },
-      "id": 26,
+      "id": 19,
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -175,14 +174,14 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(\n  max(kube_namespace_annotations{annotation_openshift_io_node_selector=\"$nodeselector\"}) by (namespace)\n  *\n  max(kube_resourcequota{resource=~\".*memory\",type=\"used\"}) by (namespace)\n)\n/\nsum(\n  max(kube_node_labels{$noderole}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*memory\",type=\"used\"}) by (name)\n)\n/\nsum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
         }
       ],
-      "thresholds": "0.6,0.9",
-      "title": "Memory request ratio (Request/Allocable)",
+      "thresholds": ".60,.90",
+      "title": "Pod requests / Allocatable in Node Group: $nodegroup",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -199,12 +198,11 @@
       "colorBackground": false,
       "colorValue": false,
       "colors": [
-        "#3f6833",
-        "#99440a",
-        "#890f02"
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
       ],
       "datasource": "prometheus",
-      "description": "",
       "format": "percentunit",
       "gauge": {
         "maxValue": 1,
@@ -214,12 +212,12 @@
         "thresholdMarkers": true
       },
       "gridPos": {
-        "h": 7,
+        "h": 5,
         "w": 8,
         "x": 16,
         "y": 1
       },
-      "id": 27,
+      "id": 20,
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -256,14 +254,21 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(\n  sum(kube_pod_info) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{$noderole}) by (node)\n   *\n  on(pod)\n  group_right(node)\n  label_replace(\n    sum by (pod_name) (\n      container_memory_usage_bytes{namespace!~\"default|openshift-.*|kube-.*|cert-manager\", namespace!=\"\", image!=''}\n    ), \"pod\", \"$1\", \"pod_name\", \"(.+)\"\n  )\n)\n/\nsum(\n  max(kube_node_labels{$noderole}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
+          "expr": "sum(\n  sum(kube_pod_info) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n   *\n  on(pod)\n  group_right(node)\n  label_replace(\n    sum by (pod_name) (\n      container_memory_usage_bytes{namespace!~\"default|openshift-.*|kube-.*|cert-manager\", namespace!=\"\",image!=''}\n    ), \"pod\", \"$1\", \"pod_name\", \"(.+)\"\n  )\n)\n/\nsum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
           "format": "time_series",
+          "hide": true,
           "intervalFactor": 1,
           "refId": "A"
+        },
+        {
+          "expr": "sum(\n  max(kube_pod_info{created_by_kind!=\"Build\",pod!~\".*-deploy\"}) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n   *\n  on(pod)\n  group_right(node)\n  label_replace(\n    sum by (pod_name) (\n      container_memory_usage_bytes{namespace!=\"\",image!=''}\n    ), \"pod\", \"$1\", \"pod_name\", \"(.+)\"\n  )\n)\n/\nsum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "B"
         }
       ],
-      "thresholds": "0.6,0.9",
-      "title": "Actual Memory Usage ratio (Usage/Allocable)",
+      "thresholds": ".60,.90",
+      "title": "Current Pod Usage / Allocatable in Node Group: $nodegroup",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -286,6 +291,7 @@
       ],
       "datasource": "prometheus",
       "decimals": 2,
+      "description": "What has been promised",
       "format": "bytes",
       "gauge": {
         "maxValue": 100,
@@ -298,9 +304,9 @@
         "h": 2,
         "w": 8,
         "x": 0,
-        "y": 8
+        "y": 6
       },
-      "id": 14,
+      "id": 4,
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -332,19 +338,19 @@
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
         "lineColor": "rgb(31, 120, 193)",
-        "show": true
+        "show": false
       },
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(\n  max(kube_namespace_annotations{annotation_openshift_io_node_selector=\"$nodeselector\"}) by (namespace)\n  *\n  max(kube_resourcequota{resource=~\".*memory\",type=\"hard\"}) by (namespace)\n)",
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*memory\",type=\"hard\"}) by (name)\n)",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
         }
       ],
       "thresholds": "",
-      "title": "Total Memory Allocated",
+      "title": "Sum of Quotas",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -366,7 +372,7 @@
         "#d44a3a"
       ],
       "datasource": "prometheus",
-      "decimals": 2,
+      "description": "What developers estimate they will need",
       "format": "bytes",
       "gauge": {
         "maxValue": 100,
@@ -379,9 +385,9 @@
         "h": 2,
         "w": 8,
         "x": 8,
-        "y": 8
+        "y": 6
       },
-      "id": 15,
+      "id": 5,
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -413,19 +419,19 @@
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
         "lineColor": "rgb(31, 120, 193)",
-        "show": true
+        "show": false
       },
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(\n  max(kube_namespace_annotations{annotation_openshift_io_node_selector=\"$nodeselector\"}) by (namespace)\n  *\n  max(kube_resourcequota{resource=~\".*memory\",type=\"used\"}) by (namespace)\n)",
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*memory\",type=\"used\"}) by (name)\n)",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
         }
       ],
       "thresholds": "",
-      "title": "Total Memory Used (Actual)",
+      "title": "Sum of Pod Requests",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -444,9 +450,9 @@
       "colors": [
         "#299c46",
         "#3f6833",
-        "#3f6833"
+        "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "$datasource",
       "format": "bytes",
       "gauge": {
         "maxValue": 100,
@@ -459,9 +465,9 @@
         "h": 2,
         "w": 8,
         "x": 16,
-        "y": 8
+        "y": 6
       },
-      "id": 13,
+      "id": 6,
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -493,19 +499,33 @@
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
         "lineColor": "rgb(31, 120, 193)",
-        "show": true
+        "show": false
       },
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(\n  max(kube_node_labels{$noderole}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
+          "expr": "sum(\n  max(kube_pod_info{created_by_kind!=\"Build\",pod!~\".*-deploy\"}) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{label_nodegroup=\"main\"}) by (node)\n   *\n  on(pod)\n  group_right(node)\n  label_replace(\n    sum by (pod_name) (\n      container_memory_usage_bytes{namespace!=\"\",image!=\"\"}\n    ), \"pod\", \"$1\", \"pod_name\", \"(.+)\"\n  )\n)",
           "format": "time_series",
           "intervalFactor": 1,
+          "refId": "C"
+        },
+        {
+          "expr": "sum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
+          "format": "time_series",
+          "hide": true,
+          "intervalFactor": 1,
           "refId": "A"
+        },
+        {
+          "expr": "sum(\n  sum(kube_pod_info) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n   *\n  on(pod)\n  group_right(node)\n  label_replace(\n    sum by (pod_name) (\n      container_memory_usage_bytes{namespace!=\"\",image!=''}\n    ), \"pod\", \"$1\", \"pod_name\", \"(.+)\"\n  )\n)",
+          "format": "time_series",
+          "hide": true,
+          "intervalFactor": 1,
+          "refId": "B"
         }
       ],
       "thresholds": "",
-      "title": "Total Allocable Memory",
+      "title": "Current memory Usage",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -522,15 +542,15 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "prometheus",
+      "datasource": "$datasource",
       "fill": 1,
       "gridPos": {
-        "h": 5,
-        "w": 12,
+        "h": 4,
+        "w": 24,
         "x": 0,
-        "y": 10
+        "y": 8
       },
-      "id": 10,
+      "id": 25,
       "legend": {
         "avg": false,
         "current": false,
@@ -554,18 +574,32 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "topk( 5, sum(kube_resourcequota{resource=~\".*memory\",type=\"used\"}) by (namespace) / ignoring(resource, type) sum(kube_resourcequota{resource=~\".*memory\",type=\"hard\"}) by (namespace))",
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*memory\",type=\"hard\"}) by (name)\n)\n\n/\nsum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{namespace}}",
+          "legendFormat": "Allocation Ratio",
           "refId": "A"
+        },
+        {
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*memory\",type=\"used\"}) by (name)\n)\n/\nsum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "Request Ratio",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(\n  max(kube_pod_info{created_by_kind!=\"Build\",pod!~\".*-deploy\"}) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n   *\n  on(pod)\n  group_right(node)\n  label_replace(\n    sum by (pod_name) (\n      container_memory_usage_bytes{namespace!~\"default|openshift-.*|kube-.*|cert-manager\", namespace!=\"\",image!=''}\n    ), \"pod\", \"$1\", \"pod_name\", \"(.+)\"\n  )\n)\n/\nsum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_memory_bytes)\n)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "Actual Usage Ratio",
+          "refId": "C"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Top 5 memory usage ratio (Request/Allocated)",
+      "title": "Memory Ratio Report",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -603,164 +637,16 @@
       }
     },
     {
-      "columns": [],
-      "datasource": "prometheus",
-      "fontSize": "100%",
-      "gridPos": {
-        "h": 5,
-        "w": 12,
-        "x": 12,
-        "y": 10
-      },
-      "hideTimeOverride": true,
-      "id": 8,
-      "links": [],
-      "pageSize": null,
-      "scroll": true,
-      "showHeader": true,
-      "sort": {
-        "col": 4,
-        "desc": false
-      },
-      "styles": [
-        {
-          "alias": "",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "Time",
-          "thresholds": [],
-          "type": "hidden",
-          "unit": "short"
-        },
-        {
-          "alias": "Project",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "namespace",
-          "thresholds": [],
-          "type": "number",
-          "unit": "short"
-        },
-        {
-          "alias": "Allocated",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "Value #A",
-          "thresholds": [],
-          "type": "number",
-          "unit": "bytes"
-        },
-        {
-          "alias": "Used",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "Value #B",
-          "thresholds": [],
-          "type": "number",
-          "unit": "bytes"
-        },
-        {
-          "alias": "Ratio",
-          "colorMode": "value",
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "Value #C",
-          "thresholds": [
-            ".6",
-            ".9"
-          ],
-          "type": "number",
-          "unit": "percent"
-        },
-        {
-          "alias": "",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "decimals": 2,
-          "pattern": "/.*/",
-          "thresholds": [],
-          "type": "number",
-          "unit": "short"
-        }
-      ],
-      "targets": [
-        {
-          "expr": "sum(kube_resourcequota{resource=~\".*memory\",type=\"used\"}) by (namespace)",
-          "format": "table",
-          "instant": true,
-          "intervalFactor": 2,
-          "refId": "B"
-        },
-        {
-          "expr": "sum(kube_resourcequota{resource=~\".*memory\",type=\"hard\"}) by (namespace)",
-          "format": "table",
-          "instant": true,
-          "intervalFactor": 2,
-          "legendFormat": "",
-          "refId": "A"
-        },
-        {
-          "expr": "100 * sum(kube_resourcequota{resource=~\".*memory\",type=\"used\"}) by (namespace) / ignoring(resource, type) sum(kube_resourcequota{resource=~\".*memory\",type=\"hard\"}) by (namespace)",
-          "format": "table",
-          "instant": true,
-          "intervalFactor": 2,
-          "refId": "C"
-        }
-      ],
-      "title": "Memory Quota/Usage per Project",
-      "transform": "table",
-      "transparent": false,
-      "type": "table"
-    },
-    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 12
       },
-      "id": 4,
+      "id": 12,
       "panels": [],
-      "title": "CPU",
+      "title": "Cluster CPU Quota",
       "type": "row"
     },
     {
@@ -768,12 +654,11 @@
       "colorBackground": false,
       "colorValue": false,
       "colors": [
-        "#3f6833",
-        "#99440a",
-        "#890f02"
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
       ],
       "datasource": "prometheus",
-      "description": "For Zone Main only\n\nNode Label>> label_node_role_kubernetes_io_compute=\"true\"\n\nProject Annotation>> annotation_openshift_io_node_selector=\"node-role.kubernetes.io/compute=true\"",
       "format": "percentunit",
       "gauge": {
         "maxValue": 1,
@@ -783,10 +668,608 @@
         "thresholdMarkers": true
       },
       "gridPos": {
-        "h": 7,
+        "h": 5,
         "w": 8,
         "x": 0,
-        "y": 16
+        "y": 13
+      },
+      "id": 21,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*cpu\",type=\"hard\"}) by (name)\n)\n\n/\nsum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_cpu_cores)\n)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": ".60,.90",
+      "title": "Quota/ Allocatable in Node Group: $nodegroup",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "prometheus",
+      "format": "percentunit",
+      "gauge": {
+        "maxValue": 1,
+        "minValue": 0,
+        "show": true,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 13
+      },
+      "id": 22,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*cpu\",type=\"used\"}) by (name)\n)\n/\nsum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_cpu_cores)\n)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": ".60,.90",
+      "title": "Pod requests / Allocatable in Node Group: $nodegroup",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "prometheus",
+      "description": "OS and Container CPU usage",
+      "format": "percentunit",
+      "gauge": {
+        "maxValue": 1,
+        "minValue": 0,
+        "show": true,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 13
+      },
+      "id": 23,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": true
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "avg (avg (rate(node_cpu{mode!=\"idle\"}[10m])) by (instance,pod)\n * on (pod) group_left()\n\nmax(\n  sum(kube_pod_info{pod=~\"node-exporter.*\"}) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{label_nodegroup=~\"$nodegroup\"}) by (node)\n) by (pod))",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": ".60,.90",
+      "title": "Actual Node CPU Utilisation (Node+Pod)",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": true,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "#052b51",
+        "#d44a3a"
+      ],
+      "datasource": "prometheus",
+      "decimals": 2,
+      "description": "What has been promised",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 8,
+        "x": 0,
+        "y": 18
+      },
+      "id": 13,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "CPU core",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*cpu\",type=\"hard\"}) by (name)\n)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "Sum of Granted Quotas",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": true,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "#58140c",
+        "#d44a3a"
+      ],
+      "datasource": "prometheus",
+      "decimals": null,
+      "description": "What developers estimate they will need",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 8,
+        "x": 8,
+        "y": 18
+      },
+      "id": 14,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "CPU core",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*cpu\",type=\"used\"}) by (name)\n)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "Sum of Pod Requests",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": true,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "#3f6833",
+        "#d44a3a"
+      ],
+      "datasource": "prometheus",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 8,
+        "x": 16,
+        "y": 18
+      },
+      "id": 15,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "CPU core",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_cpu_cores)\n)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "Total allocable CPU ($nodegroup Node Group)",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$datasource",
+      "fill": 1,
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "id": 32,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*cpu\",type=\"hard\"}) by (name)\n)\n\n/\nsum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_cpu_cores)\n)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "Allocation Ratio",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(\n  max(openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"}) by (label_nodegroup, name)\n  * on (name)\n  group_right(label_nodegroup)\n  sum (openshift_clusterresourcequota{resource=~\".*cpu\",type=\"used\"}) by (name)\n)\n/\nsum(\n  max(kube_node_labels{label_nodegroup=\"$nodegroup\"}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_cpu_cores)\n)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "Request Ratio",
+          "refId": "B"
+        },
+        {
+          "expr": "avg (avg (rate(node_cpu{mode!=\"idle\"}[10m])) by (instance,pod)\n * on (pod) group_left()\n\nmax(\n  sum(kube_pod_info{pod=~\"node-exporter.*\"}) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{label_nodegroup=~\"$nodegroup\"}) by (node)\n) by (pod))",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "Actual Utilisation",
+          "refId": "C"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "CPU Ratio Report",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "percentunit",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 17,
+      "panels": [],
+      "title": "Cluster Storage Quota",
+      "type": "row"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "prometheus",
+      "format": "percentunit",
+      "gauge": {
+        "maxValue": 1,
+        "minValue": 0,
+        "show": true,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 0,
+        "y": 25
       },
       "id": 18,
       "interval": null,
@@ -825,14 +1308,14 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(\n  max(kube_namespace_annotations{annotation_openshift_io_node_selector=\"$nodeselector\"}) by (namespace)\n  *\n  max(kube_resourcequota{resource=~\".*cpu\",type=\"hard\"}) by (namespace)\n)\n/\nsum(\n  max(kube_node_labels{$noderole}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_cpu_cores)\n)",
+          "expr": "sum(openshift_clusterresourcequota{resource=\"glusterfs.storageclass.storage.k8s.io/requests.storage\",type=\"used\"}) / sum(openshift_clusterresourcequota{resource=\"glusterfs.storageclass.storage.k8s.io/requests.storage\",type=\"hard\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
         }
       ],
-      "thresholds": "0.6,0.9",
-      "title": "CPU allocation ratio",
+      "thresholds": ".60,.90",
+      "title": "Storage Allocation Ratio",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -843,656 +1326,6 @@
         }
       ],
       "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": [
-        "#3f6833",
-        "#99440a",
-        "#890f02"
-      ],
-      "datasource": "prometheus",
-      "description": "",
-      "format": "percentunit",
-      "gauge": {
-        "maxValue": 1,
-        "minValue": 0,
-        "show": true,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 8,
-        "y": 16
-      },
-      "id": 28,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": true
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "expr": "sum(\n  max(kube_namespace_annotations{annotation_openshift_io_node_selector=\"$nodeselector\"}) by (namespace)\n  *\n  max(kube_resourcequota{resource=~\".*cpu\",type=\"used\"}) by (namespace)\n)\n/\nsum(\n  max(kube_node_labels{$noderole}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_cpu_cores)\n)",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "refId": "A"
-        }
-      ],
-      "thresholds": "0.6,0.9",
-      "title": "CPU request ratio (Request/Allocable)",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": [
-        "#3f6833",
-        "#99440a",
-        "#890f02"
-      ],
-      "datasource": "prometheus",
-      "description": "",
-      "format": "percentunit",
-      "gauge": {
-        "maxValue": 1,
-        "minValue": 0,
-        "show": true,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 16
-      },
-      "id": 29,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": true
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "expr": "avg (sum (rate(node_cpu{mode!=\"idle\"}[10m])) by (instance,pod)\n * on (pod) group_left()\n\nmax(\n  sum(kube_pod_info{pod=~\"node-exporter.*\"}) by (node,pod)\n   * on(node) group_left()\n  max(kube_node_labels{$noderole}) by (node)\n) by (pod))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "refId": "A"
-        }
-      ],
-      "thresholds": "0.6,0.9",
-      "title": "Actual Node CPU Utilisation ($noderole Zone)",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": true,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "#052b51",
-        "#d44a3a"
-      ],
-      "datasource": "prometheus",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 2,
-        "w": 8,
-        "x": 0,
-        "y": 23
-      },
-      "id": 20,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "CPU core",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "expr": "sum(\n  max(kube_namespace_annotations{annotation_openshift_io_node_selector=\"$nodeselector\"}) by (namespace)\n  *\n  max(kube_resourcequota{resource=~\".*cpu\",type=\"hard\"}) by (namespace)\n)",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "refId": "A"
-        }
-      ],
-      "thresholds": "",
-      "title": "Total CPU Allocated",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": true,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "#58140c",
-        "#d44a3a"
-      ],
-      "datasource": "prometheus",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 2,
-        "w": 8,
-        "x": 8,
-        "y": 23
-      },
-      "id": 21,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "CPU core",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": true
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "expr": "sum(\n  max(kube_namespace_annotations{annotation_openshift_io_node_selector=\"$nodeselector\"}) by (namespace)\n  *\n  max(kube_resourcequota{resource=~\".*cpu\",type=\"used\"}) by (namespace)\n)",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "refId": "A"
-        }
-      ],
-      "thresholds": "",
-      "title": "Total Actual CPU Used",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": true,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "#3f6833",
-        "#3f6833"
-      ],
-      "datasource": "prometheus",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 2,
-        "w": 8,
-        "x": 16,
-        "y": 23
-      },
-      "id": 19,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "CPU Core",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "expr": "sum(\n  max(kube_node_labels{$noderole}) by (node)\n  *\n  sum  by (node) (kube_node_status_allocatable_cpu_cores)\n)",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "refId": "A"
-        }
-      ],
-      "thresholds": "",
-      "title": "Total Allocable CPU",
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "prometheus",
-      "fill": 1,
-      "gridPos": {
-        "h": 5,
-        "w": 12,
-        "x": 0,
-        "y": 25
-      },
-      "id": 11,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "null",
-      "percentage": false,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "topk( 5, sum(kube_resourcequota{resource=~\".*cpu\",type=\"used\"}) by (namespace) / ignoring(resource, type) sum(kube_resourcequota{resource=~\".*cpu\",type=\"hard\"}) by (namespace))",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "{{namespace}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Top 5 CPU usage ratio (Request/Allocated)",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": 2,
-          "format": "percentunit",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "columns": [],
-      "datasource": "prometheus",
-      "fontSize": "100%",
-      "gridPos": {
-        "h": 5,
-        "w": 12,
-        "x": 12,
-        "y": 25
-      },
-      "hideTimeOverride": true,
-      "id": 2,
-      "links": [],
-      "pageSize": null,
-      "repeat": null,
-      "scroll": true,
-      "showHeader": true,
-      "sort": {
-        "col": null,
-        "desc": false
-      },
-      "styles": [
-        {
-          "alias": "",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "Time",
-          "thresholds": [],
-          "type": "hidden",
-          "unit": "short"
-        },
-        {
-          "alias": "Project",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "namespace",
-          "thresholds": [],
-          "type": "number",
-          "unit": "short"
-        },
-        {
-          "alias": "Quota",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "Value #A",
-          "thresholds": [],
-          "type": "number",
-          "unit": "short"
-        },
-        {
-          "alias": "Used",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "Value #B",
-          "thresholds": [],
-          "type": "number",
-          "unit": "short"
-        },
-        {
-          "alias": "Ratio",
-          "colorMode": "value",
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "Value #C",
-          "thresholds": [
-            ".6",
-            ".9"
-          ],
-          "type": "number",
-          "unit": "percent"
-        },
-        {
-          "alias": "",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "decimals": 2,
-          "pattern": "/.*/",
-          "thresholds": [],
-          "type": "number",
-          "unit": "short"
-        }
-      ],
-      "targets": [
-        {
-          "expr": "sum(kube_resourcequota{resource=~\".*cpu\",type=\"used\"}) by (namespace)",
-          "format": "table",
-          "instant": true,
-          "intervalFactor": 2,
-          "refId": "B"
-        },
-        {
-          "expr": "sum(kube_resourcequota{resource=~\".*cpu\",type=\"hard\"}) by (namespace)",
-          "format": "table",
-          "instant": true,
-          "intervalFactor": 2,
-          "legendFormat": "{{namespace}}",
-          "refId": "A"
-        },
-        {
-          "expr": "100 * sum(kube_resourcequota{resource=~\".*cpu\",type=\"used\"}) by (namespace) / ignoring(resource, type) sum(kube_resourcequota{resource=~\".*cpu\",type=\"hard\"}) by (namespace)",
-          "format": "table",
-          "instant": true,
-          "intervalFactor": 2,
-          "refId": "C"
-        }
-      ],
-      "title": "CPU Quota/Usage per Project",
-      "transform": "table",
-      "transparent": false,
-      "type": "table"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 30
-      },
-      "id": 23,
-      "panels": [],
-      "title": "Storage",
-      "type": "row"
     },
     {
       "cacheTimeout": null,
@@ -1503,22 +1336,22 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
-      "format": "percentunit",
+      "datasource": "$datasource",
+      "format": "bytes",
       "gauge": {
-        "maxValue": 1,
+        "maxValue": 100,
         "minValue": 0,
-        "show": true,
+        "show": false,
         "thresholdLabels": false,
         "thresholdMarkers": true
       },
       "gridPos": {
         "h": 5,
-        "w": 8,
-        "x": 0,
-        "y": 31
+        "w": 11,
+        "x": 12,
+        "y": 25
       },
-      "id": 25,
+      "id": 36,
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -1550,19 +1383,339 @@
         "fillColor": "rgba(31, 118, 189, 0.18)",
         "full": false,
         "lineColor": "rgb(31, 120, 193)",
-        "show": true
+        "show": false
       },
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kube_resourcequota{resource=\"glusterfs.storageclass.storage.k8s.io/requests.storage\",type=\"used\"}) / sum(kube_resourcequota{resource=\"glusterfs.storageclass.storage.k8s.io/requests.storage\",type=\"hard\"})",
+          "expr": "sum(openshift_clusterresourcequota{resource=\"glusterfs.storageclass.storage.k8s.io/requests.storage\",type=\"hard\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
         }
       ],
-      "thresholds": ".6,.9",
-      "title": "Storage utilisation ratio (glusterfs)",
+      "thresholds": "",
+      "title": "Total Storage Allocated",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "$datasource",
+      "format": "bytes",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 0,
+        "y": 30
+      },
+      "id": 37,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(heketi_device_size_bytes)/3",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "Total Storage",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "$datasource",
+      "format": "bytes",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 5,
+        "x": 6,
+        "y": 30
+      },
+      "id": 38,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(heketi_device_free_bytes)/3",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "Free Storage",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "$datasource",
+      "format": "bytes",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 5,
+        "x": 11,
+        "y": 30
+      },
+      "id": 40,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(heketi_device_used_bytes)/3",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "Used Storage",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "$datasource",
+      "format": "bytes",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 7,
+        "x": 16,
+        "y": 30
+      },
+      "id": 39,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(kube_persistentvolumeclaim_resource_requests_storage_bytes)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "PVC size",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -1578,7 +1731,7 @@
   "schemaVersion": 16,
   "style": "dark",
   "tags": [
-    "BMO"
+    "RedHat COP"
   ],
   "templating": {
     "list": [
@@ -1588,7 +1741,7 @@
           "value": "prometheus"
         },
         "hide": 2,
-        "label": null,
+        "label": "",
         "name": "datasource",
         "options": [],
         "query": "prometheus",
@@ -1600,47 +1753,23 @@
       {
         "allValue": null,
         "current": {
-          "text": "node-role.kubernetes.io/compute=true",
-          "value": "node-role.kubernetes.io/compute=true"
+          "tags": [],
+          "text": "main",
+          "value": "main"
         },
         "datasource": "$datasource",
-        "definition": "label_values(kube_namespace_annotations,annotation_openshift_io_node_selector)",
+        "definition": "label_values(kube_node_labels,label_nodegroup)",
         "hide": 0,
         "includeAll": false,
-        "label": "Project Node Selector",
+        "label": "Node Group",
         "multi": false,
-        "name": "nodeselector",
+        "name": "nodegroup",
         "options": [],
-        "query": "label_values(kube_namespace_annotations,annotation_openshift_io_node_selector)",
+        "query": "label_values(kube_node_labels,label_nodegroup)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "allValue": null,
-        "current": {
-          "text": "label_node_role_kubernetes_io_compute=\"true\"",
-          "value": "label_node_role_kubernetes_io_compute=\"true\""
-        },
-        "datasource": "$datasource",
-        "definition": "kube_node_labels",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Node Role",
-        "multi": false,
-        "name": "noderole",
-        "options": [],
-        "query": "kube_node_labels",
-        "refresh": 1,
-        "regex": "/(label_node_role_kubernetes_io.[a-zA-Z0-9_\\.]+=\"true\")/",
-        "skipUrlSync": false,
-        "sort": 1,
+        "sort": 2,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1679,7 +1808,7 @@
     ]
   },
   "timezone": "",
-  "title": "Capacity Planning (ResourceQuota)",
-  "uid": "2F8dmomZk",
-  "version": 20
+  "title": "Capacity Planning(Cluster Resource Quota)",
+  "uid": "UiQ7nV7Zz-1",
+  "version": 2
 }

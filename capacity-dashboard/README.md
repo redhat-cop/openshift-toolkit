@@ -14,7 +14,7 @@ However, using both types of quota management at the same time will not provide 
   * label_node_role_kubernetes_io_compute="true"
   * label_node_role_kubernetes_io_compute_special="true"
 * Projects are annotated with a Node Selector, for example:
-  * annotation_openshift_io_node_selector="node-role.kubernetes.io/compute-special=true"
+  * annotation_openshift_io_node_selector="node-role.kubernetes.io/compute=true"
   * annotation_openshift_io_node_selector="node-role.kubernetes.io/compute-special=true"
 * Projects are configured with Reource Quota, for example:
 ```
@@ -34,19 +34,19 @@ spec:
 
 
 **Implementation:** 
-Import the "Capacity_Planning_ResourceQuota.json" Dashboard in [custom grafana](https://github.com/redhat-cop/openshift-toolkit/tree/master/custom-dashboards). Necessary labels are required to work the dashboard. If the cluster has different types of labels, please change the variables from dashboard settings.
+Import the "DashBoard-CapacityPlanning-(ResourceQuota).json" Dashboard in [custom grafana](https://github.com/redhat-cop/openshift-toolkit/tree/master/custom-dashboards). Necessary labels are required to work the dashboard. If the cluster has different types of labels, please change the variables from dashboard settings.
 
 
 ## Cluster Resource Quota
 
 **Assumptions:**
 Openshift cluster has following labels in place:
-* Nodes are labeld. This is additional labels from default node role labels, for example:
-  * zone=dev
-  * zone=qa
+* Nodes are labeld. This is an additional label from default node role/group labels, for example:
+  * nodegroup=default
+  * nodegroup=special
 * Projects are also labeld, for example:
-  * zone=dev
-  * zone=qa
+  * nodegroup=default
+  * nodegroup=special
 * In addition to the above Project Label, ClusterResourceQuota object will use a Project Selector label. So, lable the project in accordance with the Cluster Resource Quota that the project will be tied to:
   * lob=lob1
   * lob=lob2
@@ -55,7 +55,7 @@ Openshift cluster has following labels in place:
 In summery, a typical project will be provisioned as:
 ```
 oc patch namespace test-quota-1 -p '{"metadata": {"labels": {"lob": "lob1"}}}'
-oc patch namespace test-quota-1 -p '{"metadata": {"labels": {"zone": "dev"}}}'
+oc patch namespace test-quota-1 -p '{"metadata": {"labels": {"nodegroup": "default"}}}'
 
 oc patch namespace test-quota-1 -p '{"metadata": {"annotations": {"openshift.io/node-selector": "node-role.kubernetes.io/compute=true"}}}'
 ```
@@ -66,9 +66,9 @@ oc patch namespace test-quota-1 -p '{"metadata": {"annotations": {"openshift.io/
 apiVersion: quota.openshift.io/v1
 kind: ClusterResourceQuota
 metadata:
-  name: lob1-dev
+  name: lob1-internal
   labels:
-    zone: dev
+    nodegroup: default
 spec:
   quota:
     hard:
@@ -79,7 +79,7 @@ spec:
     labels:
       matchLabels:
         lob: lob1
-        zone: dev
+        nodegroup: default
   scopes:
   - NotTerminating
   ```
@@ -90,4 +90,4 @@ To deploy openshift-state-metrics:
 
 
 **Implementation:** 
-Import the "Capacity_Planning_ClusterResourceQuota.json" Dashboard in [custom grafana](https://github.com/redhat-cop/openshift-toolkit/tree/master/custom-dashboards). Necessary labels are required to work the dashboard. If the cluster has different types of labels, please change the variables from dashboard settings.
+Import the "DashBoard-CapacityPlanning-(Custom Resource Quota).json" Dashboard in [custom grafana](https://github.com/redhat-cop/openshift-toolkit/tree/master/custom-dashboards). Necessary labels are required to work the dashboard. If the cluster has different types of labels, please change the variables from dashboard settings.
