@@ -1,6 +1,7 @@
+---
 apiVersion: v1
 data:
-  router.json: |    
+  router.json: |
     {
       "annotations": {
         "list": [
@@ -26,7 +27,7 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "gridPos": {
             "h": 7,
@@ -115,7 +116,7 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "gridPos": {
             "h": 7,
@@ -201,7 +202,7 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "gridPos": {
             "h": 7,
@@ -295,7 +296,7 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "gridPos": {
             "h": 7,
@@ -381,7 +382,7 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "gridPos": {
             "h": 7,
@@ -467,7 +468,7 @@ data:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "gridPos": {
             "h": 7,
@@ -586,8 +587,8 @@ data:
         ]
       },
       "timezone": "",
-      "title": "Router",
-      "uid": "-ic3zUXmk",
+      "title": "Cluster Status / Router",
+      "uid": "",
       "version": 2
     }
 kind: ConfigMap

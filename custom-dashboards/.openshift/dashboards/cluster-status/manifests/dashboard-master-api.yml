@@ -1,6 +1,7 @@
+---
 apiVersion: v1
 data:
-  master-api.json: |    
+  master-api.json: |
     {
      "annotations": {
        "list": [
@@ -313,8 +314,8 @@ data:
        ]
      },
      "timezone": "",
-     "title": "Master-API",
-     "uid": "9r5c5E9iz",
+     "title": "Cluster Status / Master-API",
+     "uid": "",
      "version": 1
     }
 kind: ConfigMap

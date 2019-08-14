@@ -1,0 +1,14 @@
+---
+spec:
+  template:
+    spec:
+      containers:
+      - name: grafana
+        volumeMounts:
+        - mountPath: /grafana-dashboard-definitions/0/master-api
+          name: grafana-dashboard-master-api
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: grafana-dashboard-master-api
+        name: grafana-dashboard-master-api

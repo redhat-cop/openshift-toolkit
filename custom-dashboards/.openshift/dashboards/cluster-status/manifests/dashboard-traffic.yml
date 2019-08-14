@@ -1,6 +1,7 @@
+---
 apiVersion: v1
 data:
-  traffic.json: |    
+  traffic.json: |
     {
      "annotations": {
        "list": [
@@ -320,8 +321,8 @@ data:
        ]
      },
      "timezone": "",
-     "title": "Traffic",
-     "uid": "Yj-RoP9iz",
+     "title": "Cluster Status / Traffic",
+     "uid": "",
      "version": 1
     }
 kind: ConfigMap

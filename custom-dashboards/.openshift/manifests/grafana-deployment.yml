@@ -52,26 +52,6 @@ spec:
           name: grafana-datasources
         - mountPath: /etc/grafana/provisioning/dashboards
           name: grafana-dashboards
-        - mountPath: /grafana-dashboard-definitions/0/k8s-cluster-rsrc-use
-          name: grafana-dashboard-k8s-cluster-rsrc-use
-        - mountPath: /grafana-dashboard-definitions/0/k8s-node-rsrc-use
-          name: grafana-dashboard-k8s-node-rsrc-use
-        - mountPath: /grafana-dashboard-definitions/0/k8s-resources-cluster
-          name: grafana-dashboard-k8s-resources-cluster
-        - mountPath: /grafana-dashboard-definitions/0/k8s-resources-namespace
-          name: grafana-dashboard-k8s-resources-namespace
-        - mountPath: /grafana-dashboard-definitions/0/k8s-resources-pod
-          name: grafana-dashboard-k8s-resources-pod
-        - mountPath: /grafana-dashboard-definitions/0/master-api
-          name: grafana-dashboard-master-api
-        - mountPath: /grafana-dashboard-definitions/0/capacity
-          name: grafana-dashboard-capacity
-        - mountPath: /grafana-dashboard-definitions/0/pods
-          name: grafana-dashboard-pods
-        - mountPath: /grafana-dashboard-definitions/0/traffic
-          name: grafana-dashboard-traffic
-        - mountPath: /grafana-dashboard-definitions/0/devops
-          name: grafana-dashboard-devops
         - mountPath: /etc/grafana
           name: grafana-config
       - args:
@@ -125,46 +105,6 @@ spec:
           defaultMode: 420
           name: grafana-dashboards
         name: grafana-dashboards
-      - configMap:
-          defaultMode: 420
-          name: grafana-dashboard-k8s-cluster-rsrc-use
-        name: grafana-dashboard-k8s-cluster-rsrc-use
-      - configMap:
-          defaultMode: 420
-          name: grafana-dashboard-k8s-node-rsrc-use
-        name: grafana-dashboard-k8s-node-rsrc-use
-      - configMap:
-          defaultMode: 420
-          name: grafana-dashboard-k8s-resources-cluster
-        name: grafana-dashboard-k8s-resources-cluster
-      - configMap:
-          defaultMode: 420
-          name: grafana-dashboard-k8s-resources-namespace
-        name: grafana-dashboard-k8s-resources-namespace
-      - configMap:
-          defaultMode: 420
-          name: grafana-dashboard-k8s-resources-pod
-        name: grafana-dashboard-k8s-resources-pod
-      - configMap:
-          defaultMode: 420
-          name: grafana-dashboard-master-api
-        name: grafana-dashboard-master-api
-      - configMap:
-          defaultMode: 420
-          name: grafana-dashboard-capacity
-        name: grafana-dashboard-capacity
-      - configMap:
-          defaultMode: 420
-          name: grafana-dashboard-pods
-        name: grafana-dashboard-pods
-      - configMap:
-          defaultMode: 420
-          name: grafana-dashboard-traffic
-        name: grafana-dashboard-traffic
-      - configMap:
-          defaultMode: 420
-          name: grafana-dashboard-devops
-        name: grafana-dashboard-devops
       - name: grafana-config
         secret:
           defaultMode: 420
