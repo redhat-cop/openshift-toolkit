@@ -38,7 +38,7 @@ fi
 
 # Vars
 HOSTNAME=$(hostnamectl --static)
-TS=$(date +"%Y%m%d_%H%M%S")
+TS=$(date +"%Y%m%d-%H%M%S")
 
 MASTER_EXEC="/usr/local/bin/master-exec"
 ETCD_POD_MANIFEST="/etc/origin/node/pods/etcd.yaml"
@@ -100,14 +100,14 @@ backup_data() {
   # snapshot output is /var/lib/etcd/ because is mounted from the host, and we can move it later to another host folder.
   # > /usr/local/bin/master-exec etcd etcd /bin/bash -c "ETCDCTL_API=3 /usr/bin/etcdctl \
   # --cert /etc/etcd/peer.crt --key /etc/etcd/peer.key --cacert /etc/etcd/ca.crt --endpoints ${ETCD_EP} snapshot save /var/lib/etcd/snapshot.db"
-  ${MASTER_EXEC} etcd etcd /bin/bash -c "ETCDCTL_API=3 /usr/bin/etcdctl \
+  ${MASTER_EXEC} etcd etcd /bin/sh -c "ETCDCTL_API=3 etcdctl \
   --cert /etc/etcd/peer.crt --key /etc/etcd/peer.key --cacert /etc/etcd/ca.crt \
   --endpoints ${ETCD_EP} snapshot save /var/lib/etcd/snapshot.db"
 
   log "Backing up ETCD data, validating snapshot."
   # Validate the status of the snapshot
   # > snapshot status /var/lib/etcd/snapshot.db 
-  ${MASTER_EXEC} etcd etcd /bin/bash -c "ETCDCTL_API=3 /usr/bin/etcdctl \
+  ${MASTER_EXEC} etcd etcd /bin/sh -c "ETCDCTL_API=3 etcdctl \
   --cert /etc/etcd/peer.crt --key /etc/etcd/peer.key --cacert /etc/etcd/ca.crt \
   --endpoints ${ETCD_EP} snapshot status /var/lib/etcd/snapshot.db"
 

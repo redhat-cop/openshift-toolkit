@@ -79,6 +79,10 @@ objects:
               hostPathVolume(
                 hostPath: '/var/run/docker.sock',
                 mountPath: '/var/run/docker.sock'
+              ),
+              hostPathVolume(
+                hostPath: '/root/.docker/config.json',
+                mountPath: '/var/run/.docker/config.json'
               )
           ]) {
 
@@ -99,7 +103,7 @@ objects:
                     IMAGE_CONTENT=\${WORKING_DIR}/image-content
                     RESULTS=\${WORKING_DIR}/results
                     JENKINS_WORKSPACE=$WORKSPACE
-                    DOCKER_CFG_HOME=/tmp/dockercfg
+                    DOCKER_CFG_HOME=/tmp/.docker
                     EXPORT_TO=\${JENKINS_WORKSPACE}/\${IMAGE_NAMESPACE}/\${IMAGE_NAME}
 
                     echo "Starting scan of image \$IMAGE_TO_SCAN"
@@ -112,10 +116,14 @@ objects:
                     NAMESPACE=\$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
                     DOCKERCFG_SECRET_NAME=\$(oc get sa -n \$NAMESPACE \$SA_NAME -o jsonpath='{range .secrets[*]}{.name}{"\\n"}{end}' | grep dockercfg)
 
-                    oc get secret -n \$NAMESPACE \$DOCKERCFG_SECRET_NAME -o jsonpath='{.data.\\.dockercfg}' | base64 --decode > \$DOCKER_CFG_HOME/.dockercfg
+                    # Write SA docker config
+                    oc get secret -n \$NAMESPACE \$DOCKERCFG_SECRET_NAME -o jsonpath='{.data.\\.dockercfg}' | base64 --decode > \$DOCKER_CFG_HOME/config-sa.json
+
+                    # Generate final docker config
+                    jq -s '.[0] * .[1]' \$DOCKER_CFG_HOME/config-sa.json /var/run/.docker/config.json > \$DOCKER_CFG_HOME/config.json
 
                     { # try
-                      image-inspector --path=\${IMAGE_CONTENT} --scan-results-dir=\${RESULTS} --scan-type=openscap --openscap-html-report --image=\$IMAGE_TO_SCAN --dockercfg=\$DOCKER_CFG_HOME/.dockercfg
+                      image-inspector --path=\${IMAGE_CONTENT} --scan-results-dir=\${RESULTS} --scan-type=openscap --openscap-html-report --image=\$IMAGE_TO_SCAN --dockercfg=\$DOCKER_CFG_HOME/config.json
                     } && {
                       echo "Scan of \${IMAGE_TO_SCAN} complete."
                     } || {
@@ -132,8 +140,15 @@ objects:
                   }
 
                 cluster_images=\$(oc get pod --all-namespaces -o jsonpath='{range .items[?(@.status.phase=="Running")]}{range .status.containerStatuses[*]}{.imageID}{"\\n"}{end}{end}' | sed 's/docker-pullable:\\/\\///g' | awk '!seen[\$0]++')
+                num_images=\$(echo "\${cluster_images}" | wc -w)
+                echo "Beginning Scan of \${num_images} images..."
+                images_complete=0
                 for image in \${cluster_images}; do
                   scan_image \$image
+                  images_complete=\$((images_complete+1))
+                  echo "Scanned \${images_complete} of \${num_images} Images."
+                  percent=\$(echo "scale=2; \$images_complete / \$num_images * 100" | bc)
+                  echo "\${percent}% Complete!"
                 done
 
                   """, returnStatus: true)

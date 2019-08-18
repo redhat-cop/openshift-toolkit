@@ -1,0 +1,16 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: asb-service-broker-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: openshift-ansible-service-broker
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: kube-service-catalog
+      ports:
+        - port: 1338
+          protocol: TCP

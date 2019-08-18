@@ -1,2 +1,4 @@
-.retry
+**/*.retry
 */galaxy/
+**/*.pyc
+**/__pycache__

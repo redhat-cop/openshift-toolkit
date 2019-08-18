@@ -23,13 +23,13 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Check if executed on OSE master
-if ! systemctl status atomic-openshift-master-api >/dev/null 2>&1; then
+if ! [ -d $SOURCE_BACKUP_DIR ] ; then
   echo "ERROR: This script must be run on an OpenShift master. Aborting."
   exit 1
 fi
 
 #Variable to hold path to tar
-base_file="${DEST_BACKUP_DIR}/${TAR_FILE_PREFIX}-$HOSTNAME-$(date -u '+%Y%m%d-%k%M%S')"
+base_file="${DEST_BACKUP_DIR}/${TAR_FILE_PREFIX}-$HOSTNAME-$(date -u '+%Y%m%d-%H%M%S')"
 tar_name="${base_file}.tar"
 gz_name="${base_file}.tar.gz"
 
