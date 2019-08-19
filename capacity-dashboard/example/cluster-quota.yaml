@@ -1,0 +1,38 @@
+---
+apiVersion: quota.openshift.io/v1
+kind: ClusterResourceQuota
+metadata:
+  name: quota1
+  labels:
+    nodegroup: group1
+spec:
+  quota:
+    hard:
+      glusterfs.storageclass.storage.k8s.io/requests.storage: 10Gi
+      requests.cpu: "2"
+      requests.memory: 4Gi
+  selector:
+    labels:
+      matchLabels:
+        quota: quota1
+  scopes:
+  - NotTerminating
+---
+apiVersion: quota.openshift.io/v1
+kind: ClusterResourceQuota
+metadata:
+  name: quota2
+  labels:
+    nodegroup: group1
+spec:
+  quota:
+    hard:
+      glusterfs.storageclass.storage.k8s.io/requests.storage: 10Gi
+      requests.cpu: "2"
+      requests.memory: 4Gi
+  selector:
+    labels:
+      matchLabels:
+        quota: quota2
+  scopes:
+  - NotTerminating  
