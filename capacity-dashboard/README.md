@@ -76,7 +76,7 @@ git clone https://github.com/redhat-cop/openshift-toolkit
 cd openshift-toolkit/custom-grafana
 ansible-galaxy install -r requirements.yml -p galaxy
 ansible-playbook -i .applier/ galaxy/openshift-applier/playbooks/openshift-cluster-seed.yml \
-  -e include_tags=""
+  -e include_tags="dashboard-capacity"
 ```
 
-Open the custom Grafana and import the capacity planning dashboard: [capacity-planning.json](./capacity-planning.json)
+If you have otherwise created you Grafana instance, you can simply import the dashboard by opening Grafana and importing the capacity planning dashboard: [capacity-planning.json](./capacity-planning.json)
