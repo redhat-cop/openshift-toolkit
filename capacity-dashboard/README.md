@@ -1,7 +1,7 @@
 # Capacity Management Dashboard
 
 This repo adds a capacity management Grafana dashboard.
-The intent of this dashboard is to answer a single question: Do I nee a new node?
+The intent of this dashboard is to answer a single question: Do I need a new node?
 
 We believe this is the most important question when setting up a capacity management process. We are aware that this is not the only question a capacity management process may need to be able to answers to. So, this should be considered the starting point for organizations to build their capacity management process.
 
