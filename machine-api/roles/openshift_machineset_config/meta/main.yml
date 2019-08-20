@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  role_name: openshift_machineset_config
+  author: Johnathan Kupferer
+  description: Configure OpenShift 4 MachineSets
+  license: MIT
+  min_ansible_version: 2.7
+  platforms:
+  - name: GenericLinux
+    versions:
+    - all
+  galaxy_tags:
+  - ocp
+  - openshift
+dependencies: []

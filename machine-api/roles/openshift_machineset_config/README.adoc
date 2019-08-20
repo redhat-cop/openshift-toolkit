@@ -1,0 +1,206 @@
+# openshift_machineset_config
+
+OpenShift 4 MachineSet management to implement custom machinesets such as to
+create dedicated compute and infra nodes.
+
+This Ansible role will query the cluster for the default worker machinesets
+provisioned by the installer and then manage custom machinesets based on the
+discovered worker configuration information.
+
+## Note
+
+As OpenShift 4 is a fast moving target this Ansible role may become obsolete at
+any time. In particular we hope that the standard OpenShift installer or a
+standard OpenShift 4 operator will manage custom machinesets such as to render
+this Ansible role redundant.
+
+## Example Playbooks
+
+Example creating machinesets based on default worker machinesets:
+
+```
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+  - role: openshift_machineset_config
+  vars:
+    openshift_machineset_config_disable_default_worker_machinesets: true
+    openshift_machineset_config_groups:
+    - name: compute
+      autoscale: true
+      role: compute
+      total_replicas_min: 3
+      total_replicas_max: 30
+      aws_instance_type: m4.large
+      aws_root_volume_size: 80
+    - name: infra
+      role: infra
+      total_replicas: 2
+      aws_instance_type: m4.large
+```
+
+Example creating machinesets from scratch:
+
+```
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+  - role: openshift_machineset_config
+  vars:
+    openshift_machineset_config_cloud_provider: aws
+    openshift_machineset_config_cluster_infra_id: cluster-65b3-gvfpv
+    openshift_machineset_config_aws_iam_instance_profile_id: cluster-65b3-gvfpv-worker-profile
+    openshift_machineset_config_aws_security_group_search_key: tag:Name
+    openshift_machineset_config_aws_security_group_search_value: cluster-65b3-gvfpv-worker-sg
+    openshift_machineset_config_aws_availability_zones:
+    - name: us-east-2a
+      subnet_search_key: tag:Name
+      subnet_search_value: cluster-65b3-gvfpv-private-us-east-2a
+    - name: us-east-2b
+      subnet_search_key: tag:Name
+      subnet_search_value: cluster-65b3-gvfpv-private-us-east-2b
+    - name: us-east-2c
+      subnet_search_key: tag:Name
+      subnet_search_value: cluster-65b3-gvfpv-private-us-east-2c
+    openshift_machineset_config_groups:
+    - name: compute
+      aws_instance_type: m4.large
+      aws_root_volume_size: 80
+      autoscale: true
+      role: compute
+      total_replicas_min: 1
+      total_replicas_max: 30
+    - name: infra
+      aws_instance_type: m4.large
+      role: infra
+      total_replicas: 1
+```
+
+## Installation
+
+```
+ansible-galaxy install \
+https://github.com/redhat-gpte-devopsautomation/ansible-role-openshift_machineset_config/archive/master.tar.gz#/openshift_machineset_config
+```
+
+## Configuration
+
+.Top level configuration variables
+[options="header",cols="30%,10%,60%"]
+|===
+| Variable
+| Default
+| Description
+
+| `openshift_machineset_config_cloud_provider`
+| (detect from default worker machinesets)
+| Cloud provider, currently only "aws" is supported.
+
+| `openshift_machineset_config_cluster_infra_id`
+| (detect from default worker machinesets)
+| Infrastructure tag and label used to identify cluster.
+
+| `openshift_machineset_config_domain`
+| `"openshift-machineset-config.gpte.redhat.com"`
+| Domain used for custom group label.
+
+| `openshift_machineset_config_group_label`
+| `"{{ openshift_machineset_config_domain }}/machineset-group"`
+| Label applied to machinesets to identify machinesets managed by this role.
+
+| `openshift_machineset_config_groups`
+| `[]`
+| Listed of machineset groups, described below.
+
+| `openshift_machineset_config_disable_default_worker_machinesets`
+| `false`
+| Boolean to indicate if default worker machinesets should be scaled to zero.
+
+| `openshift_cluster_autoscaler_spec`
+| `{"scaleDown:{"enabled": true}}`
+| Value for spec section of ClusterAutoscaler definition, applied if any
+machineset enables autoscaling.
+|===
+
+.AWS configuration variables
+[options="header",cols="30%,10%,60%"]
+|===
+| Variable
+| Default
+| Description
+
+| `openshift_machineset_config_aws_availability_zone_data`
+| None
+| JSON output of `aws ec2 describe-subnets --region=$REGION --subnet-ids ...`
+
+| `openshift_machineset_config_aws_availability_zones`
+| (detect from default worker machinesets)
+| Availability zones for worker machinesets
+
+| `openshift_machineset_config_aws_iam_instance_profile_id`
+| (detect from default worker machinesets)
+| AWS IAM instance profile ID
+
+| `openshift_machineset_config_aws_instance_type`
+| `"m4.large"`
+| Default AWS instance type.
+
+| `openshift_machineset_config_aws_root_volume_size`
+| `120`
+| AWS root volume size default in GB
+
+| `openshift_machineset_config_aws_security_group_search_key`
+| (detect from default worker machinesets)
+| Key used to find security group
+
+| `openshift_machineset_config_aws_security_group_search_value`
+| (detect from default worker machinesets)
+| Value used to find security group
+
+| `openshift_machineset_config_aws_tags`
+| Cluster infra id label
+| Tags applied to AWS ec2 instances
+|===
+
+.`openshift_machineset_config_groups` item values
+[options="header",cols="30%,10%,60%"]
+|===
+| Variable
+| Default
+| Description
+
+| `name`
+| (required)
+| Name for machineset config group
+
+| `role`
+| (optional)
+| Value used for default machine and node labels
+
+| `total_replicas`
+| `0`
+| Total number of machineset replicas for non-autoscaling machinesets
+
+| `autoscale`
+| `False`
+| Boolean to indicate if machineautoscaler should be configured for machinesets
+
+| `total_replicas_min`
+| `0`
+| Total minimum number of machineset replicas for non-autoscaling machinesets
+
+| `total_replicas_max`
+| `100`
+| Total maximum number of machineset replicas for non-autoscaling machinesets
+
+| `aws_instance_type`
+| `openshift_machineset_config_aws_instance_type`
+| Default AWS instance type
+
+| `aws_root_volume_size`
+| `openshift_machineset_config_aws_root_volume_size`
+| Default root EBS storage disk size
+|===

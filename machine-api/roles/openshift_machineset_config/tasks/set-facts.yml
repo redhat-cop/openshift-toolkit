@@ -1,0 +1,51 @@
+---
+- name: Get machinesets
+  k8s_facts:
+    api_version: machine.openshift.io/v1beta1
+    kind: MachineSet
+    namespace: openshift-machine-api
+  register: r_get_machinesets
+
+- name: Set default_worker_machinesets
+  set_fact:
+    current_machinesets: >-
+      {{ r_get_machinesets.resources }}
+    current_machineset_names: >-
+      {{ r_get_machinesets.resources
+       | json_query('[].metadata.name')
+      }}
+    default_worker_machinesets: >-
+      {{ r_get_machinesets.resources
+       | json_query(default_worker_machineset_json_query)
+      }}
+  vars:
+    # Base worker machinesets will lack machineset group label
+    default_worker_machineset_json_query: >-
+      [?!contains(keys(metadata.labels), '{{ machineset_group_label }}')]
+
+- name: Set cluster facts
+  set_fact:
+    openshift_machineset_config_cluster_infra_id: >-
+      {{ reference_machineset.metadata.labels['machine.openshift.io/cluster-api-cluster'] }}
+    openshift_machineset_config_cloud_provider: >-
+      {{ reference_provider_spec_value.apiVersion
+       | regex_replace('providerconfig\.openshift\.io/v1beta1', '')
+      }}
+  vars:
+    reference_machineset: >-
+      {{ default_worker_machinesets[0] | default({}) }}
+    reference_provider_spec_value: >-
+      {{ reference_machineset
+       | json_query('spec.template.spec.providerSpec.value')
+      }}
+  when: default_worker_machinesets
+
+- name: Fail if openshift_machineset_config_cloud_provider is undefined
+  fail:
+    msg: openshift_machineset_config_cloud_provider is required
+  when: openshift_machineset_config_cloud_provider is undefined
+
+- name: Fail if openshift_machineset_config_cluster_infra_id is undefined
+  fail:
+    msg: openshift_machineset_config_cluster_infra_id is required
+  when: openshift_machineset_config_cluster_infra_id is undefined

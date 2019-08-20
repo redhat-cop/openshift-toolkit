@@ -1,0 +1,84 @@
+---
+apiVersion: machine.openshift.io/v1beta1
+kind: MachineSet
+metadata:
+  name: {{ machineset_name | to_json }}
+  namespace: openshift-machine-api
+  labels:
+    {{ machineset_group_label | to_json }}: {{ machineset_group.name | to_json }}
+    machine.openshift.io/cluster-api-cluster: {{ cluster_infra_id | to_json }}
+spec:
+
+{# Do not set replicas on existing autoscaling machinesets #}
+{% if machineset_name not in current_machineset_names
+   or not machineset_group.autoscale|default(False)
+%}
+  replicas: {{ machineset_replicas | int | to_json }}
+{% endif %}
+
+  selector:
+    matchLabels:
+      machine.openshift.io/cluster-api-cluster: {{ cluster_infra_id | to_json }}
+{% if 'role' in machineset_group %}
+      machine.openshift.io/cluster-api-machine-role: {{ machineset_group.role | to_json }}
+      machine.openshift.io/cluster-api-machine-type: {{ machineset_group.role | to_json }}
+{% endif %}
+      machine.openshift.io/cluster-api-machineset: {{ machineset_name | to_json }}
+
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        {{ machineset_group_label }}: {{ machineset_group.name | to_json }}
+        machine.openshift.io/cluster-api-cluster: {{ cluster_infra_id | to_json }}
+{% if 'role' in machineset_group %}
+        machine.openshift.io/cluster-api-machine-role: {{ machineset_group.role | to_json }}
+        machine.openshift.io/cluster-api-machine-type: {{ machineset_group.role | to_json }}
+{% endif %}
+        machine.openshift.io/cluster-api-machineset: {{ machineset_name | to_json }}
+    spec:
+      metadata:
+        creationTimestamp: null
+        labels: {{ machineset_node_labels | to_json }}
+      providerSpec:
+        value:
+          ami:
+            id: {{ ami_id | to_json }}
+          apiVersion: awsproviderconfig.openshift.io/v1beta1
+          blockDevices:
+          - ebs:
+              iops: 0
+              volumeSize: {{ root_volume_size | int | to_json }}
+              volumeType: gp2
+          credentialsSecret:
+            name: aws-cloud-credentials
+          deviceIndex: 0
+          iamInstanceProfile:
+            id: {{ iam_instance_profile_id | to_json }}
+          instanceType: {{ instance_type | to_json }}
+          kind: AWSMachineProviderConfig
+          metadata:
+            creationTimestamp: null
+          placement:
+            availabilityZone: {{ availability_zone.name | to_json }}
+            region: {{ region | to_json }}
+          publicIp: null
+          securityGroups:
+          - filters:
+            - name: {{ security_group_search_key | to_json }}
+              values:
+              - {{ security_group_search_value | to_json }}
+          subnet:
+            filters:
+            - name: {{ subnet_search_key | to_json }}
+              values:
+              - {{ subnet_search_value | to_json }}
+          tags:
+{% for name, value in aws_tags.items() %}
+          - name: {{ name | to_json }}
+            value: {{ value | to_json }}
+{% endfor %}
+          userDataSecret:
+            name: {{ user_data_secret | to_json }}
+      versions:
+        kubelet: ""

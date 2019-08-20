@@ -1,0 +1,73 @@
+---
+- name: Define custom machinesets
+  include_tasks: aws-machineset-group.yml
+  loop: "{{ openshift_machineset_config_groups }}"
+  loop_control:
+    label: "{{ machineset_group.name }}"
+    loop_var: machineset_group
+  vars:
+    iam_instance_profile_id: >-
+      {{ machineset_group.aws_iam_instance_profile_id
+       | default(openshift_machineset_config_aws_iam_instance_profile_id)
+       | default(reference_provider_spec_value_iam_instance_profile_id)
+      }}
+    security_group_search_key: >-
+      {{ machineset_group.aws_security_group_search_key
+       | default(openshift_machineset_config_aws_security_group_search_key)
+       | default(reference_provider_security_group_search_key)
+       | default('group-id', True)
+      }}
+    security_group_search_value: >-
+      {{ machineset_group.aws_security_group_search_value
+       | default(openshift_machineset_config_aws_security_group_search_value)
+       | default(reference_provider_security_group_search_value)
+      }}
+    aws_tags: >-
+      {{ machineset_group.aws_tags
+       | default(openshift_machineset_config_aws_tags)
+       | default(reference_provider_tags)
+       | combine({'kubernetes.io/cluster/' ~ cluster_infra_id: 'owned'})
+      }}
+    cluster_infra_id: >-
+      {{ openshift_machineset_config_cluster_infra_id }}
+    reference_provider_spec_value: >-
+      {{ default_worker_machinesets
+       | json_query('[0].spec.template.spec.providerSpec.value')
+       | default({}, True)
+      }}
+    reference_provider_spec_value_iam_instance_profile_id: >-
+      {% if reference_provider_spec_value -%}
+      {{ reference_provider_spec_value.iamInstanceProfile.id }}
+      {%- endif %}
+    reference_provider_security_group_search_key: >-
+      {% if reference_provider_spec_value -%}
+      {{ reference_provider_spec_value.securityGroups[0].filters[0].name }}
+      {%- endif %}
+    reference_provider_security_group_search_value: >-
+      {% if reference_provider_spec_value -%}
+      {{ reference_provider_spec_value.securityGroups[0].filters[0]['values'][0] }}
+      {%- endif %}
+    reference_provider_tags: >-
+      {{ reference_provider_spec_value.tags
+       | default([])
+       | items2dict(key_name='name', value_name='value')
+      }}
+    user_data_secret: >-
+      {{ machineset_group.aws_user_data_secret
+       | default('worker-user-data')
+      }}
+    availability_zones: >-
+      {{ machineset_group.aws_availability_zones
+       | default(default_aws_availability_zones)
+       | default(default_worker_availability_zones, true)
+      }}
+    default_worker_availability_zones: >-
+      {{ default_worker_machinesets
+       | json_query(worker_availability_zone_query)
+      }}
+    worker_availability_zone_query: >-
+      [].{
+        "name": spec.template.spec.providerSpec.value.placement.availabilityZone,
+        "subnet_search_key": spec.template.spec.providerSpec.value.subnet.filters[0].name
+        "subnet_search_value": spec.template.spec.providerSpec.value.subnet.filters[0].values[0]
+      }
