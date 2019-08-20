@@ -59,9 +59,21 @@ This ratio shows what is being requested (estimates of what we need) vs what the
 This ration shows what we have promised to the team we can give them in terms of resources versus what we have. This is a slow moving ratio because it changes only when new quotas are granted, which should more or less coincide with new teams being onboarded to the cluster. This metric can be used to make long term (and therefore non-precise) forecast of what is going to be needed. This metrics is best suited when our node provisioning lifecycle is very long: weeks or months. This likely happens when the nodes are physical machines.
 With this ratio is possible and ok to go above 100%. In that situation the cluster is over committed. Over committing the cluster is generally fine if we can safely assume that not all the projects will use all of their quotas at the same time. Each organization will have to find its own sweet spot in terms of over committing the cluster.
 
-## Installation
+## Applier-based installation
 
-Install the openshift-state-metrics additional metrics here as follows
+Install as follows:
+
+```shell
+git clone https://github.com/redhat-cop/openshift-toolkit
+cd openshift-toolkit/custom-dashboards
+ansible-galaxy install -r requirements.yml -p galaxy
+ansible-playbook -i .applier/ galaxy/openshift-applier/playbooks/openshift-cluster-seed.yml \
+  -e include_tags="dashboard-capacity"
+```
+
+## Alternative Installation method
+
+Install the openshift-state-metrics additional metrics here as follows:
 
 ```shell
 git clone https://github.com/openshift/openshift-state-metrics
@@ -69,14 +81,11 @@ cd openshift-state-metrics
 oc apply -f ./manifests
 ```
 
-Install the custom dashboard as follows
+Install the custom dashboard as follows:
 
 ```shell
 git clone https://github.com/redhat-cop/openshift-toolkit
-cd openshift-toolkit/custom-grafana
-ansible-galaxy install -r requirements.yml -p galaxy
-ansible-playbook -i .applier/ galaxy/openshift-applier/playbooks/openshift-cluster-seed.yml \
-  -e include_tags="dashboard-capacity"
+oc apply -f openshift-toolkit/custom-dashboards/.openshift/manifests -n openshift-monitoring
 ```
 
-If you have otherwise created you Grafana instance, you can simply import the dashboard by opening Grafana and importing the capacity planning dashboard: [capacity-planning.json](./capacity-planning.json)
+Import the dashboard by opening Grafana and importing the capacity planning dashboard: [capacity-planning.json](./capacity-planning.json)
