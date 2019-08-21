@@ -24,13 +24,15 @@ spec:
       for: 1h
       labels:
         severity: warning
-      summary: Node group {{ $labels.label_nodegroup }} is overcommitted ({{ $value*100 }}%) with regards to CPU quota
+      annotations:  
+        message: Node group {{ $labels.label_nodegroup }} is overcommitted ({{ $value }}) with regards to CPU quota
     - alert: HighCPURequest
       expr: (request_sum:cpu:by_nodegroup / allocatable_sum:cpu:by_nodegroup) > 0.8
       for: 1m
       labels:
         severity: critical
-      summary: Pod CPU request for node group {{ $labels.label_nodegroup }} is at {{ $value*100 }}%; soon pods will stop being scheduled.                            
+      annotations:  
+        message: Pod CPU request for node group {{ $labels.label_nodegroup }} is at {{ $value }}; soon pods will stop being scheduled.                            
   - name: memory.capacity.rules
     rules: 
     - record: quota_sum:memory:by_nodegroup
@@ -50,10 +52,12 @@ spec:
       for: 1h
       labels:
         severity: warning
-      summary: Node group {{ $labels.label_nodegroup }} is overcommitted ({{ $value*100 }}%) with regards to memory quota
+      annotations:  
+        message: Node group {{ $labels.label_nodegroup }} is overcommitted ({{ $value }}) with regards to memory quota
     - alert: HighMemoryRequest
       expr: (request_sum:memory:by_nodegroup / allocatable_sum:memory:by_nodegroup) > 0.8
       for: 1m
       labels:
         severity: critical
-      summary: Pod memory request for node group {{ $labels.label_nodegroup }} is at {{ $value*100 }}%; soon pods will stop being scheduled.                             
+      annotations:  
+        message: Pod memory request for node group {{ $labels.label_nodegroup }} is at {{ $value }}; soon pods will stop being scheduled.                             
