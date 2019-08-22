@@ -53,6 +53,11 @@ openshift_cluster_content:
         namespace: openshift-monitoring
         tags:
           - dashboard-capacity
+      - name: Capacity Management Rules
+        file: "{{ inventory_dir }}/../.openshift/dashboards/capacity/capacity_management_rules.yml"
+        namespace: openshift-monitoring
+        tags:
+          - dashboard-capacity          
       - name: Mount Capacity Dashboard to Grafana
         action: patch
         file: "{{ inventory_dir }}/../.openshift/manifests/grafana-deployment.yml"
