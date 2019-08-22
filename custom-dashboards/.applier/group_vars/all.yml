@@ -54,7 +54,7 @@ openshift_cluster_content:
         tags:
           - dashboard-capacity
       - name: Capacity Management Rules
-        file: "{{ inventory_dir }}/../.openshift/dashboards/capacity/capacity_management_rules.yml"
+        file: "{{ inventory_dir }}/../../capacity-dashboard/capacity_management_rules.yaml"
         namespace: openshift-monitoring
         tags:
           - dashboard-capacity          
