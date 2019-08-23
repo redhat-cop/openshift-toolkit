@@ -269,7 +269,7 @@ data:
             }
           ],
           "thresholds": ".60,.90",
-          "title": "Current Pod Usage / Allocatable in Node Group: $nodegroup",
+          "title": "Current Memory Usage / Allocatable in Node Group: $nodegroup",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
