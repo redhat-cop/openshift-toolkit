@@ -88,4 +88,4 @@ git clone https://github.com/redhat-cop/openshift-toolkit
 oc apply -f openshift-toolkit/custom-dashboards/.openshift/manifests -n openshift-monitoring
 ```
 
-Import the dashboard by opening Grafana and importing the capacity planning dashboard: [capacity-planning.json](./capacity-planning.json)
+Import the dashboard by opening Grafana and importing the capacity planning dashboard: [capacity-planning.json](./capacity-planning.json). If you are installing on a 3.x cluster, use this dashboard [capacity-planning-3.11.json](./capacity-planning-3.11.json).
