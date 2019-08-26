@@ -1,0 +1,63 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: capacity-management-rules
+  namespace: openshift-monitoring
+spec:
+  groups:
+  - name: cpu.capacity.rules
+    rules: 
+    - record: quota_sum:cpu:by_nodegroup
+      expr: >
+        sum (openshift_clusterresourcequota_labels * on (name) group_left () openshift_clusterresourcequota_usage{resource="requests.cpu",type="hard"}) by (label_nodegroup)
+    - record: allocatable_sum:cpu:by_nodegroup
+      expr: >
+        sum (kube_node_labels * on (node) group_left () kube_node_status_allocatable_cpu_cores) by (label_nodegroup)
+    - record: request_sum:cpu:by_nodegroup
+      expr: >
+        sum (kube_node_labels * on (node) group_left () sum (kube_pod_container_resource_requests_cpu_cores) by (node)) by (label_nodegroup)
+    - record: usage_sum:cpu:by_nodegroup
+      expr: >
+        sum (kube_node_labels * on (node) group_left () sum (rate (container_cpu_usage_seconds_total{container_name=~".+", container_name!="POD"} [1m])) by (node)) by (label_nodegroup)
+    - alert: HighCPUQuotaGranted
+      expr: (quota_sum:cpu:by_nodegroup / allocatable_sum:cpu:by_nodegroup) > 1
+      for: 1h
+      labels:
+        severity: warning
+      annotations:  
+        message: Node group {{ $labels.label_nodegroup }} is overcommitted ({{ $value }}) with regards to CPU quota
+    - alert: HighCPURequest
+      expr: (request_sum:cpu:by_nodegroup / allocatable_sum:cpu:by_nodegroup) > 0.8
+      for: 1m
+      labels:
+        severity: critical
+      annotations:  
+        message: Pod CPU request for node group {{ $labels.label_nodegroup }} is at {{ $value }}; soon pods will stop being scheduled.                            
+  - name: memory.capacity.rules
+    rules: 
+    - record: quota_sum:memory:by_nodegroup
+      expr: >
+        sum (openshift_clusterresourcequota_labels * on (name) group_left () openshift_clusterresourcequota_usage{resource="requests.memory",type="hard"}) by (label_nodegroup)
+    - record: allocatable_sum:memory:by_nodegroup
+      expr: >
+        sum (kube_node_labels * on (node) group_left () kube_node_status_allocatable_memory_bytes) by (label_nodegroup)
+    - record: request_sum:memory:by_nodegroup
+      expr: >
+        sum (kube_node_labels * on (node) group_left () sum (kube_pod_container_resource_requests_memory_bytes) by (node)) by (label_nodegroup)
+    - record: usage_sum:memory:by_nodegroup
+      expr: >
+        sum (kube_node_labels * on (node) group_left () sum(container_memory_usage_bytes{container_name=~".+", container_name!="POD"}) by (node)) by (label_nodegroup)
+    - alert: HighMemoryQuotaGranted
+      expr: (quota_sum:memory:by_nodegroup / allocatable_sum:memory:by_nodegroup) > 1
+      for: 1h
+      labels:
+        severity: warning
+      annotations:  
+        message: Node group {{ $labels.label_nodegroup }} is overcommitted ({{ $value }}) with regards to memory quota
+    - alert: HighMemoryRequest
+      expr: (request_sum:memory:by_nodegroup / allocatable_sum:memory:by_nodegroup) > 0.8
+      for: 1m
+      labels:
+        severity: critical
+      annotations:  
+        message: Pod memory request for node group {{ $labels.label_nodegroup }} is at {{ $value }}; soon pods will stop being scheduled.                             

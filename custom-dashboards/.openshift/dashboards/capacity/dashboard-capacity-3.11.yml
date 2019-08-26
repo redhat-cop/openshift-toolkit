@@ -19,8 +19,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "id": 7,
-      "iteration": 1566222844056,
+      "iteration": 1566588618322,
       "links": [],
       "panels": [
         {
@@ -98,7 +97,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "quota_sum:memory:by_nodegroup{label_nodegroup=\"$nodegroup\"}/allocatable_sum:memory:by_nodegroup{label_nodegroup=\"$nodegroup\"}",
+              "expr": "(sum (openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"} * on (name) group_left () openshift_clusterresourcequota_usage{resource=\"requests.memory\",type=\"hard\"}) by (label_nodegroup))/(sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () kube_node_status_allocatable_memory_bytes) by (label_nodegroup))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -179,7 +178,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "request_sum:memory:by_nodegroup{label_nodegroup=\"$nodegroup\"}/allocatable_sum:memory:by_nodegroup{label_nodegroup=\"$nodegroup\"}",
+              "expr": "(sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () sum (kube_pod_container_resource_requests_memory_bytes) by (node)) by (label_nodegroup))/(sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () kube_node_status_allocatable_memory_bytes) by (label_nodegroup))",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 1,
@@ -261,7 +260,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "usage_sum:memory:by_nodegroup{label_nodegroup=\"$nodegroup\"}/allocatable_sum:memory:by_nodegroup{label_nodegroup=\"$nodegroup\"}",
+              "expr": "sum(kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () sum(kube_pod_info * on (pod) group_left() label_replace(sum(container_memory_usage_bytes{container_name=~\".+\", container_name!=\"POD\"}) by (pod_name),\"pod\",\"$1\",\"pod_name\", \"(.+)\")) by (node)) by (label_nodegroup)/(sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () kube_node_status_allocatable_memory_bytes) by (label_nodegroup))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -344,7 +343,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "quota_sum:memory:by_nodegroup{label_nodegroup=\"$nodegroup\"}",
+              "expr": "(sum (openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"} * on (name) group_left () openshift_clusterresourcequota_usage{resource=\"requests.memory\",type=\"hard\"}) by (label_nodegroup))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -426,7 +425,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "request_sum:memory:by_nodegroup{label_nodegroup=\"$nodegroup\"}",
+              "expr": "(sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () sum (kube_pod_container_resource_requests_memory_bytes) by (node)) by (label_nodegroup))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -507,7 +506,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "usage_sum:memory:by_nodegroup{label_nodegroup=\"$nodegroup\"}",
+              "expr": "sum(kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () sum(kube_pod_info * on (pod) group_left() label_replace(sum(container_memory_usage_bytes{container_name=~\".+\", container_name!=\"POD\"}) by (pod_name),\"pod\",\"$1\",\"pod_name\", \"(.+)\")) by (node)) by (label_nodegroup)",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -601,7 +600,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "quota_sum:cpu:by_nodegroup{label_nodegroup=\"$nodegroup\"}/allocatable_sum:cpu:by_nodegroup{label_nodegroup=\"$nodegroup\"}",
+              "expr": "(sum (openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"} * on (name) group_left () openshift_clusterresourcequota_usage{resource=\"requests.cpu\",type=\"hard\"}) by (label_nodegroup))/(sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () kube_node_status_allocatable_cpu_cores) by (label_nodegroup))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -682,7 +681,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "request_sum:cpu:by_nodegroup{label_nodegroup=\"$nodegroup\"}/allocatable_sum:cpu:by_nodegroup{label_nodegroup=\"$nodegroup\"}",
+              "expr": "(sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () sum (kube_pod_container_resource_requests_cpu_cores) by (node)) by (label_nodegroup))/(sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () kube_node_status_allocatable_cpu_cores) by (label_nodegroup))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -764,7 +763,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "usage_sum:cpu:by_nodegroup{label_nodegroup=\"$nodegroup\"} / allocatable_sum:cpu:by_nodegroup{label_nodegroup=\"$nodegroup\"}",
+              "expr": "sum(kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () sum(kube_pod_info * on (pod) group_left() label_replace(sum(rate (container_cpu_usage_seconds_total{container_name=~\".+\", container_name!=\"POD\"} [1m])) by (pod_name),\"pod\",\"$1\",\"pod_name\", \"(.+)\")) by (node)) by (label_nodegroup) / (sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () kube_node_status_allocatable_cpu_cores) by (label_nodegroup)) / (sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () kube_node_status_allocatable_cpu_cores) by (label_nodegroup))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -847,7 +846,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "quota_sum:cpu:by_nodegroup{label_nodegroup=\"$nodegroup\"}",
+              "expr": "(sum (openshift_clusterresourcequota_labels{label_nodegroup=\"$nodegroup\"} * on (name) group_left () openshift_clusterresourcequota_usage{resource=\"requests.cpu\",type=\"hard\"}) by (label_nodegroup))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -930,7 +929,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "request_sum:cpu:by_nodegroup{label_nodegroup=\"$nodegroup\"}",
+              "expr": "(sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () sum (kube_pod_container_resource_requests_cpu_cores) by (node)) by (label_nodegroup))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -1011,7 +1010,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "usage_sum:cpu:by_nodegroup{label_nodegroup=\"$nodegroup\"} ",
+              "expr": "sum(kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () sum(kube_pod_info * on (pod) group_left() label_replace(sum(rate (container_cpu_usage_seconds_total{container_name=~\".+\", container_name!=\"POD\"} [1m])) by (pod_name),\"pod\",\"$1\",\"pod_name\", \"(.+)\")) by (node)) by (label_nodegroup) / (sum (kube_node_labels{label_nodegroup=\"$nodegroup\"} * on (node) group_left () kube_node_status_allocatable_cpu_cores) by (label_nodegroup))",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "",
@@ -1058,7 +1057,6 @@ data:
           {
             "allValue": null,
             "current": {
-              "tags": [],
               "text": "group1",
               "value": "group1"
             },
@@ -1113,10 +1111,10 @@ data:
         ]
       },
       "timezone": "",
-      "title": "Capacity Management",
-      "uid": "UiQ7nV7Zz-1",
-      "version": 6
-    } 
+      "title": "Capacity Management - 3.11",
+      "uid": "UiQ7nV7Zz-3",
+      "version": 3
+    }
 kind: ConfigMap
 metadata:
   creationTimestamp: null
