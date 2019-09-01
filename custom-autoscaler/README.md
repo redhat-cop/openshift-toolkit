@@ -1,6 +1,6 @@
 # OpenShift Custom Autoscaler Quickstart
 
-The following illustrates how one might use OpenShift's [metrics stack](https://docs.openshift.com/container-platform/latest/install_config/cluster_metrics.html) (Hawkular, Cassandra, Heapster) to develop customized application autoscaling.
+The following illustrates how one might use OpenShift's [metrics stack](https://docs.openshift.com/container-platform/3.11/install_config/cluster_metrics.html) (Hawkular, Cassandra, Heapster) to develop customized application autoscaling.
 
 ## Running & Testing
 
