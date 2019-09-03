@@ -1,10 +1,10 @@
 # NetworkPolicy
 
-Tools to configure OpenShift with a set of baseline [NetworkPolicy](https://docs.openshift.com/container-platform/latest/admin_guide/managing_networking.html) objects
+Tools to configure OpenShift with a set of baseline [NetworkPolicy](https://docs.openshift.com/container-platform/3.11/admin_guide/managing_networking.html) objects
 
 ## Overview
 
-The [OpenShift SDN](https://docs.openshift.com/container-platform/latest/install_config/configuring_sdn.html) offers several plugin implementations. One of these plugins supports NetworkPolicy, which provides for more fine grained policies for communication between pods running on the cluster. Once enabled, all communication between pods within OpenShift are not restricted in any way. The tools within this repository will configure an OpenShift environment with a set of default policies that support a [zero trust network](https://tigera.io/wp-content/uploads/2017/12/wp-tigera-zero-trust-cloud-native-environment.pdf).
+The [OpenShift SDN](https://docs.openshift.com/container-platform/3.11/install_config/configuring_sdn.html) offers several plugin implementations. One of these plugins supports NetworkPolicy, which provides for more fine grained policies for communication between pods running on the cluster. Once enabled, all communication between pods within OpenShift are not restricted in any way. The tools within this repository will configure an OpenShift environment with a set of default policies that support a [zero trust network](https://tigera.io/wp-content/uploads/2017/12/wp-tigera-zero-trust-cloud-native-environment.pdf).
 
 The following sections describes the relevant concepts along with tooling to automate the application of these policies to an OpenShift environment.
 
@@ -58,7 +58,7 @@ Additional namespaces may be configured if desired.
 
 ### Allow Traffic from the Default Namespace
 
-OpenShift provides a routing layer to external traffic to access applications within the cluster. Since traffic traverses through router(s) which are deployed within the _default_ namespace, a trust must be established between projects and the default namespace for traffic to flow properly. The NetworkPolicy [allow-from-default-namespace.yml](policies/baseline/allow-from-default.yml) is available that should be applied to all projects.
+OpenShift provides a routing layer to external traffic to access applications within the cluster. Since traffic traverses through router(s) which are deployed within the _default_ namespace, a trust must be established between projects and the default namespace for traffic to flow properly. The NetworkPolicy [allow-from-default-namespace.yml](policies/baseline/allow-from-default-namespace.yml) is available that should be applied to all projects.
 
 ### Configure Existing Projects
 
@@ -75,7 +75,7 @@ done
 
 ### Default Policies for New Projects
 
-In a prior section, Network Policies were applied to disable inter namespace communication while allowing access from the _default_ namespace to support ingress from the Router. These same set of policies can be applied for any new project that is created within OpenShift by [modifying the Default Project Template](https://docs.openshift.com/container-platform/latest/admin_guide/managing_projects.html#modifying-the-template-for-new-projects).
+In a prior section, Network Policies were applied to disable inter namespace communication while allowing access from the _default_ namespace to support ingress from the Router. These same set of policies can be applied for any new project that is created within OpenShift by [modifying the Default Project Template](https://docs.openshift.com/container-platform/3.11/admin_guide/managing_projects.html#modifying-the-template-for-new-projects).
 
 The following Ansible inventory content can be provided at cluster install time and placed within the `[OSEv3:vars]` group:
 

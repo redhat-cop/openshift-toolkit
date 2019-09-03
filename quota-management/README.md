@@ -179,7 +179,7 @@ This section describes a few ways we can advance the solution through advanced c
 
 ### (Recommended) Add the desired default Profile to the default project template
 
-OpenShift allows cluster administrators to customize the default template that is used to create projects when a user runs `oc new-project`. That process is described further in the [OpenShift Documentation](https://docs.openshift.com/container-platform/latest/admin_guide/managing_projects.html#modifying-the-template-for-new-projects).
+OpenShift allows cluster administrators to customize the default template that is used to create projects when a user runs `oc new-project`. That process is described further in the [OpenShift Documentation](https://docs.openshift.com/container-platform/3.11/admin_guide/managing_projects.html#modifying-the-template-for-new-projects).
 
 In order to lower the overhead in our process, we can embed the Small _tier profile_ in our cluster's default project template. This way, every project that gets created will, by default, be restrcted by a small quota. An example of what this default project template looks like can be found in `files/default-project-template.yml`.
 
@@ -187,7 +187,7 @@ With that template applied and configured, this ensures that all projects in our
 
 ### (Recommended) Automate the process further using the openshift-applier
 
-The [openshift-applier](https://github.com/redhat-cop/casl-ansible/tree/master/roles/openshift-applier) is an ansible role that supports declarative automation for rolling out OpenShift resources. This role can be used to declare a set of projects and their quotas, and keep them up to date with ansible. Here's a sample of how you would define the ansible variables to accomplish this.
+The [openshift-applier](https://github.com/redhat-cop/openshift-applier) is an ansible role that supports declarative automation for rolling out OpenShift resources. This role can be used to declare a set of projects and their quotas, and keep them up to date with ansible. Here's a sample of how you would define the ansible variables to accomplish this.
 
 ```
 openshift_cluster_content:
