@@ -25,7 +25,7 @@ To help visualize this setup, you can think of it as the following ER relationsh
 
 ![assumption_and_setup](./media/assumptions_setup.png)
 
-How to set up this configuration is out of scope of this guideline. We recommend instrumenting the application onboarding process to automate the necessary configuration for the OpenShift quotas and projects that are created. On the infrastructure side there should be automation to set up the nodes with the correct labels.
+How to set up this configuration is out of scope of this guide. We recommend instrumenting the application onboarding process to automate the necessary configuration for the OpenShift quotas and projects that are created. On the infrastructure side there should be automation to set up the nodes with the correct labels.
 
 Refer to the [example](./example/README.md) to see how to meet the prerequisites.
 
