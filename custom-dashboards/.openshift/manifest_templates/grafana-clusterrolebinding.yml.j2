@@ -8,6 +8,6 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: grafana-custom
-  namespace: openshift-monitoring
+  namespace: {{ dashboard_namespace }}
 userNames:
-- system:serviceaccount:openshift-monitoring:grafana-custom
+- system:serviceaccount:{{ dashboard_namespace }}:grafana-custom

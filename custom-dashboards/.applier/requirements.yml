@@ -1,0 +1,4 @@
+---
+
+- src: https://github.com/ramius345/mdt-secret-discovery.git
+  version: master
