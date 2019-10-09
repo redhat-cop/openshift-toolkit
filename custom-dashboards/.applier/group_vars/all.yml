@@ -81,3 +81,18 @@ openshift_cluster_content:
         tags:
           - dashboard-capacity
           - openshift-3
+  - object: Dashboards - Capacity by nodetype
+    content:
+      - name: Capacity by nodetype
+        file: "{{ inventory_dir }}/../.openshift/dashboards/capacity-by-nodetype/grafana-dashboard-capacity-by-nodetype.yml"
+        namespace: openshift-monitoring
+        tags:
+          - dashboard-capacity-by-nodetype
+      - name: Mount Capacity by nodetype dashboard to Grafana
+        action: patch
+        file: "{{ inventory_dir }}/../.openshift/manifests/grafana-deployment.yml"
+        params: "{{ inventory_dir }}/../.openshift/dashboards/capacity-by-nodetype/volume-patch.yml"
+        namespace: openshift-monitoring
+        tags:
+          - dashboard-capacity-by-nodetype
+          - openshift-3
