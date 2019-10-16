@@ -86,8 +86,6 @@ spec:
         - mountPath: /etc/proxy/secrets
           name: secret-grafana-proxy
       dnsPolicy: ClusterFirst
-      nodeSelector:
-        node-role.kubernetes.io/infra: "true"
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
