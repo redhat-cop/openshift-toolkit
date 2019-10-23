@@ -1,4 +1,4 @@
 ---
 
 - src: https://github.com/ramius345/openshift-toolkit.git
-  version: master
+  version: merge_prepare
