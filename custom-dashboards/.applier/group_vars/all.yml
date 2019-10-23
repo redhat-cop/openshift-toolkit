@@ -9,7 +9,7 @@ openshift_cluster_content:
           - infrastructure
       - name: Grafana - config secret
         pre_steps:
-          - role: mdt-secret-discovery
+          - role: openshift-toolkit/custom-dashboards/mdt-secret-discovery
         file: "{{ inventory_dir }}/../.openshift/secrets/grafana_config.yml.j2"
         namespace: "{{ dashboard_namespace }}"
         tags:
@@ -17,7 +17,7 @@ openshift_cluster_content:
 
       - name: Grafana - datasources secret
         pre_steps:
-          - role: mdt-secret-discovery
+          - role: openshift-toolkit/custom-dashboards/mdt-secret-discovery
         file: "{{ inventory_dir }}/../.openshift/secrets/grafana_datasources.yml.j2"
         namespace: "{{ dashboard_namespace }}"
         tags:
@@ -25,7 +25,7 @@ openshift_cluster_content:
 
       - name: Grafana - grafana-proxy
         pre_steps:
-          - role: mdt-secret-discovery
+          - role: openshift-toolkit/custom-dashboards/mdt-secret-discovery
         file: "{{ inventory_dir }}/../.openshift/secrets/grafana_proxy.yml.j2"
         namespace: "{{ dashboard_namespace }}"
         tags:
