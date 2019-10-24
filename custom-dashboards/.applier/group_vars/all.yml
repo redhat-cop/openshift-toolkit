@@ -118,7 +118,6 @@ openshift_cluster_content:
           - dashboard-capacity
       - name: Capacity Management Rules
         file: "{{ inventory_dir }}/../../capacity-dashboard/capacity_management_rules.yaml"
-        namespace: "{{ dashboard_namespace }}"
         tags:
           - dashboard-capacity
       - name: Mount Capacity Dashboard to Grafana
