@@ -1,4 +1,4 @@
-dashboard_namespace: openshift-monitoring
+dashboard_namespace: custom-dashboards
 openshift_cluster_content:
   - galaxy_requirements: "{{ inventory_dir }}/../mdt-secret-discovery-requirements.yml"
   - object: Infrastructure
