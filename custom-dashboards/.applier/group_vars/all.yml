@@ -34,6 +34,11 @@ openshift_cluster_content:
         namespace: "{{ dashboard_namespace }}"
         tags:
           - infrastructure
+      - name: OpenShift State Metrics
+        file: "{{ inventory_dir }}/../.openshift/manifests/openshift-state-metrics"
+        namespace: openshift-monitoring
+        tags:
+          - infrastructure
   - object: Dashboards - Cluster Status
     content:
       - name: Cluster Status Dashboards
