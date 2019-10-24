@@ -4,7 +4,7 @@ metadata:
   labels:
     k8s-app: openshift-state-metrics
   name: openshift-state-metrics
-  namespace: openshift-monitoring
+  namespace: {{ dashboard_namespace }}
 spec:
   replicas: 1
   selector:

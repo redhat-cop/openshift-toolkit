@@ -1,0 +1,35 @@
+- name: Fetch grafana_config secret
+  k8s_facts:
+    api_version: v1
+    kind: Secret
+    namespace: openshift-monitoring
+    name: grafana-config
+  register: grafana_config_data
+
+- name: Set grafana_config grafana.ini secret fact
+  set_fact:
+    grafana_config_grafana_ini: "{{ grafana_config_data.resources[0]['data']['grafana.ini'] }}"
+
+- name: Fetch grafana-datasources secret
+  k8s_facts:
+    api_version: v1
+    kind: Secret
+    namespace: openshift-monitoring
+    name: grafana-datasources
+  register: grafana_datasources_data
+
+- name: Set grafana-config prometheus.yaml secret fact
+  set_fact:
+    grafana_datasources_prometheus_yaml: "{{ grafana_datasources_data.resources[0]['data']['prometheus.yaml'] | to_nice_json(indent=2) }}"
+
+- name: Fetch grafana-proxy secret
+  k8s_facts:
+    api_version: v1
+    kind: Secret
+    namespace: openshift-monitoring
+    name: grafana-proxy
+  register: grafana_proxy_data
+
+- name: Set grafana-proxy session_secret
+  set_fact:
+    grafana_proxy_session_secret: "{{ grafana_proxy_data.resources[0]['data']['session_secret'] }}"
