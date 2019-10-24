@@ -1,12 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: RoleBinding
 metadata:
   name: openshift-state-metrics
+  namespace: openshift-monitoring
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
+  kind: Role
   name: openshift-state-metrics
 subjects:
 - kind: ServiceAccount
   name: openshift-state-metrics
-  namespace: {{ dashboard_namespace }}
