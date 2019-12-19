@@ -1,12 +1,14 @@
 #!/bin/bash
 
-GLUSTER_PODS=$(oc get pods -l glusterfs-node=pod --all-namespaces -o wide | tail -n +2 | awk '{print $2}')
-GLUSTER_POD_NAMESPACES=$(oc get pods -l glusterfs-node=pod --all-namespaces -o wide | tail -n +2 | awk '{print $1}')
-GLUSTER_POD_NODES=$(oc get pods -l glusterfs-node=pod --all-namespaces -o wide | tail -n +2 | awk '{print $8}')
+GLUSTER_PODS=$(oc get pods -l glusterfs-node=pod --all-namespaces -o jsonpath='{.items[*].metadata.name}' | tr ' ' "\n")
+GLUSTER_POD_NAMESPACES=$(oc get pods -l glusterfs-node=pod --all-namespaces -o jsonpath='{.items[*].metadata.namespace}' | tr ' ' "\n")
+GLUSTER_POD_NODES=$(oc get pods -l glusterfs-node=pod --all-namespaces -o jsonpath='{.items[*].spec.nodeName}' | tr ' ' "\n")
 
+# get health
 while read gluster_pod <&3 && read gluster_namespace <&4 && read gluster_node <&5; do
   echo
   echo
   echo "GLUSTER STATUS FOR POD (${gluster_pod}) IN PROJECT (${gluster_namespace}) ON NODE (${gluster_node})"
   oc rsh -n ${gluster_namespace} ${gluster_pod} /bin/sh -c 'for vol in $(gluster volume list); do echo $vol; gluster volume heal $vol info | grep -E "Number of entries:" | grep -Ev "Number of entries: [0-]"; gluster volume heal $vol info split-brain | grep -E "Number of entries:" | grep -Ev "Number of entries: [0-]"; echo; done;'
 done 3<<<"${GLUSTER_PODS}" 4<<<"${GLUSTER_POD_NAMESPACES}" 5<<<"${GLUSTER_POD_NODES}" 
+
