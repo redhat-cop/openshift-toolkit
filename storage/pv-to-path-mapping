@@ -5,8 +5,8 @@ printf "%-40s\t%-40s\t%s\n" "PATH" "PV" "CLAIM"
 PVS=$(oc get pv -o jsonpath='{.items[*].metadata.name}' | tr ' ' "\n")
 declare -A PATH_TO_PV_MAP
 while read pv <&3; do
-  path=$(oc describe pv ${pv} | grep Path: | awk '{print $2}')
-  claim=$(oc describe pv ${pv} | grep Claim: | awk '{print $2}')
+  path=$(oc get pv ${pv} -o jsonpath='{.spec..path}')
+  claim=$(oc get pv ${pv} -o jsonpath='{.spec.claimRef.name}')
 
   printf "%-40s\t%-40s\t%s\n" "${path}" "${pv}" "${claim}"
 done 3<<<"${PVS}"
