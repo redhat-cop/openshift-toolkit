@@ -1,0 +1,179 @@
+---
+- name: Create F5 VIPs Openshift
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  # vars_prompt:
+  #   - name: 'user'
+  #     prompt: "Please enter your F5 username:"
+  #   - name: 'password'
+  #     prompt: "Please enter your F5 password:"
+  #     private: true
+
+  vars:
+    # In my host, I use python3 and the f5-sdk module is installed on it, so I need to set here.
+    ansible_python_interpreter: "python3"
+    provider:
+      # Setup F5 Big-IP connection parameters
+      server: '192.168.15.188'
+      user: 'admin'
+      password: 'AdminPwd01!'
+      server_port: 443
+      validate_certs: no
+    # Define in the lb_instances array each LB instance to be created
+    lb_instances: [
+      {
+        # Use this for Openshift 3 and Openshift 4
+        name: 'Master-https',
+        port: 443,
+        monitor: true,
+        monitor_type: 'master',
+        vip: '192.168.10.100',
+        # Add the nodes below using either the hostname array OR the IP array. Do not add to both.
+        # In case of Openshift 4, add the IP or hostname of the bootstrap node too
+        node_hostnames: ['openshift-master-1.myorg.com', 'openshift-master-2.myorg.com', 'openshift-master-3.myorg.com', 'openshift-bootstrap.myorg.com'],
+        node_ips: []
+        },
+      {
+        # Use this for Openshift 4
+        name: 'Master-http',
+        port: 80,
+        monitor: false,
+        monitor_type: 'master',
+        vip: '192.168.10.100',
+        # Add the nodes below using either the hostname array OR the IP array. Do not add to both.
+        # In case of Openshift 4, add the IP or hostname of the bootstrap node too
+        node_hostnames: ['openshift-master-1.myorg.com', 'openshift-master-2.myorg.com', 'openshift-master-3.myorg.com', 'openshift-bootstrap.myorg.com'],
+        node_ips: []
+        },
+      {
+        # Use this for Openshift 4
+        name: 'Master-6443',
+        port: 6443,
+        monitor: false,
+        vip: '192.168.10.100',
+        # Add the nodes below using either the hostname array OR the IP array. Do not add to both.
+        # In case of Openshift 4, add the IP or hostname of the bootstrap node too
+        node_hostnames: ['openshift-master-1.myorg.com', 'openshift-master-2.myorg.com', 'openshift-master-3.myorg.com', 'openshift-bootstrap.myorg.com'],
+        node_ips: []
+        },
+      {
+        # Use this for Openshift 4
+        name: 'Master-22623',
+        port: 22623,
+        monitor: false,
+        vip: '192.168.10.100',
+        # Add the nodes below using either the hostname array OR the IP array. Do not add to both.
+        # In case of Openshift 4, add the IP or hostname of the bootstrap node too
+        node_hostnames: ['openshift-master-1.myorg.com', 'openshift-master-2.myorg.com', 'openshift-master-3.myorg.com', 'openshift-bootstrap.myorg.com'],
+        node_ips: []
+        },
+      {
+        # Use this for Openshift 3 and Openshift 4
+        name: 'Infra-http',
+        port: 80,
+        monitor: true,
+        vip: '192.168.10.101',
+        node_hostnames: ['openshift-infra-1.myorg.com', 'openshift-infra-2.myorg.com'],
+        node_ips: [],
+        },
+      {
+        # Use this for Openshift 3 and Openshift 4
+        name: 'Infra-https',
+        port: 443,
+        monitor: false,
+        vip: '192.168.10.101',
+        node_hostnames: ['openshift-infra-1.myorg.com', 'openshift-infra-2.myorg.com'],
+        node_ips: []
+        },
+    ]
+
+  tasks:
+
+  - name: Create Master HTTPS Monitor
+    bigip_monitor_https:
+      provider: '{{ provider }}'
+      name: '{{item.name}}-monitor'
+      parent: 'https'
+      send: 'GET /healthz'
+    loop: '{{ lb_instances|flatten(levels=1) }}'
+    when: item.monitor and item.monitor_type == 'master'
+    tags:
+      - monitor
+
+  - name: Create Infra HTTP Monitor
+    bigip_monitor_http:
+      provider: '{{ provider }}'
+      name: '{{item.name}}-monitor'
+      parent: 'http'
+      send: 'GET /healthz'
+      ip: '*'
+      port: 1936
+    loop: '{{ lb_instances|flatten(levels=1) }}'
+    when: item.monitor and item.monitor_type == 'infra'
+    tags:
+      - monitor
+
+  - name: Create a pool with monitor
+    bigip_pool:
+      provider: '{{ provider }}'
+      name: '{{item.name}}-pool'
+      lb_method: round-robin
+      slow_ramp_time: 120
+      monitors: '/Common/{{item.name}}-monitor'
+    loop: '{{ lb_instances|flatten(levels=1) }}'
+    when: item.monitor
+    tags:
+      - pool
+
+  - name: Create a pool without monitor
+    bigip_pool:
+      provider: '{{ provider }}'
+      name: '{{item.name}}-pool'
+      lb_method: round-robin
+      slow_ramp_time: 120
+    loop: '{{ lb_instances|flatten(levels=1) }}'
+    when: not item.monitor
+    tags:
+      - pool
+
+  - name: Add members to pool from hostnames
+    bigip_pool_member:
+      provider: '{{ provider }}'
+      description: 'Node {{ item.1 }}'
+      hostname: '{{ item.1 }}'
+      name: '{{ item.1 }}'
+      pool: '{{item.0.name}}-pool'
+      port: '{{item.0.port}}'
+    loop: '{{ lb_instances|subelements("node_hostnames") }}'
+    tags:
+      - pool
+
+  - name: Add members to pool from IPs
+    bigip_pool_member:
+      provider: '{{ provider }}'
+      description: 'Node {{ item.1 }}'
+      address: '{{ item.1 }}'
+      name: '{{ item.1 }}'
+      pool: '{{item.0.name}}-pool'
+      port: '{{item.0.port}}'
+    loop: '{{ lb_instances|subelements("node_ips") }}'
+    tags:
+      - pool
+
+  - name: Create a Virtual Server (VIP)
+    bigip_virtual_server:
+      provider: '{{ provider }}'
+      description: 'VIP {{ item.name }}'
+      destination: '{{item.vip}}'
+      name: '{{ item.name }}-vip'
+      pool: '{{ item.name }}-pool'
+      port: '{{item.port}}'
+      snat: Automap
+      type: performance-l4
+      profiles:
+        - fastL4
+    loop: '{{ lb_instances|flatten(levels=1) }}'
+    tags:
+      - vip

@@ -16,6 +16,7 @@ A collection of code samples to help you get started with OpenShift.
 * [OpenShift Applier](https://github.com/redhat-cop/openshift-applier.git) - An Automation Framework for Kubernetes
 * [Containers Quickstarts](https://github.com/redhat-cop/containers-quickstarts.git) - A set of quickstarts to help you get started building and deploying software on OpenShift
 * [Container Pipelines](https://github.com/redhat-cop/container-pipelines.git) - A set of sample CI/CD Piplines for OpenShift
+* [F5-load-balancer](./F5-load-balancer) - Playbook and scripts to configure F5 load-balancer for Master and Infra-node instances.
 
 ## Ansible Playbooks
 
