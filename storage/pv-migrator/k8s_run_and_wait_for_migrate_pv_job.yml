@@ -1,0 +1,55 @@
+---
+- name: "Create pv-migrator-{{ pv_migrator_job_name }} job per PV in namespace | namespace={{ k8s_namespace }}"
+  k8s:
+    state: present
+    wait: yes
+    definition:
+      apiVersion: v1
+      kind: Job
+      metadata:
+        name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc.metadata.name }}"
+        namespace: "{{ k8s_namespace }}"
+      spec:
+        parallelism: 1
+        completions: 1
+        template:
+          metadata:
+            name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc.metadata.name }}"
+          spec:
+            restartPolicy: Never
+            containers:
+            - name: pv-migrator
+              image: registry.redhat.io/rhel7/rhel-tools
+              volumeMounts:
+                - name: migration-source
+                  mountPath: "/migration-source"
+                - name: migration-destination
+                  mountPath: "/migration-destination"
+              command:
+              - 'sh'
+              - '-c'
+              - 'rsync -avxHAX --ignore-missing-args --progress /migration-source/* /migration-destination'
+            volumes:
+              - name: migration-source
+                persistentVolumeClaim:
+                  claimName: "{{ pvc.metadata.name }}"
+              - name: migration-destination
+                persistentVolumeClaim:
+                  claimName: "{{ pvc.metadata.name }}{{ k8s_migration_destination_pvc_postfix }}"
+  loop: "{{ pvcs_sources }}"
+  loop_control:
+    loop_var: pvc
+
+- name: "Wait for pv-migrator-{{ pv_migrator_job_name }} jobs to complete | namespace={{ k8s_namespace }}"
+  k8s:
+    kind: Job
+    namespace: "{{ k8s_namespace }}"
+    name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc.metadata.name }}"
+    wait: yes
+    wait_condition:
+      type: Complete
+      status: "True"
+    wait_timeout: "{{ k8s_migration_pv_migrator_job_k8s_wait_timeout | default(600) }}"
+  loop: "{{ pvcs_sources }}"
+  loop_control:
+    loop_var: pvc
