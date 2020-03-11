@@ -1,0 +1,9 @@
+---
+- name: Migrate PVs
+  hosts: localhost
+  module_defaults:
+    group/k8s:
+      host: "{{ k8s_host }}"
+      validate_certs: "{{ k8s_validate_certs | default(true) }}"
+  tasks:
+  - include_tasks: private/k8s_migrate_pvs.yml

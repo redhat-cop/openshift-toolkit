@@ -1,20 +1,21 @@
 ---
-- name: "Create pv-migrator-{{ pv_migrator_job_name }} job per PV in namespace | namespace={{ k8s_namespace }}"
+- name: "K8s Migrate PVs | Create pv-migrator-{{ pv_migrator_job_name }} job per PVC | {{ _k8s_pv_migrator_namespace }}"
   k8s:
+    api_key: "{{ k8s_api_key }}"
     state: present
     wait: yes
     definition:
       apiVersion: v1
       kind: Job
       metadata:
-        name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc.metadata.name }}"
-        namespace: "{{ k8s_namespace }}"
+        name: "pv-migrator-{{ pv_migrator_job_name }}-{{ .metadata.name }}"
+        namespace: "{{ _k8s_pv_migrator_namespace }}"
       spec:
         parallelism: 1
         completions: 1
         template:
           metadata:
-            name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc.metadata.name }}"
+            name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc_source_and_destination.0..metadata.name }}"
           spec:
             restartPolicy: Never
             containers:
@@ -32,24 +33,25 @@
             volumes:
               - name: migration-source
                 persistentVolumeClaim:
-                  claimName: "{{ pvc.metadata.name }}"
+                  claimName: "{{ pvc_source_and_destination.0.metadata.name }}"
               - name: migration-destination
                 persistentVolumeClaim:
-                  claimName: "{{ pvc.metadata.name }}{{ k8s_migration_destination_pvc_postfix }}"
-  loop: "{{ pvcs_sources }}"
+                  claimName: "{{ pvc_source_and_destination.1.metadata.name }}"
+  loop: "{{ pvcs_sources | zip(pvcs_destinations) | list }}"
   loop_control:
-    loop_var: pvc
+    loop_var: pvc_source_and_destination
 
-- name: "Wait for pv-migrator-{{ pv_migrator_job_name }} jobs to complete | namespace={{ k8s_namespace }}"
+- name: "K8s Migrate PVs | Wait for pv-migrator-{{ pv_migrator_job_name }} jobs to complete | {{ _k8s_pv_migrator_namespace }}"
   k8s:
+    api_key: "{{ k8s_api_key }}"
     kind: Job
-    namespace: "{{ k8s_namespace }}"
+    namespace: "{{ _k8s_pv_migrator_namespace }}"
     name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc.metadata.name }}"
     wait: yes
     wait_condition:
       type: Complete
       status: "True"
-    wait_timeout: "{{ k8s_migration_pv_migrator_job_k8s_wait_timeout | default(600) }}"
+    wait_timeout: "{{ k8s_pv_migrator_job_wait_timeout | default(3600) }}"
   loop: "{{ pvcs_sources }}"
   loop_control:
     loop_var: pvc
