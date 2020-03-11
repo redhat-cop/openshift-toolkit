@@ -57,6 +57,19 @@ ansible-playbook migrate-pvs.yml \
   -e k8s_pv_migrator_pvc_label_selectors="['migrate=true']"
 ```
 
+#### Example for large PVs with lots of data expecting a looooong rsync time (10 hours in this example)
+```bash
+ansible-playbook migrate-pvs.yml \
+  -i localhost.ini \
+  -e k8s_host=https://ocp.example.xyz \
+  -e k8s_username=admin1 \
+  -e k8s_password=secret \
+  -e k8s_pv_migrator_namespaces="['test-migration0', 'test-migration1']" \
+  -e k8s_pv_migrator_destination_storageclass='my-new-storage-class' \
+  -e k8s_pv_migrator_pvc_label_selectors="['migrate=true']" \
+  -e k8s_pv_migrator_job_wait_timeout=36000
+```
+
 ### Executed Procedure
 This is the procedure implimented to migrate PVs to a new storage class without having to update applications with new PVC names
 
