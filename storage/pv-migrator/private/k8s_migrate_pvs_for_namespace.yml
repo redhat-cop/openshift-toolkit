@@ -1,220 +1,27 @@
 ---
-- name: "K8s Migrate PVs | Get PVCs to migrate | {{ _k8s_pv_migrator_namespace }}"
-  k8s_info:
-    api_key: "{{ k8s_api_key }}"
-    kind: PersistentVolumeClaim
-    namespace: "{{ _k8s_pv_migrator_namespace }}"
-    label_selectors: "{{ k8s_pv_migrator_pvc_label_selectors }}"
-  register: persistentvolumeclaims
-
-- name: "K8s Migrate PVs | Filter out PVCs that are already on destiation storage class | {{ _k8s_pv_migrator_namespace }}"
-  set_fact:
-    pvcs_sources: "{{ persistentvolumeclaims.resources | rejectattr('spec.storageClassName', 'match', k8s_pv_migrator_destination_storageclass) | list}}"
-
-- name: "K8s Migrate PVs | Create temporary destination PVCs using new storage class | {{ _k8s_pv_migrator_namespace }}"
-  k8s:
-    api_key: "{{ k8s_api_key }}"
-    state: present
-    definition:
-      apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
-        name: "{{ pvc.metadata.name }}{{ k8s_pv_migrator_temp_destination_pvc_postfix }}"
-        namespace: "{{ _k8s_pv_migrator_namespace }}"
-      spec:
-        accessModes: "{{ pvc.spec.accessModes }}"
-        resources: "{{ pvc.spec.resources }}"
-        storageClassName: "{{ k8s_pv_migrator_destination_storageclass }}"
-  loop: "{{ pvcs_sources }}"
-  loop_control:
-    loop_var: pvc
-  register: pvcs_destinations_creation_results
-
-- name: "K8s Migrate PVs | Wait for temporary destination PVCs to be bound to new destination PV | {{ _k8s_pv_migrator_namespace }}"
-  k8s_info:
-    api_key: "{{ k8s_api_key }}"
-    kind: PersistentVolumeClaim
-    namespace: "{{ _k8s_pv_migrator_namespace }}"
-    name: "{{ pvc_destination.metadata.name }}"
-  until: pvcs_destinations_results.resources | rejectattr('status.phase', 'regex', 'Bound') | list | length == 0
-  retries: "{{ k8s_pv_migrator_temp_destination_pvc_bind_wait_retries }}"
-  delay: "{{ k8s_pv_migrator_temp_destination_pvc_bind_wait_delay }}"
-  register: pvcs_destinations_results
-  loop: "{{ pvcs_destinations_creation_results.results | map(attribute='result') | list }}"
-  loop_control:
-    loop_var: pvc_destination
-
-- name: "K8s Migrate PVs | Get temporary PVC destiantions | {{ _k8s_pv_migrator_namespace }}"
-  set_fact:
-    pvcs_destinations: "{{ pvcs_destinations_results.results | map(attribute='resources') | list | flatten }}"
-
-- name: "K8s Migrate PVs | Perform pre pod scall-down PV rsync | {{ _k8s_pv_migrator_namespace }}"
-  include_tasks: k8s_run_and_wait_for_migrate_pv_job.yml
-  vars:
-    pv_migrator_job_name: 'pre-sync'
-
-- name: "K8s Migrate PVs | Get all scaleable resources | {{ _k8s_pv_migrator_namespace }}"
-  k8s_info:
-    api_key: "{{ k8s_api_key }}"
-    kind: "{{ item }}"
-    namespace: "{{ _k8s_pv_migrator_namespace }}"
-  register: pre_scaledown_scaleable_resources
-  loop:
-  - DeploymentConfig
-  - Deployment
-  - StatefulSet
-  - ReplicaSet
-  - ReplicationController
-
-# NOTE: this does not work due to: https://github.com/ansible/ansible/pull/65312
-#- name: "Scale down all scaleable resources to 0 | namespace={{ _k8s_pv_migrator_namespace }}"
-#  k8s_scale:
-#    resource_definition: "{{ item.1 }}"
-#    replicas: 0
-#    wait: yes
-#  loop: "{{ pre_scaledown_scaleable_resources.results | subelements('resources') }}"
-
-- name: "K8s Migrate PVs | Scale down all scaleable resources to 0 | {{ _k8s_pv_migrator_namespace }}"
-  k8s:
-    api_key: "{{ k8s_api_key }}"
-    kind: "{{ item.1.kind }}"
-    namespace: "{{ _k8s_pv_migrator_namespace }}"
-    name: "{{ item.1.metadata.name }}"
-    definition:
-      spec:
-        replicas: 0
-  loop: "{{ pre_scaledown_scaleable_resources.results | subelements('resources') }}"
+- name: "K8s Migrate PVs | Get source PVCs | {{ _k8s_pv_migrator_namespace }}"
+  include_tasks: k8s_migrate_pvs_get_source_pvcs.yml
 
 - block:
-  - name: "K8s Migrate PVs | Wait for all pods to be stopped | {{ _k8s_pv_migrator_namespace }}"
-    k8s_info:
-      api_key: "{{ k8s_api_key }}"
-      kind: Pod
-      namespace: "{{ _k8s_pv_migrator_namespace }}"
-    register: pods
-    until: pods.resources | rejectattr('status.phase', 'regex', 'Succeeded|Failed') | list | length == 0
-    retries: "{{ k8s_pv_migrator_pods_shutdown_wait_retries }}"
-    delay: "{{ k8s_pv_migrator_pods_shutdown_wait_delay }}"
-  rescue:
-  - name: "K8s Migrate PVs | Pods that are not in 'Succeeded' or 'Failed' state | {{ _k8s_pv_migrator_namespace }}"
-    debug:
-      msg: "{{ pods.resources | rejectattr('status.phase', 'regex', 'Succeeded|Failed') | list | map(attribute='metadata.name') | list }}"
+  - name: "K8s Migrate PVs | Create destination PVs | {{ _k8s_pv_migrator_namespace }}"
+    include_tasks: k8s_migrate_pvs_create_destination_pvs.yml
+    
+  - name: "K8s Migrate PVs | Perform pre pod scale-down PV rsync | {{ _k8s_pv_migrator_namespace }}"
+    include_tasks: k8s_run_and_wait_for_migrate_pv_job.yml
+    vars:
+      pv_migrator_job_name: 'pre-sync'
+  
+  - name: "K8s Migrate PVs | Pods Scale-down  | {{ _k8s_pv_migrator_namespace }}"
+    include_tasks: k8s_migrate_pvs_pods_scale_down.yml
+  
+  - name: "K8s Migrate PVs | Perform post pod scale-down PV rsync | {{ _k8s_pv_migrator_namespace }}"
+    include_tasks: k8s_run_and_wait_for_migrate_pv_job.yml
+    vars:
+      pv_migrator_job_name: 'post-sync'
+  
+  - name: "K8s Migrate PVs | Perform PVC migration | {{ _k8s_pv_migrator_namespace }}"
+    include_tasks: k8s_migrate_pvs_pvc_migration.yml
 
-  - name: "K8s Migrate PVs | Allow user time to manually kill stuck pods | {{ _k8s_pv_migrator_namespace }}"
-    pause:
-      prompt: "Not all pods in namespace ({{ _k8s_pv_migrator_namespace }}) stopped before timeout ({{ k8s_pv_migrator_pods_shutdown_wait_retries * k8s_pv_migrator_pods_shutdown_wait_delay }}) was reached. Now would be a good time to see if any pods are stuck in Termminiating state and manually destroy them. Do you want to continue with the PV migration now? (Yes/No)"
-      echo: yes
-    register: pod_shutdown_failed_pause
-
-  - name: "K8s Migrate PVs | Not all pods could be verified as stopped and user opted to stop migration | {{ _k8s_pv_migrator_namespace }}"
-    fail:
-      msg: "User selected not to continue migration namespace ({{ _k8s_pv_migrator_namespace }} when prompted based on Pods failing to terminate"
-    when: pod_shutdown_failed_pause is not regex("Y|y|Yes|yes")
-
-- name: "K8s Migrate PVs | Perform post pod scall-down PV rsync | {{ _k8s_pv_migrator_namespace }}"
-  include_tasks: k8s_run_and_wait_for_migrate_pv_job.yml
-  vars:
-    pv_migrator_job_name: 'post-sync'
-
-- name: "K8s Migrate PVs | Set destination PVs to 'Retain' so they do not delete when their temporary PVC is deleted | {{ _k8s_pv_migrator_namespace }}"
-  k8s:
-    api_key: "{{ k8s_api_key }}"
-    kind: PersistentVolume
-    namespace: "{{ _k8s_pv_migrator_namespace }}"
-    name: "{{ pvc_destination.spec.volumeName }}"
-    definition:
-      spec:
-        persistentVolumeReclaimPolicy: 'Retain'
-  loop: "{{ pvcs_destinations }}"
-  loop_control:
-    loop_var: pvc_destination
-  register: pv_destinations_updates
-
-- name: "K8s Migrate PVs | Delete temporary destination PVCs | {{ _k8s_pv_migrator_namespace }}"
-  k8s:
-    api_key: "{{ k8s_api_key }}"
-    kind: PersistentVolumeClaim
-    namespace: "{{ _k8s_pv_migrator_namespace }}"
-    name: "{{ pvc_destination.metadata.name }}"
-    state: absent
-  loop: "{{ pvcs_destinations }}"
-  loop_control:
-    loop_var: pvc_destination
-
-- name: "K8s Migrate PVs | Set source PVs to 'Retain' and label | {{ _k8s_pv_migrator_namespace }}"
-  k8s:
-    api_key: "{{ k8s_api_key }}"
-    kind: PersistentVolume
-    name: "{{ pvc_source_and_destination.0.spec.volumeName }}"
-    definition:
-      metadata:
-        labels:
-          migrated: "true"
-          migrated-to-pv: "{{ pvc_source_and_destination.1.spec.volumeName }}"
-      spec:
-        persistentVolumeReclaimPolicy: 'Retain'
-  loop: "{{ pvcs_sources | zip(pvcs_destinations) | list }}"
-  loop_control:
-    loop_var: pvc_source_and_destination
-
-- name: "K8s Migrate PVs | Delete source PVCs | {{ _k8s_pv_migrator_namespace }}"
-  k8s:
-    api_key: "{{ k8s_api_key }}"
-    kind: PersistentVolumeClaim
-    namespace: "{{ _k8s_pv_migrator_namespace }}"
-    name: "{{ pvc_source.metadata.name }}"
-    state: absent
-  loop: "{{ pvcs_sources }}"
-  loop_control:
-    loop_var: pvc_source
-
-- name: "K8s Migrate PVs | Remove claimRef from destination PVs and update labels | {{ _k8s_pv_migrator_namespace }}"
-  k8s:
-    api_key: "{{ k8s_api_key }}"
-    kind: PersistentVolume
-    namespace: "{{ _k8s_pv_migrator_namespace }}"
-    name: "{{ pvc_source_and_destination.1.spec.volumeName }}"
-    definition:
-      metadata:
-        labels:
-          migrated-from-pv: "{{ pvc_source_and_destination.0.spec.volumeName }}"
-      spec:
-        claimRef: Null
-  loop: "{{ pvcs_sources | zip(pvcs_destinations) | list }}"
-  loop_control:
-    loop_var: pvc_source_and_destination
-
-- name: "K8s Migrate PVs | Create new PVC with origional source PVC name pre-bound to new destination PV created in new storage class | {{ _k8s_pv_migrator_namespace }}"
-  k8s:
-    api_key: "{{ k8s_api_key }}"
-    kind: PersistentVolumeClaim
-    namespace: "{{ _k8s_pv_migrator_namespace }}"
-    state: present
-    apply: yes
-    resource_definition: "{{ pvc_source_and_destination.0 | combine({'spec':{'storageClassName': pvc_source_and_destination.1.spec.storageClassName }}, {'spec':{'volumeName': pvc_source_and_destination.1.spec.volumeName}}, {'metadata':{'labels':{'migrated-from-pv':pvc_source_and_destination.0.spec.volumeName}}}, {'metadata':{'resourceVersion': None}}, recursive=True) }}"
-  loop: "{{ pvcs_sources | zip(pvcs_destinations) | list }}"
-  loop_control:
-    loop_var: pvc_source_and_destination
-
-- name: "K8s Migrate PVs | Set destination PVs back to their orgional reclaim policy | {{ _k8s_pv_migrator_namespace }}"
-  k8s:
-    api_key: "{{ k8s_api_key }}"
-    kind: PersistentVolume
-    name: "{{ pv_destination_update.result.metadata.name }}"
-    definition:
-      spec:
-        persistentVolumeReclaimPolicy: "{{ pv_destination_update.diff.before.spec.persistentVolumeReclaimPolicy | default('Retain') }}"
-  loop: "{{ pv_destinations_updates.results }}"
-  loop_control:
-    loop_var: pv_destination_update
-
-- name: "K8s Migrate PVs | Scale up all scaleable resources to origional replica count | {{ _k8s_pv_migrator_namespace }}"
-  k8s:
-    api_key: "{{ k8s_api_key }}"
-    kind: "{{ item.1.kind }}"
-    namespace: "{{ _k8s_pv_migrator_namespace }}"
-    name: "{{ item.1.metadata.name }}"
-    definition:
-      spec:
-        replicas: "{{ item.1.spec.replicas }}"
-  loop: "{{ pre_scaledown_scaleable_resources.results | subelements('resources') }}"
+  - name: "K8s Migrate PVs | Pods Scale-up | {{ _k8s_pv_migrator_namespace }}"
+    include_tasks: k8s_migrate_pvs_pods_scale_up.yml
+  when: pvcs_sources | length > 0

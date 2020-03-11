@@ -40,8 +40,8 @@ ansible-playbook migrate-pvs.yml \
   -e k8s_host=https://ocp.example.xyz \
   -e k8s_username=admin1 \
   -e k8s_password=secret \
-  -e k8s_pv_migrator_namespaces= \
-  -e k8s_pv_migrator_destination_storageclass=
+  -e k8s_pv_migrator_namespaces="['test-migration0', 'test-migration1']" \
+  -e k8s_pv_migrator_destination_storageclass='my-new-storage-class'
 ```
 
 #### Example for 2 namespaces with PVC filtering based on labels
@@ -51,44 +51,44 @@ ansible-playbook migrate-pvs.yml \
   -e k8s_host=https://ocp.example.xyz \
   -e k8s_username=admin1 \
   -e k8s_password=secret \
-  -e k8s_pv_migrator_namespaces= \
-  -e k8s_pv_migrator_destination_storageclass= \
-  -e k8s_pv_migrator_pvc_label_selectors=
+  -e k8s_pv_migrator_namespaces="['test-migration0', 'test-migration1']" \
+  -e k8s_pv_migrator_destination_storageclass='my-new-storage-class' \
+  -e k8s_pv_migrator_pvc_label_selectors="['migrate=true']"
 ```
-
 
 ### Executed Procedure
 This is the procedure implimented to migrate PVs to a new storage class without having to update applications with new PVC names
 
 1. log into k8s cluster
 2. for each specified namespace
-   1. Pre pods scall-down PV migraiton preperation and pre-sync
-      1. Get PVCs to migrate
+   1. Get source PVCs
+      1. Get PVCs to migrate in namespace with correct label(s)
       2. Filter out PVCs that are already on destiation storage clas
-      3. Create temporary destination PVCs using new storage class
-      4. Wait for temporary destination PVCs to be bound to new destination PV
-      5. Get temporary PVC destiantions
-      6. Perform pre pod scalldown PV rsync
-         1. Create pv-migrator job per PVC
-         2. Wait for pv-migrator jobs to complete
-   2. Pods scall-down
+   2. Create destination PVs
+      1. Create temporary destination PVCs using new storage class
+      2. Wait for temporary destination PVCs to be bound to new destination PV
+      3. Get temporary PVC destiantions
+   3. Perform pre pod scaledown PV rsync
+      1. Create pv-migrator job per PVC
+      2. Wait for pv-migrator jobs to complete
+   4. Pods scale-down
       1. Get all scaleable resources
       2. Scale down all scaleable resources to 0
       3. Wait for all pods to be stopped
          * if this times out, prompt user on whether to continue or not giving user chance to manually kill pods or abort migration
-   3. Post pods scall-down PV migraiton
-      1. Perform post pod scall-down PV rsync
-         1. Create pv-migrator job per PVC
-         2. Wait for pv-migrator jobs to complete
-      2. Set destination PVs to 'Retain' so they do not delete when their temporary PVC is deleted
-      3. Delete temporary destination PVCs
-      4. Set source PVs to 'Retain' and labe
+   5. Perform post pod scale-down PV rsync
+      1. Create pv-migrator job per PVC
+      2. Wait for pv-migrator jobs to complete
+   6. Perform PVC migration
+      1. Set destination PVs to 'Retain' so they do not delete when their temporary PVC is deleted
+      2. Delete temporary destination PVCs
+      3. Set source PVs to 'Retain' and labe
          * migrated: true
          * migrated-to-pv: (destination PV name)
-      5. Delete source PVCs
-      6. Remove claimRef from destination PVs and update labels
-      7. Create new PVC with origional source PVC name pre-bound to new destination PV created in new storage class
-      8. Set destination PVs back to their orgional reclaim policy
-   4. Pods scall-up
+      4. Delete source PVCs
+      5. Remove claimRef from destination PVs and update labels
+      6. Create new PVC with origional source PVC name pre-bound to new destination PV created in new storage class
+      7. Set destination PVs back to their orgional reclaim policy
+   7. Pods scale-up
       1. Scale up all scaleable resources to origional replica count
 3. log out of k8s cluster

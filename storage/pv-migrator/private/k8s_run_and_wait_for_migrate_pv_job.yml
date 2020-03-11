@@ -8,14 +8,14 @@
       apiVersion: v1
       kind: Job
       metadata:
-        name: "pv-migrator-{{ pv_migrator_job_name }}-{{ .metadata.name }}"
+        name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc_source_and_destination.0.metadata.name }}"
         namespace: "{{ _k8s_pv_migrator_namespace }}"
       spec:
         parallelism: 1
         completions: 1
         template:
           metadata:
-            name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc_source_and_destination.0..metadata.name }}"
+            name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc_source_and_destination.0.metadata.name }}"
           spec:
             restartPolicy: Never
             containers:
