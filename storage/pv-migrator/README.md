@@ -14,23 +14,24 @@ Ansible playbook to migrate the PVs assoicated with the PVCs in a given list of 
 
 ### Parameters
 
-| Parameter                                        | Choices / **Defaults** | Comments
-|--------------------------------------------------|------------------------|---------
-| k8s\_host                                        |                        | K8s API to run this playbook against
-| k8s\_validate\_certs                             | **True** / False       | Whether to validate K8s API certificate
-| k8s\_api\_key                                    |                        | K8s API token to authenticate with. Mutually exclusive with `k8s_username` and `k8s_password`.
-| k8s\_username                                    |                        | K8s username to authenticate with. Mutually exclusive with `k8s_api_key`.
-| k8s\_password                                    |                        | K8s password to authenticate with. Mutually exclusive with `k8s_api_key`.
-| k8s\_pv\_migrator\_namespaces                                  |          | Required. Namespaces containing the PVCs who's PVs should be migrated.
-| k8s\_pv\_migrator\_destination\_storageclass                   |          | Required. Name of the k8s storage class to migrate to.
-| k8s\_pv\_migrator\_pvc\_label\_selectors                       | **[]**   | Optional. Label(s) that must be on PVCs in the given namespaces to migrate.
-| k8s\_pv\_migrator\_job\_wait\_timeout                          | **3600** | Optional. Timeout in secoonds to wait for migraiton jobs to finish. If you have large data sets you will need to update this.
-| k8s\_pv\_migrator\_temp\_destination\_pvc\_postfix             | **-new** | Optional. Postfix appened to PVC name for creating temporary PVC on the new storage class to create a new destination PV. Probably no good reason for you to change this.
-| k8s\_pv\_migrator\_temp\_destination\_pvc\_bind\_wait\_retries | **60**   | Optional. How long to wait for new PVCs to bind.
-| k8s\_pv\_migrator\_temp\_destination\_pvc\_bind\_wait\_delay   | **1**    | Optional. How long to wait for new PVCs to bind.
-| k8s\_pv\_migrator\_pods\_shutdown\_wait\_retries               | **120**  | Optional. How long to wait for pods to shutdown before prompting user what to do.
-| k8s\_pv\_migrator\_pods\_shutdown\_wait\_delay                 | **1**    | Optional. How long to wait for pods to shutdown before prompting user what to do.
-| k8s\_pv\_migrator\_pods\_start\_wait\_timeout                  | **600**  | Optional. Number of seconds to wait for pods to be available before and after migration.
+| Parameter                                        | Choices / **Defaults**  | Comments
+|--------------------------------------------------|-------------------------|---------
+| k8s\_host                                        |                         | K8s API to run this playbook against
+| k8s\_validate\_certs                             | **True** / False        | Whether to validate K8s API certificate
+| k8s\_api\_key                                    |                         | K8s API token to authenticate with. Mutually exclusive with `k8s_username` and `k8s_password`.
+| k8s\_username                                    |                         | K8s username to authenticate with. Mutually exclusive with `k8s_api_key`.
+| k8s\_password                                    |                         | K8s password to authenticate with. Mutually exclusive with `k8s_api_key`.
+| k8s\_pv\_migrator\_namespaces                                  |           | Required. Namespaces containing the PVCs who's PVs should be migrated.
+| k8s\_pv\_migrator\_destination\_storageclass                   |           | Required. Name of the k8s storage class to migrate to.
+| k8s\_pv\_migrator\_pre\_pod\_shutdown\_stage\_only             | **False** | Optional. If `True` then only the pre pod shutdown staging steps will happen.
+| k8s\_pv\_migrator\_pvc\_label\_selectors                       | **[]**    | Optional. Label(s) that must be on PVCs in the given namespaces to migrate.
+| k8s\_pv\_migrator\_job\_wait\_timeout                          | **3600**  | Optional. Timeout in secoonds to wait for migraiton jobs to finish. If you have large data sets you will need to update this.
+| k8s\_pv\_migrator\_temp\_destination\_pvc\_postfix             | **-new**  | Optional. Postfix appened to PVC name for creating temporary PVC on the new storage class to create a new destination PV. Probably no good reason for you to change this.
+| k8s\_pv\_migrator\_temp\_destination\_pvc\_bind\_wait\_retries | **60**    | Optional. How long to wait for new PVCs to bind.
+| k8s\_pv\_migrator\_temp\_destination\_pvc\_bind\_wait\_delay   | **1**     | Optional. How long to wait for new PVCs to bind.
+| k8s\_pv\_migrator\_pods\_shutdown\_wait\_retries               | **120**   | Optional. How long to wait for pods to shutdown before prompting user what to do.
+| k8s\_pv\_migrator\_pods\_shutdown\_wait\_delay                 | **1**     | Optional. How long to wait for pods to shutdown before prompting user what to do.
+| k8s\_pv\_migrator\_pods\_start\_wait\_timeout                  | **600**   | Optional. Number of seconds to wait for pods to be available before and after migration.
 
 ### Examples
 
@@ -70,6 +71,31 @@ ansible-playbook migrate-pvs.yml \
   -e k8s_pv_migrator_job_wait_timeout=36000
 ```
 
+#### Example of performing migraiton in two stages
+```bash
+ansible-playbook migrate-pvs.yml \
+  -i localhost.ini \
+  -e k8s_host=https://ocp.example.xyz \
+  -e k8s_username=admin1 \
+  -e k8s_password=secret \
+  -e k8s_pv_migrator_namespaces="['test-migration0', 'test-migration1']" \
+  -e k8s_pv_migrator_destination_storageclass='my-new-storage-class' \
+  -e k8s_pv_migrator_pvc_label_selectors="['migrate=true']" \
+  -e k8s_pv_migrator_job_wait_timeout=36000 \
+  -e k8s_pv_migrator_pre_pod_shutdown_stage_only=True
+
+# wait for a "downtime" window
+
+ansible-playbook migrate-pvs.yml \
+  -i localhost.ini \
+  -e k8s_host=https://ocp.example.xyz \
+  -e k8s_username=admin1 \
+  -e k8s_password=secret \
+  -e k8s_pv_migrator_namespaces="['test-migration0', 'test-migration1']" \
+  -e k8s_pv_migrator_destination_storageclass='my-new-storage-class' \
+  -e k8s_pv_migrator_pvc_label_selectors="['migrate=true']"
+```
+
 ### Executed Procedure
 This is the procedure implimented to migrate PVs to a new storage class without having to update applications with new PVC names
 
@@ -84,7 +110,7 @@ This is the procedure implimented to migrate PVs to a new storage class without 
       1. Create temporary destination PVCs using new storage class
       2. Wait for temporary destination PVCs to be bound to new destination PV
       3. Get temporary PVC destiantions
-   4. Perform pre pod scaledown PV rsync
+   4. Perform pre pod scale-down PV rsync
       1. Create pv-migrator job per PVC
       2. Wait for pv-migrator jobs to complete
    5. Pods scale-down

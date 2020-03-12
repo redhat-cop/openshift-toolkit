@@ -17,6 +17,11 @@
 
   - name: "K8s Migrate PVs | Set defaults"
     block:
+    - name: "K8s Migrate PVs | Set defaults | k8s_pv_migrator_pre_pod_shutdown_stage_only"
+      set_fact:
+        k8s_pv_migrator_pre_pod_shutdown_stage_only: False
+      when: k8s_pv_migrator_pre_pod_shutdown_stage_only is not defined
+
     - name: "K8s Migrate PVs | Set defaults | k8s_pv_migrator_pvc_label_selectors"
       set_fact:
         k8s_pv_migrator_pvc_label_selectors: []
