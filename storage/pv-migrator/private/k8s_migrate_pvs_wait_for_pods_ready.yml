@@ -1,0 +1,22 @@
+---
+- name: "K8s Migrate PVs | Get all pods | {{ _k8s_pv_migrator_namespace }}"
+  k8s_info:
+    api_key: "{{ k8s_api_key }}"
+    kind: Pod
+    namespace: "{{ _k8s_pv_migrator_namespace }}"
+  register: k8s_pods
+
+- name: "K8s Migrate PVs | Wait for all pods to be available | {{ _k8s_pv_migrator_namespace }}"
+  k8s:
+    api_key: "{{ k8s_api_key }}"
+    kind: Pod
+    name: "{{ pod.metadata.name }}"
+    namespace: "{{ _k8s_pv_migrator_namespace }}"
+    wait: yes
+    wait_condition:
+      type: Ready
+      status: "True"
+    wait_timeout : "{{ k8s_pv_migrator_pods_start_wait_timeout }}"
+  loop: "{{ k8s_pods.resources | rejectattr('status.phase', 'regex', 'Succeeded') | list }}"
+  loop_control:
+    loop_var: pod

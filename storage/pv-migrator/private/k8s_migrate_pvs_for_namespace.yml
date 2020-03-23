@@ -1,0 +1,32 @@
+---
+- name: "K8s Migrate PVs | Wait for pods to be ready pre-migration | {{ _k8s_pv_migrator_namespace }}"
+  include_tasks: k8s_migrate_pvs_wait_for_pods_ready.yml
+
+- name: "K8s Migrate PVs | Get source PVCs | {{ _k8s_pv_migrator_namespace }}"
+  include_tasks: k8s_migrate_pvs_get_source_pvcs.yml
+
+- block:
+  - name: "K8s Migrate PVs | Create destination PVs | {{ _k8s_pv_migrator_namespace }}"
+    include_tasks: k8s_migrate_pvs_create_destination_pvs.yml
+    
+  - name: "K8s Migrate PVs | Perform pre pod scale-down PV rsync | {{ _k8s_pv_migrator_namespace }}"
+    include_tasks: k8s_run_and_wait_for_migrate_pv_job.yml
+    vars:
+      pv_migrator_job_name: 'pre-sync'
+  
+  - block:
+    - name: "K8s Migrate PVs | Pods Scale-down  | {{ _k8s_pv_migrator_namespace }}"
+      include_tasks: k8s_migrate_pvs_pods_scale_down.yml
+    
+    - name: "K8s Migrate PVs | Perform post pod scale-down PV rsync | {{ _k8s_pv_migrator_namespace }}"
+      include_tasks: k8s_run_and_wait_for_migrate_pv_job.yml
+      vars:
+        pv_migrator_job_name: 'post-sync'
+    
+    - name: "K8s Migrate PVs | Perform PVC migration | {{ _k8s_pv_migrator_namespace }}"
+      include_tasks: k8s_migrate_pvs_pvc_migration.yml
+
+    - name: "K8s Migrate PVs | Pods Scale-up | {{ _k8s_pv_migrator_namespace }}"
+      include_tasks: k8s_migrate_pvs_pods_scale_up.yml
+    when: not k8s_pv_migrator_pre_pod_shutdown_stage_only
+  when: pvcs_sources | length > 0

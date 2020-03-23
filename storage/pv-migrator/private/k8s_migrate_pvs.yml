@@ -1,0 +1,76 @@
+---
+- name: "K8s Migrate PVs | Authenticed with K8s"
+  block:
+
+  - name: "K8s Migrate PVs | Get and Set k8s API key"
+    block:
+    - name: "K8s Migrate PVs | Get K8s access token"
+      k8s_auth:
+        username: "{{ k8s_username }}"
+        password: "{{ k8s_password }}"
+      register: k8s_auth_results
+
+    - name: "K8s Migrate PVs | Set k8s_api_key"
+      set_fact:
+        k8s_api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    when: (k8s_api_key is not defined) and ((k8s_username is defined) and (k8s_password is defined))
+
+  - name: "K8s Migrate PVs | Set defaults"
+    block:
+    - name: "K8s Migrate PVs | Set defaults | k8s_pv_migrator_pre_pod_shutdown_stage_only"
+      set_fact:
+        k8s_pv_migrator_pre_pod_shutdown_stage_only: False
+      when: k8s_pv_migrator_pre_pod_shutdown_stage_only is not defined
+
+    - name: "K8s Migrate PVs | Set defaults | k8s_pv_migrator_pvc_label_selectors"
+      set_fact:
+        k8s_pv_migrator_pvc_label_selectors: []
+      when: k8s_pv_migrator_pvc_label_selectors is not defined
+
+    - name: "K8s Migrate PVs | Set defaults | k8s_pv_migrator_job_wait_timeout"
+      set_fact:
+        k8s_pv_migrator_job_wait_timeout: 3600
+      when: k8s_pv_migrator_job_wait_timeout is not defined
+
+    - name: "K8s Migrate PVs | Set defaults | k8s_pv_migrator_temp_destination_pvc_postfix"
+      set_fact:
+        k8s_pv_migrator_temp_destination_pvc_postfix: '-new'
+      when: k8s_pv_migrator_temp_destination_pvc_postfix is not defined
+
+    - name: "K8s Migrate PVs | Set defaults | k8s_pv_migrator_temp_destination_pvc_bind_wait_retries"
+      set_fact:
+        k8s_pv_migrator_temp_destination_pvc_bind_wait_retries: 60
+      when: k8s_pv_migrator_temp_destination_pvc_bind_wait_retries is not defined
+
+    - name: "K8s Migrate PVs | Set defaults | k8s_pv_migrator_temp_destination_pvc_bind_wait_delay"
+      set_fact:
+        k8s_pv_migrator_temp_destination_pvc_bind_wait_delay: 1
+      when: k8s_pv_migrator_temp_destination_pvc_bind_wait_delay is not defined
+
+    - name: "K8s Migrate PVs | Set defaults | k8s_pv_migrator_pods_shutdown_wait_retries"
+      set_fact:
+        k8s_pv_migrator_pods_shutdown_wait_retries: 120
+      when: k8s_pv_migrator_pods_shutdown_wait_retries is not defined
+
+    - name: "K8s Migrate PVs | Set defaults | k8s_pv_migrator_pods_shutdown_wait_delay"
+      set_fact:
+        k8s_pv_migrator_pods_shutdown_wait_delay: 1
+      when: k8s_pv_migrator_pods_shutdown_wait_delay is not defined
+
+    - name: "K8s Migrate PVs | Set defaults | k8s_pv_migrator_pods_start_wait_timeout"
+      set_fact:
+        k8s_pv_migrator_pods_start_wait_timeout: 600
+      when: k8s_pv_migrator_pods_start_wait_timeout is not defined
+
+  - name: "K8s Migrate PVs | Loop namespaces to migrate PVS per namespace"
+    include_tasks: private/k8s_migrate_pvs_for_namespace.yml
+    loop: "{{ k8s_pv_migrator_namespaces }}"
+    loop_control:
+      loop_var: _k8s_pv_migrator_namespace
+
+  always:
+  - name: "K8s Migrate PVs | Revoke K8s access token"
+    k8s_auth:
+      state: absent
+      api_key: "{{ k8s_api_key }}"
+    when: ((k8s_username is defined) and (k8s_password is defined))

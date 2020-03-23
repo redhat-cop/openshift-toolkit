@@ -1,0 +1,58 @@
+---
+- name: "K8s Migrate PVs | Get all scaleable resources | {{ _k8s_pv_migrator_namespace }}"
+  k8s_info:
+    api_key: "{{ k8s_api_key }}"
+    kind: "{{ item }}"
+    namespace: "{{ _k8s_pv_migrator_namespace }}"
+  register: pre_scaledown_scaleable_resources
+  loop:
+  - DeploymentConfig
+  - Deployment
+  - StatefulSet
+  - ReplicaSet
+  - ReplicationController
+
+# NOTE: this does not work due to: https://github.com/ansible/ansible/pull/65312
+#- name: "Scale down all scaleable resources to 0 | namespace={{ _k8s_pv_migrator_namespace }}"
+#  k8s_scale:
+#    resource_definition: "{{ item.1 }}"
+#    replicas: 0
+#    wait: yes
+#  loop: "{{ pre_scaledown_scaleable_resources.results | subelements('resources') }}"
+
+- name: "K8s Migrate PVs | Scale down all scaleable resources to 0 | {{ _k8s_pv_migrator_namespace }}"
+  k8s:
+    api_key: "{{ k8s_api_key }}"
+    kind: "{{ item.1.kind }}"
+    namespace: "{{ _k8s_pv_migrator_namespace }}"
+    name: "{{ item.1.metadata.name }}"
+    definition:
+      spec:
+        replicas: 0
+  loop: "{{ pre_scaledown_scaleable_resources.results | subelements('resources') }}"
+
+- block:
+  - name: "K8s Migrate PVs | Wait for all pods to be stopped | {{ _k8s_pv_migrator_namespace }}"
+    k8s_info:
+      api_key: "{{ k8s_api_key }}"
+      kind: Pod
+      namespace: "{{ _k8s_pv_migrator_namespace }}"
+    register: pods
+    until: pods.resources | rejectattr('status.phase', 'regex', 'Succeeded|Failed') | list | length == 0
+    retries: "{{ k8s_pv_migrator_pods_shutdown_wait_retries }}"
+    delay: "{{ k8s_pv_migrator_pods_shutdown_wait_delay }}"
+  rescue:
+  - name: "K8s Migrate PVs | Pods that are not in 'Succeeded' or 'Failed' state | {{ _k8s_pv_migrator_namespace }}"
+    debug:
+      msg: "{{ pods.resources | rejectattr('status.phase', 'regex', 'Succeeded|Failed') | list | map(attribute='metadata.name') | list }}"
+
+  - name: "K8s Migrate PVs | Allow user time to manually kill stuck pods | {{ _k8s_pv_migrator_namespace }}"
+    pause:
+      prompt: "Not all pods in namespace ({{ _k8s_pv_migrator_namespace }}) stopped before timeout ({{ k8s_pv_migrator_pods_shutdown_wait_retries * k8s_pv_migrator_pods_shutdown_wait_delay }}) was reached. Now would be a good time to see if any pods are stuck in Termminiating state and manually destroy them. Do you want to continue with the PV migration now? (Yes/No)"
+      echo: yes
+    register: pod_shutdown_failed_pause
+
+  - name: "K8s Migrate PVs | Not all pods could be verified as stopped and user opted to stop migration | {{ _k8s_pv_migrator_namespace }}"
+    fail:
+      msg: "User selected not to continue migration namespace ({{ _k8s_pv_migrator_namespace }} when prompted based on Pods failing to terminate"
+    when: pod_shutdown_failed_pause is not regex("Y|y|Yes|yes")

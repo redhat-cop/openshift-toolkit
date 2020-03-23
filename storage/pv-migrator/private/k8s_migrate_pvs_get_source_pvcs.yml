@@ -1,0 +1,12 @@
+---
+- name: "K8s Migrate PVs | Get PVCs to migrate in namespace with correct label(s) | {{ _k8s_pv_migrator_namespace }}"
+  k8s_info:
+    api_key: "{{ k8s_api_key }}"
+    kind: PersistentVolumeClaim
+    namespace: "{{ _k8s_pv_migrator_namespace }}"
+    label_selectors: "{{ k8s_pv_migrator_pvc_label_selectors }}"
+  register: persistentvolumeclaims
+
+- name: "K8s Migrate PVs | Filter out PVCs that are already on destiation storage class | {{ _k8s_pv_migrator_namespace }}"
+  set_fact:
+    pvcs_sources: "{{ persistentvolumeclaims.resources | rejectattr('spec.storageClassName', 'match', k8s_pv_migrator_destination_storageclass) | list}}"

@@ -1,0 +1,37 @@
+---
+- name: "K8s Migrate PVs | Create temporary destination PVCs using new storage class | {{ _k8s_pv_migrator_namespace }}"
+  k8s:
+    api_key: "{{ k8s_api_key }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: "{{ pvc.metadata.name }}{{ k8s_pv_migrator_temp_destination_pvc_postfix }}"
+        namespace: "{{ _k8s_pv_migrator_namespace }}"
+      spec:
+        accessModes: "{{ pvc.spec.accessModes }}"
+        resources: "{{ pvc.spec.resources }}"
+        storageClassName: "{{ k8s_pv_migrator_destination_storageclass }}"
+  loop: "{{ pvcs_sources }}"
+  loop_control:
+    loop_var: pvc
+  register: pvcs_destinations_creation_results
+
+- name: "K8s Migrate PVs | Wait for temporary destination PVCs to be bound to new destination PV | {{ _k8s_pv_migrator_namespace }}"
+  k8s_info:
+    api_key: "{{ k8s_api_key }}"
+    kind: PersistentVolumeClaim
+    namespace: "{{ _k8s_pv_migrator_namespace }}"
+    name: "{{ pvc_destination.metadata.name }}"
+  until: pvcs_destinations_results.resources | rejectattr('status.phase', 'regex', 'Bound') | list | length == 0
+  retries: "{{ k8s_pv_migrator_temp_destination_pvc_bind_wait_retries }}"
+  delay: "{{ k8s_pv_migrator_temp_destination_pvc_bind_wait_delay }}"
+  register: pvcs_destinations_results
+  loop: "{{ pvcs_destinations_creation_results.results | map(attribute='result') | list }}"
+  loop_control:
+    loop_var: pvc_destination
+  
+- name: "K8s Migrate PVs | Get temporary PVC destiantions | {{ _k8s_pv_migrator_namespace }}"
+  set_fact:
+    pvcs_destinations: "{{ pvcs_destinations_results.results | map(attribute='resources') | list | flatten }}"

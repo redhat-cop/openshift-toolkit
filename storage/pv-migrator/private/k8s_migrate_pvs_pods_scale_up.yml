@@ -1,0 +1,14 @@
+---
+- name: "K8s Migrate PVs | Scale up all scaleable resources to origional replica count | {{ _k8s_pv_migrator_namespace }}"
+  k8s:
+    api_key: "{{ k8s_api_key }}"
+    kind: "{{ item.1.kind }}"
+    namespace: "{{ _k8s_pv_migrator_namespace }}"
+    name: "{{ item.1.metadata.name }}"
+    definition:
+      spec:
+        replicas: "{{ item.1.spec.replicas }}"
+  loop: "{{ pre_scaledown_scaleable_resources.results | subelements('resources') }}"
+
+- name: "K8s Migrate PVs | Wait for pods to be ready post-migration | {{ _k8s_pv_migrator_namespace }}"
+  include_tasks: k8s_migrate_pvs_wait_for_pods_ready.yml

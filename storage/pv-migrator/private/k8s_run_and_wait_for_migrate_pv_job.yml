@@ -1,0 +1,57 @@
+---
+- name: "K8s Migrate PVs | Create pv-migrator-{{ pv_migrator_job_name }} job per PVC | {{ _k8s_pv_migrator_namespace }}"
+  k8s:
+    api_key: "{{ k8s_api_key }}"
+    state: present
+    wait: yes
+    definition:
+      apiVersion: v1
+      kind: Job
+      metadata:
+        name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc_source_and_destination.0.metadata.name }}"
+        namespace: "{{ _k8s_pv_migrator_namespace }}"
+      spec:
+        parallelism: 1
+        completions: 1
+        template:
+          metadata:
+            name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc_source_and_destination.0.metadata.name }}"
+          spec:
+            restartPolicy: Never
+            containers:
+            - name: pv-migrator
+              image: registry.redhat.io/rhel7/rhel-tools
+              volumeMounts:
+                - name: migration-source
+                  mountPath: "/migration-source"
+                - name: migration-destination
+                  mountPath: "/migration-destination"
+              command:
+              - 'sh'
+              - '-c'
+              - 'rsync -avxHAX --ignore-missing-args --progress /migration-source/* /migration-destination'
+            volumes:
+              - name: migration-source
+                persistentVolumeClaim:
+                  claimName: "{{ pvc_source_and_destination.0.metadata.name }}"
+              - name: migration-destination
+                persistentVolumeClaim:
+                  claimName: "{{ pvc_source_and_destination.1.metadata.name }}"
+  loop: "{{ pvcs_sources | zip(pvcs_destinations) | list }}"
+  loop_control:
+    loop_var: pvc_source_and_destination
+
+- name: "K8s Migrate PVs | Wait for pv-migrator-{{ pv_migrator_job_name }} jobs to complete | {{ _k8s_pv_migrator_namespace }}"
+  k8s:
+    api_key: "{{ k8s_api_key }}"
+    kind: Job
+    namespace: "{{ _k8s_pv_migrator_namespace }}"
+    name: "pv-migrator-{{ pv_migrator_job_name }}-{{ pvc.metadata.name }}"
+    wait: yes
+    wait_condition:
+      type: Complete
+      status: "True"
+    wait_timeout: "{{ k8s_pv_migrator_job_wait_timeout | default(3600) }}"
+  loop: "{{ pvcs_sources }}"
+  loop_control:
+    loop_var: pvc
