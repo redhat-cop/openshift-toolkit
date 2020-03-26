@@ -15,27 +15,6 @@ Look in the `status` of the output to see what needs to be patched. In the examp
 status:
   conditions:
   - lastTransitionTime: "2020-03-26T10:01:05Z"
-    message: All resources successfully discovered
-    reason: ResourcesDiscovered
-    status: "False"
-    type: NamespaceDeletionDiscoveryFailure
-  - lastTransitionTime: "2020-03-26T10:01:05Z"
-    message: All legacy kube types successfully parsed
-    reason: ParsedGroupVersions
-    status: "False"
-    type: NamespaceDeletionGroupVersionParsingFailure
-  - lastTransitionTime: "2020-03-26T10:01:44Z"
-    message: All content successfully deleted, may be waiting on finalization
-    reason: ContentDeleted
-    status: "False"
-    type: NamespaceDeletionContentFailure
-  - lastTransitionTime: "2020-03-26T10:01:05Z"
-    message: 'Some resources are remaining: cephclusters.ceph.rook.io has 1 resource
-      instances'
-    reason: SomeResourcesRemain
-    status: "True"
-    type: NamespaceContentRemaining
-  - lastTransitionTime: "2020-03-26T10:01:05Z"
     message: 'Some content in the namespace has finalizers remaining: cephcluster.ceph.rook.io
       in 1 resource instances'
     reason: SomeFinalizersRemain
