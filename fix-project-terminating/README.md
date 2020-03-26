@@ -8,7 +8,7 @@ In some cases, projects/namespaces get stuck in a `terminating` state. In most c
 > oc get project <project-name> -o yaml
 ```
 
-Look in the `status` of the output to see what needs to be patched. In the example below we'll need to patach `cephclusters.ceph.rook.io`
+Look in the `status` of the output to see what needs to be patched. In the example below we'll need to patch `cephclusters.ceph.rook.io`
 
 ```
 ...
