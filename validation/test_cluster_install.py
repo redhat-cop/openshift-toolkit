@@ -1,4 +1,4 @@
-from lib import k8sHelper
+from .lib import k8sHelper
 import pytest
 
 # Instantiate k8s_helper class from k8s_helper library.
