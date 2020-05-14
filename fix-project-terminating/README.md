@@ -28,7 +28,7 @@ status:
 > oc patch <object-type> <object-name> -p '{"metadata":{"finalizers": []}}' --type=merge
 ```
 
-### Patch project/namespace script using curl or oc client
+### Patch project/namespace script using curl and oc client or certs
 
 In other cases, however, the project/namespace seems stuck by having a finalizer on the project itself. In that case, the script found here - `fix-terminating.sh` can be utilized to patch the namespace utilizing curl. Note that this script may need to be executed where the necessary certs exists (obtained on the OpenShift master node).
 

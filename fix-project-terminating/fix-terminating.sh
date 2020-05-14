@@ -36,7 +36,6 @@ then
 
   curl -X PUT -H "Content-Type: application/json" \
     --data  ${data} \
-    -H "Content-Type: application/json" \
     -H "Authorization: Bearer $token" \
     ${clusterurl}/api/v1/namespaces/${namespace}/finalize
 else
