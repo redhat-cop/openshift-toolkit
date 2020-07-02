@@ -9,6 +9,6 @@ while read gluster_pod <&3 && read gluster_namespace <&4 && read gluster_node <&
   echo
   echo
   echo "GLUSTER STATUS FOR POD (${gluster_pod}) IN PROJECT (${gluster_namespace}) ON NODE (${gluster_node})"
-  oc rsh -n ${gluster_namespace} ${gluster_pod} /bin/sh -c 'for vol in $(gluster volume list); do echo $vol; gluster volume heal $vol info | grep -E "Number of entries:" | grep -Ev "Number of entries: [0-]"; gluster volume heal $vol info split-brain | grep -E "Number of entries:" | grep -Ev "Number of entries: [0-]"; echo; done;'
+  oc rsh -n ${gluster_namespace} ${gluster_pod} /bin/sh -c 'for vol in $(gluster volume list); do echo $vol; gluster volume heal $vol info | grep -E "Number of entries:" | grep -Ev "Number of entries: [0-]"; gluster volume heal $vol info split-brain | grep -E "Number of entries:" | grep -Ev "Number of entries: [0-]" | gluster volume heal $vol info | grep -E "Status:" | grep -Ev "Status: Connected"; echo; done;'
 done 3<<<"${GLUSTER_PODS}" 4<<<"${GLUSTER_POD_NAMESPACES}" 5<<<"${GLUSTER_POD_NODES}" 
 
