@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+# Module for flat file for openshift audit logging
+$ModLoad imfile
+
+#New settings for OpenShift audit logging
+$InputFileName {{ rsyslog_ocp_audit_log_input_file_name }}
+$InputFileTag {{ rsyslog_ocp_audit_log_input_file_tag }}
+$InputFileStateFile {{ rsyslog_ocp_audit_log_input_file_state_file }}
+$InputFileFacility {{ rsyslog_ocp_audit_log_input_file_facility }}
+$InputRunFileMonitor

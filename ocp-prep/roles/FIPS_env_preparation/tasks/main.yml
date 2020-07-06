@@ -1,0 +1,57 @@
+---
+
+# Use a 'block' to ensure "become: True" for all tasks since
+# # # all of these tasks require elevated privileges
+- block:
+
+    # Disable and Stop the named service
+    - name: Disable and Stop the named service
+      service:
+        name: named
+        enabled: no
+        state: stopped
+      ignore_errors: yes
+
+    # Address an issue associated with certain missing SELinux policies
+    - name: Address Missing SELinux Policy issue (uninstall container-selinux)
+      yum:
+        name: container-selinux
+        state: absent
+      register: result
+      until: result is succeeded
+      ignore_errors: yes
+
+    - name: Address Missing SELinux Policy issue (reinstall/update container-selinux)
+      yum:
+        name: container-selinux
+        state: latest
+      register: result
+      until: result is succeeded
+
+    - name: Address Missing SELinux Policy issue (ensure no incomplete/aborted yum transactions)
+      shell: yum-complete-transaction -y
+
+    - name: Address Missing SELinux Policy issue (add missing SELinux policies) 
+      shell: |
+        semodule -n -s targeted -d container ; load_policy
+        semodule -n -s targeted -e container ; load_policy
+
+    # Enable IPv4 IP Forwarding on all OCP machines. This addresses an issue caused by Hardening/Security that disables it by default.
+    - name: Enable IPv4 IP Forwarding (update sysctl.conf file)
+      lineinfile:
+        path: /etc/sysctl.conf 
+        regexp: '^(.*)net.ipv4.ip_forward \= 0$'
+        line: 'net.ipv4.ip_forward = 1'
+        state: present
+        backup: yes
+
+    - name: Enable IPv4 IP Forwarding (update active session)
+      shell: |
+        sysctl -w net.ipv4.ip_forward=1
+
+  become: True
+
+# Change encryption algorithm value in three key config files required by OCP installation, from MD5 to SHA256 as required by Hardening/Security policies.
+- import_tasks: update_local_install_files.yml
+  delegate_to: localhost
+  run_once: true

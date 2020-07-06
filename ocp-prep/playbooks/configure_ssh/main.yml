@@ -1,0 +1,10 @@
+---
+
+- name: Generate and Distribute SSH keys
+  hosts: nodes
+  roles:
+  - role: configure_ssh
+    when:
+    - copy_ssh_keys|default(false)
+  tags:
+  - configure_ssh

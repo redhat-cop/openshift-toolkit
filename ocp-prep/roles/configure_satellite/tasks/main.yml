@@ -1,0 +1,76 @@
+---
+
+# Use a 'block' to ensure "become: True" for all tasks since
+# # all of these tasks require elevated privileges
+- block:
+
+  # Obtains the necessary satellite packages
+  - name: Grab Satellite Info
+    get_url:
+      url: "http://{{ rhsm_server_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
+      dest: "{{ satellite_server_rpm_tmp_dir }}"
+    when:
+    - rhsm_server_hostname is defined
+    - rhsm_server_hostname|trim != ''
+
+  # Unregisters from default satellite
+  - name: Unregister satellite
+    redhat_subscription:
+      state: absent
+    when:
+    - rhsm_server_hostname is defined
+    - rhsm_server_hostname|trim != ''
+
+  # Removes default/non-applicable repo(s)
+  - name: Purge repos
+    command: rm -rf /etc/yum.repos.d/*
+    args:
+      warn: False
+    when:
+    - rhsm_server_hostname is defined
+    - rhsm_server_hostname|trim != ''
+
+  # Installs the satellite package(s) obtained in an earlier step
+  - name: Install Katello package
+    yum:
+      name: "{{ satellite_server_rpm_tmp_dir }}/katello-ca-consumer-latest.noarch.rpm"
+      state: present
+      disable_gpg_check: "{{ disable_pkg_authenticity_verification | default(no) }}"
+    when:
+    - rhsm_server_hostname is defined
+    - rhsm_server_hostname|trim != ''
+
+  # Registers to the new satellite
+  - name: Register satellite
+    redhat_subscription:
+      state: present
+      username: "{{ rhsm_username | default(omit) }}"
+      password: "{{ rhsm_password | default(omit) }}"
+      pool_ids: "{{ rhsm_pool_ids | default(omit) }}"
+      pool: "{{ rhsm_pool | default(omit) }}"
+      autosubscribe: "{{ ((rhsm_pool is defined or rhsm_pool_ids is defined or rhsm_activation_key is defined) | ternary(omit, true)) }}"
+      server_hostname: "{{ rhsm_server_hostname | default(omit) }}"
+      activationkey: "{{ rhsm_activation_key | default(omit) }}"
+      org_id: "{{ rhsm_org_id | default(omit) }}"
+      force_register: "{{ rhsm_force_register | default(omit) }}"
+      force_register: "true"
+    delegate_to: "{{ item }}"
+    with_items: "{{ groups['nodes'] }}"
+    run_once: true
+    when:
+    - rhsm_server_hostname is defined
+    - rhsm_server_hostname|trim != ''
+ 
+  # Perform a yum clean/update
+  - name: Update repos
+    command: yum clean all
+    args:
+      warn: no
+
+  # Remove temp file
+  - name: Cleanup
+    file:
+      path: "{{ satellite_server_rpm_tmp_dir }}katello-ca-consumer-latest.noarch.rpm"
+      state: absent
+
+  become: True

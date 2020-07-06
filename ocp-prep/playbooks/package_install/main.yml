@@ -1,0 +1,10 @@
+---
+
+- name: Ensure required packages are installed
+  hosts: nodes
+  roles:
+  - role: package_install
+    when:
+    - package_install|default(false)
+  tags:
+  - package_install

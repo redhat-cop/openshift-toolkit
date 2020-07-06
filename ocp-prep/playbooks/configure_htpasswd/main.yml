@@ -1,0 +1,28 @@
+---
+
+- name: Generate htpasswd username/password - Prompt
+  gather_facts: false
+  hosts: localhost
+  tags:
+  - configure_htpasswd
+  tasks:
+
+  - name: Username prompt
+    pause:
+      prompt: "Please enter your htpasswd username(s) (comma separated)"
+      echo: true
+    register: username
+    when: configure_htpasswd|default(false)
+
+  - name: Password prompt
+    pause:
+      prompt: "Please enter your htpasswd password for user {{ item }}"
+      echo: false
+    register: passwords
+    with_items: "{{ username.user_input.split(',') }}"
+    when: configure_htpasswd|default(false)
+
+  - name: Create and configure local htpasswd file
+    include_role:
+      name: configure_htpasswd
+    when: configure_htpasswd|default(false)

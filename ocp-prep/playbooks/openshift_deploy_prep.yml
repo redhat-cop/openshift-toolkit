@@ -1,0 +1,17 @@
+---
+
+- import_playbook: configure_ssh/main.yml
+
+- import_playbook: configure_satellite/main.yml
+
+- import_playbook: package_install/main.yml
+
+- import_playbook: FIPS_env_preparation/main.yml
+
+- import_playbook: configure_ocp_storage/main.yml
+
+- import_playbook: configure_docker_storage/main.yml
+
+- import_playbook: configure_rsyslog/main.yml
+
+- import_playbook: configure_htpasswd/main.yml

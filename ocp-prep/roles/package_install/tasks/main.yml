@@ -1,0 +1,25 @@
+---
+
+# Ensure required packages are installed on localhost
+- import_tasks: package_install.yml
+  delegate_to: localhost
+  vars:
+    host_grp: localhost
+  run_once: true
+
+# Ensure required packages are installed on all nodes in the OpenShift cluster
+- import_tasks: package_install.yml
+  vars:
+    host_grp: nodes
+
+# Update packages on localhost
+- import_tasks: yum_update.yml
+  delegate_to: localhost
+  vars:
+    host_grp: localhost
+  run_once: true
+
+# Update packages on all nodes in the OpenShift cluster
+- import_tasks: yum_update.yml
+  vars:
+    host_grp: nodes

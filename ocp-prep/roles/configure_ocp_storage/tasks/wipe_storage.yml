@@ -1,0 +1,19 @@
+---
+
+# Use a 'block' to ensure "become: True" for all tasks since
+# # all of these tasks require elevated privileges
+
+- block:
+
+  # Prepare disk for docker storage on all OCP hosts
+  - name: Prepare disk for docker storage on all OCP hosts
+    shell: "dd if=/dev/zero of={{ docker_storage_disk }} bs=512 count=2000"
+    when: inventory_hostname in groups['nodes']
+
+  # Prepare disk for gluster storage on all storage/OCS hosts
+  - name: Prepare disks for gluster storage on all storage hosts
+    shell: "dd if=/dev/zero of={{ item }} bs=512 count=2000"
+    with_items: "{{ gluster_storage_disks }}"
+    when: inventory_hostname in groups['storage']
+
+  become: True

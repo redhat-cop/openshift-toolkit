@@ -1,0 +1,49 @@
+---
+localhost_prep_pkg_list:
+- openshift-ansible
+- atomic-openshift-clients
+- vim
+- mlocate
+- tmux
+- skopeo
+- sysstat
+- bash-completion
+
+nodes_prep_pkg_list:
+- wget 
+- git
+- net-tools
+- bind-utils
+- yum-utils
+- iptables-services 
+- bridge-utils
+- bash-completion
+- kexec-tools 
+- sos
+- psacct
+- vim
+- glusterfs-fuse
+- device-mapper-multipath
+- nfs-utils
+- iscsi-initiator-utils
+- ceph-common
+- atomic
+- ansible
+- bash-completion
+- dnsmasq
+- ntp
+- logrotate
+- httpd-tools
+- firewalld
+- libselinux-python
+- conntrack-tools
+- openssl
+- iproute
+- python-dbus
+- PyYAML
+- mlocate
+- tmux
+- skopeo
+- sysstat
+
+pkg_list: "{{ vars[host_grp + '_prep_pkg_list'] }}"

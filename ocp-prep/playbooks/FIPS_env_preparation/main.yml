@@ -1,0 +1,10 @@
+---
+
+- name: Prepare for OCP deploy in FIPS environment
+  hosts: nodes
+  roles:
+  - role: FIPS_env_preparation
+    when:
+    - update_ocp_for_fips_env|default(false)
+  tags:
+  - fips_env

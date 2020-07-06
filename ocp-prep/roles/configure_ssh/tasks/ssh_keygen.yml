@@ -1,0 +1,12 @@
+---
+# Generate ssh keypair
+
+- name: Verify if ssh keypair exists
+  stat:
+    path: "{{ user_ssh }}/id_rsa.pub"
+  register: stat_result
+
+- name: Generate ssh keypair
+  command: ssh-keygen -t rsa -b {{ ssh_key_size }} -P {{ ssh_passphrase | default('""') }} -f {{ user_ssh }}/id_rsa
+  when: stat_result.stat.exists == False
+  become: False

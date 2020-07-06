@@ -1,0 +1,41 @@
+---
+
+# Use a 'block' to ensure "become: True" for all tasks since
+# # all of these tasks require elevated privileges
+- block:
+
+  # Install Docker on all nodes in the OpenShift cluster
+  - import_tasks: docker_install.yml
+
+  # Initial setup of docker storage config files
+  - name: Prepare docker-storage-setup config file
+    lineinfile:
+      path: /etc/sysconfig/docker-storage-setup
+      regexp: 'STORAGE_DRIVER=overlay2'
+      state: absent
+      backup: yes
+
+  # Initial setup of docker storage config files
+  - name: Setup docker-storage-setup config file
+    blockinfile:
+      dest: /etc/sysconfig/docker-storage-setup
+      marker: "## {mark} added by ansible"
+      block: |
+        DEVS={{ docker_storage_disk }}
+        VG=docker-vg
+      state: present
+      create: yes
+
+  # Continuing docker storage setup
+  - name: Setup docker storage with docker-storage-setup
+    shell: "docker-storage-setup"
+    ignore_errors: yes
+
+  # Enables docker services
+  - name: Enable docker service
+    service:
+      name: docker
+      enabled: yes
+      state: restarted
+
+  become: True

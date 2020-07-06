@@ -1,0 +1,10 @@
+---
+
+- name: Configure Docker storage
+  hosts: nodes
+  roles:
+  - role: configure_docker_storage
+    when:
+    - configure_docker_storage|default(false)
+  tags:
+  - docker_storage_config

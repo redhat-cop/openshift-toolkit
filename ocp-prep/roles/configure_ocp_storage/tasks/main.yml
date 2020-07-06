@@ -1,0 +1,94 @@
+---
+
+# Use a 'block' to ensure "become: True" for all tasks since
+# # all of these tasks require elevated privileges
+- block:
+
+  # Create sysvg volume group (if it doesn't exist)
+  #### !!!! MAKE SURE TO CUSTOMIZE all.yml FILE TO REFLECT DESIRED VG CONFIGURATION !!!! ####
+  - name: Create sysvg volume group (if it doesn't exist)
+    lvg:
+      vg: sysvg
+      pvs: "{{ sysvg_pv }}"
+    when: inventory_hostname in groups['nodes']
+    ignore_errors: true
+  # Create etcd logical volume on etcd nodes
+  - name: Create "{{ etcd_lv_size }}" etcd logical volume on etcd nodes
+    lvol:
+      vg: sysvg
+      lv: ocp-etcd-lv
+      size: "{{ etcd_lv_size }}"
+    when: inventory_hostname in groups['etcd']
+  # Create origin logical volume on all nodes except etcd
+  - name: Create "{{ node_origin_lv_size }}" origin logical volume on all nodes except etcd
+    lvol:
+      vg: sysvg
+      lv: ocp-origin-lv
+      size: "{{ node_origin_lv_size }}"
+    when: inventory_hostname in groups['nodes'] and inventory_hostname not in groups['etcd']
+  # Create origin logical volume on etcd nodes
+  - name: Create "{{ etcd_origin_lv_size }}" origin logical volume on etcd nodes
+    lvol:
+      vg: sysvg
+      lv: ocp-origin-lv
+      size: "{{ etcd_origin_lv_size }}"
+    when: inventory_hostname in groups['etcd']
+  # Create etcd filesystem on etcd nodes
+  - name: Create etcd filesystem on etcd nodes
+    filesystem:
+      fstype: xfs
+      dev: /dev/mapper/sysvg-ocp--etcd--lv
+    when: inventory_hostname in groups['etcd']
+  # Create origin filesystem on all nodes
+  - name: Create origin filesystem on all nodes
+    filesystem:
+      fstype: xfs
+      dev: /dev/mapper/sysvg-ocp--origin--lv
+    when: inventory_hostname in groups['nodes']
+  # Create etcd mountpoint on etcd nodes
+  - name: Create etcd mountpoint on etcd nodes
+    file:
+      path: /var/lib/etcd
+      state: directory
+    when: inventory_hostname in groups['etcd']
+  # Create origin mountpoint on all nodes
+  - name: Create origin mountpoint on all nodes
+    file:
+      path: /var/lib/origin
+      state: directory
+    when: inventory_hostname in groups['nodes']
+  # Mount etcd filesystem on etcd nodes
+  - name: Mount etcd filesystem on etcd nodes
+    mount:
+      path: /var/lib/etcd
+      src: /dev/mapper/sysvg-ocp--etcd--lv
+      fstype: xfs
+      opts: defaults
+      state: mounted
+    when: inventory_hostname in groups['etcd']
+  # Mount origin filesystem on all nodes
+  - name: Mount origin filesystem on all nodes
+    mount:
+      path: /var/lib/origin
+      src: /dev/mapper/sysvg-ocp--origin--lv
+      fstype: xfs
+      opts: defaults
+      state: mounted
+    when: inventory_hostname in groups['nodes']
+  # Update SELinux policy on all nodes
+  - name: Update SELinux policy on all nodes
+    shell:
+      cmd: |
+        semanage fcontext -a -t container_file_t '/var/lib/origin'
+        restorecon -R /var/lib/origin
+    when: inventory_hostname in groups['nodes']
+  # Update SELinux policy on etcd nodes
+  - name: Update SELinux policy on etcd nodes
+    shell:
+      cmd:  |
+        semanage fcontext -a -t container_file_t '/var/lib/etcd'
+        chcon -R -t container_file_t /var/lib/etcd
+        restorecon -R /var/lib/etcd
+    when: inventory_hostname in groups['etcd']
+
+  become: True
