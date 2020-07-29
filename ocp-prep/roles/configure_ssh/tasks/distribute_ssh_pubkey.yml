@@ -1,0 +1,10 @@
+---
+#Copy newly created ssh pubkey to .ssh dir on remote hosts
+
+- name: Copy newly created ssh pubkey to .ssh dir on remote hosts
+  authorized_key:
+    user: "{{ ansible_ssh_user }}"
+    state: present
+    key: "{{ lookup('file', '{{ user_ssh }}/id_rsa.pub') }}"
+    manage_dir: yes
+  become: False

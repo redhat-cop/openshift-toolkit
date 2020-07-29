@@ -1,0 +1,7 @@
+---
+# defaults file for rsyslog
+
+rsyslog_ocp_audit_log_input_file_name: "/var/log/origin/audit-ocp.log"
+rsyslog_ocp_audit_log_input_file_tag: "audit_ocp"
+rsyslog_ocp_audit_log_input_file_state_file: "audit-log:"
+rsyslog_ocp_audit_log_input_file_facility: "local6"

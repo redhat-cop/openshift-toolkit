@@ -1,0 +1,10 @@
+---
+
+- name: Configure rsyslog for ocp advanced auditing
+  hosts: masters
+  roles:
+  - role: configure_rsyslog
+    when:
+    - configure_rsyslog|default(false)
+  tags:
+  - rsyslog

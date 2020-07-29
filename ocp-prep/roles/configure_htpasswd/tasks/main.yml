@@ -1,0 +1,27 @@
+---
+
+- name: Create local htpasswd file
+  file: 
+    path: '{{ htpasswd_file }}'
+    mode: 0664
+    state: touch
+
+- name: Generate username/password hash
+  no_log: true
+  shell: htpasswd -b '{{ htpasswd_file }}' '{{ item.item }}' '{{ item.user_input }}'
+  loop: "{{ passwords.results }}"
+
+- name: Comment out the openshift_master_htpasswd_users variable in the inventory file (if it exists)
+  lineinfile:
+    path: '{{ ocp_inventory_file }}'
+    regexp: '^openshift_master_htpasswd_users(.*)$'
+    line: '#openshift_master_htpasswd_users\1'
+    backrefs: yes
+    state: present
+
+- name: Add htpasswd variable to inventory file (if it doesn't exist)
+  lineinfile:
+    path: '{{ ocp_inventory_file }}'
+    regexp: '^openshift_master_htpasswd_file'
+    insertafter: '^openshift_master_identity_providers'
+    line: 'openshift_master_htpasswd_file={{ htpasswd_file }}'

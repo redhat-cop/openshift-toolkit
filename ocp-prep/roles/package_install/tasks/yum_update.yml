@@ -1,0 +1,9 @@
+---
+# Upgrade all packages 
+- name: Upgrade all packages
+  become: True
+  yum:
+    name: '*'
+    state: latest
+  register: result
+  until: result is succeeded

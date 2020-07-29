@@ -1,0 +1,10 @@
+---
+
+# Installs Docker on all OCP machines
+- name: Install Docker
+  become: True
+  yum:
+    name: "docker{{ '-' + docker_version if docker_version is defined else '' }}"
+    state: latest
+  register: result
+  until: result is succeeded

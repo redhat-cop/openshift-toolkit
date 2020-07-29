@@ -1,0 +1,60 @@
+---
+
+# Use a 'block' to ensure "become: True" for all tasks since
+# # # all of these tasks require elevated privileges
+- block:
+
+    # Change encryption algorithm value in three key config files required by OCP installation, from MD5 to SHA256 as required by Hardening/Security policies.
+    - name: "Address invalid encryption algorithm value (Comment out old hex_md5 line in digests file)"
+      delegate_to: localhost
+      lineinfile:
+        path: /usr/lib/python2.7/site-packages/passlib/handlers/digests.py
+        regexp: 'hex_md5     = create_hex_hash\(hashlib.md5,      "md5"\)'
+        line: '#hex_md5     = create_hex_hash(hashlib.md5,      "md5")'
+        state: present
+        backup: yes
+
+    - name: "Address invalid encryption algorithm value (Add new hex_md5 line in digests.py file)"
+      delegate_to: localhost
+      lineinfile:
+        path: /usr/lib/python2.7/site-packages/passlib/handlers/digests.py
+        insertafter: '#hex_md5     = create_hex_hash\(hashlib.md5,      "md5"\)'
+        line: 'hex_md5     = create_hex_hash(hashlib.sha256,      "sha256")'
+        state: present
+
+    - name: "Address invalid encryption algorithm value (Update hashlib.md5 line in digests.py file)"
+      delegate_to: localhost
+      lineinfile:
+        path: /usr/lib/python2.7/site-packages/passlib/handlers/digests.py
+        regexp: '^(.*)return hashlib.md5\(data\).hexdigest\(\)$'
+        line: '\1return hashlib.sha256(data).hexdigest()'
+        backrefs: yes
+
+    - name: "Address invalid encryption algorithm value (Update crypt_scheme line in htpasswd.py file)"
+      delegate_to: localhost
+      lineinfile:
+        path: /usr/lib/python2.7/site-packages/ansible/modules/web_infrastructure/htpasswd.py
+        regexp: '^(.*)crypt_scheme=dict\(required=False, default="apr_md5_crypt"\),$'
+        line: '\1crypt_scheme=dict(required=False, default="des_crypt"),'
+        backrefs: yes
+        backup: yes
+
+    - name: "Address invalid encryption algorithm value (Update openshift_client_binary line in stream_secrets.yml file)"
+      delegate_to: localhost
+      lineinfile:
+        path: /usr/share/ansible/openshift-ansible/roles/openshift_examples/tasks/stream_secrets.yml
+        regexp: '^(.*)item.host \| hash\(''md5''\)(.*)$'
+        line: '\1item.host | hash(''sha256'')\2'
+        backrefs: yes
+        backup: yes
+    
+    # Disable CHAPS authentication as a workaround for OCS/Gluster storage issue
+    - name: "Disable CHAPS authentication - Workaround for OCS/Gluster storage issue (update gluster-block-storageclass.yml.j2 file)"
+      delegate_to: localhost
+      lineinfile:
+        path: /usr/share/ansible/openshift-ansible/roles/openshift_storage_glusterfs/templates/gluster-block-storageclass.yml.j2
+        regexp: '^(.*)chapauthenabled: "true"$'
+        line: '\1chapauthenabled: "false"'
+        backrefs: yes
+
+  become: true

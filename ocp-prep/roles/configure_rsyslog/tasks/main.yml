@@ -1,0 +1,31 @@
+---
+# tasks file to configure rsyslog for OCP Auditing
+
+- name: Ensure config files in rsyslog.d/ are accounted for in the rsyslog.conf configuration file 
+  become: yes
+  lineinfile:
+    path: /etc/rsyslog.conf
+    regexp: '^\$IncludeConfig \/etc\/rsyslog\.d/\*\.conf'
+    line: '$IncludeConfig /etc/rsyslog.d/*.conf'
+  notify:
+    - restart rsyslog
+
+- name: Create rsyslog.d configuration directory
+  become: yes
+  file:
+    path: /etc/rsyslog.d
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+
+- name: Create rsyslog ocp audit configuration file
+  become: yes
+  template:
+    src: 50-ocp-audit.conf.j2
+    dest: /etc/rsyslog.d/50-ocp-audit.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart rsyslog

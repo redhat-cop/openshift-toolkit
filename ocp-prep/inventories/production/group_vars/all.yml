@@ -1,0 +1,57 @@
+##SSH configuration ##
+copy_ssh_keys: false
+ansible_ssh_user: <username>
+ssh_key_size: 2048
+
+
+## Satellite configuration ##
+# Register nodes to satellite
+rhsm_register: true
+rhsm_server_hostname: "satsrv.example.com"
+# Enable/Disable gpgcheck
+disable_pkg_authenticity_verification: yes
+rhsm_org_id: "<org_id>"
+rhsm_activation_key: "<activation_key>"
+rhsm_force_register: false
+
+
+## Package installation
+package_install: true
+
+
+## Prepare OCP cluster and configs for deployment in FIPS enabled environment
+update_ocp_for_fips_env: true
+
+
+## OCP storage configuration
+##### BE CAREFUL!! ######
+##### Setting below value to "True" WILL WIPE whatever drives are specified in the subsequent variables, assuming you answer "yes" to both confirmation prompts!! #####
+configure_ocp_storage: true
+# Physical volume on which to create the sysvg volume group and the logical volumes/filesystems created therein
+sysvg_pv: "/dev/sda3"
+# Disk that will be used for docker storage on all nodes (typically "/dev/sdb" though this may be different in your environment)
+docker_storage_disk: "/dev/sdb"
+# Disk that will be used for gluster storage on storage nodes
+gluster_storage_disks:
+- /dev/sdc
+#- /dev/sdd
+# Size of ETCD logical volume created on all "etcd" nodes
+etcd_lv_size: 10G
+# Size of ORIGIN logical volume created on all nodes EXCEPT etcd nodes
+node_origin_lv_size: 50G
+# Size of ORIGIN logical volume created on all ETCD nodes
+etcd_origin_lv_size: 25G
+
+
+## Setup docker storage
+configure_docker_storage: true
+
+
+## Configure rsyslog for OCP advanced auditing
+configure_rsyslog: true
+
+
+## Generate Username/Password hash and add to (and create) local htpasswd file to be referenced by OpenShift deployment process
+configure_htpasswd: false
+# Path/Filename of OCP inventory file
+ocp_inventory_file: '/<parent_dir>/ocp-prep/inventories/<inventory_subdir>/hosts'

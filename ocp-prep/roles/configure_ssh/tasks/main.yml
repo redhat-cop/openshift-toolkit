@@ -1,0 +1,14 @@
+---
+
+# Create .ssh directory for user on localhost
+- import_tasks: ssh_dir_create.yml
+  delegate_to: localhost
+  run_once: true
+
+# Generate ssh key for user on localhost
+- import_tasks: ssh_keygen.yml
+  delegate_to: localhost
+  run_once: true
+
+# Distribute ssh key to all nodes in the OpenShift cluster
+- import_tasks: distribute_ssh_pubkey.yml

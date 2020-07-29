@@ -1,0 +1,10 @@
+---
+
+- name: Configure satellite
+  hosts: nodes
+  roles:
+  - role: configure_satellite
+    when:
+    - rhsm_register|default(false)
+  tags:
+  - configure_rhsm

@@ -1,0 +1,42 @@
+---
+
+- name: Prepare storage for OCP installation - Prompt
+  gather_facts: false
+  hosts: localhost
+  tags:
+  - configure_ocp_storage
+  tasks:
+
+  - name: Confirm storage wipe
+    pause:
+      prompt: "Do you want to wipe the Docker and Gluster storage partitions? (yes/no)"
+    register: wipe_prompt
+    when: configure_ocp_storage|default(false)
+
+  - name: Re-confirm storage wipe
+    pause:
+      prompt: "Please confirm that you want to wipe the Docker and Gluster storage partitions - NOTE: this WILL delete the existing data on these partitions and can NOT be undone!! (yes/no)"
+    register: confirm_prompt
+    when: configure_ocp_storage|default(false) and hostvars['localhost'].wipe_prompt.user_input | bool
+
+  - debug: msg="Storage will NOT be wiped"
+    when: 
+    - configure_ocp_storage|default(false)
+    - not hostvars['localhost'].wipe_prompt.user_input | bool or not hostvars['localhost'].confirm_prompt.user_input | bool
+
+- name: Prepare storage for OCP installation
+  hosts: nodes,etcd,storage
+  tags:
+  - configure_ocp_storage
+  tasks:
+
+  - name: Wipe storage partitions
+    include_role:
+      name: configure_ocp_storage
+      tasks_from: wipe_storage.yml
+    when: configure_ocp_storage|default(false) and hostvars['localhost'].wipe_prompt.user_input | bool and hostvars['localhost'].confirm_prompt.user_input | bool
+
+  - name: Configure storage
+    include_role:
+      name: configure_ocp_storage
+    when: configure_ocp_storage|default(false)

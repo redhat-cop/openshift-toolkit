@@ -1,0 +1,29 @@
+apiVersion: audit.k8s.io/v1beta1
+kind: Policy
+rules:
+
+  # Do not log node communications or from system service accounts
+  - level: None
+    userGroups: ["system:nodes", "system:serviceaccounts"]
+    resources:
+
+  # Do not log from kub-system accounts
+  - level: None
+    users:
+    - system:apiserver
+    - system:kube-scheduler
+    - system:volume-scheduler
+    - system:kube-controller-manager
+    - system:node
+    - system:openshift-master
+
+  # Do not log these read-only URLs
+  - level: None
+    nonResourceURLs:
+    - /healthz*
+    - /version
+    - /swagger*
+
+  # A catch-all rule to log all other requests at the metadata level
+  - level: Metadata
+

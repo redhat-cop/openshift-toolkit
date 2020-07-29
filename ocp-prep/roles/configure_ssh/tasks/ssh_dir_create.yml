@@ -1,0 +1,8 @@
+---
+# Create .ssh directory on localhost
+
+- name: Create ssh dir
+  file:
+    state: directory
+    path: "{{ user_ssh }}"
+  become: False
