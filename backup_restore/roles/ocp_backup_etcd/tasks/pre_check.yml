@@ -1,0 +1,28 @@
+---
+- name: backup directory {{ MYBACKUPDIR }} exist
+  file: 
+    name: "{{ MYBACKUPDIR }}"
+    state: directory
+
+- name: check for {{ MASTER_EXEC }} command
+  stat: 
+    path: "{{ MASTER_EXEC }}"
+  register: master_exec
+  failed_when: master_exec.stat.exists == False
+
+- name: check for {{ ETCD_POD_MANIFEST }}
+  stat:
+    path: "{{ ETCD_POD_MANIFEST }}"
+  register: etcd_pod_manifest
+  failed_when: etcd_pod_manifest.stat.exists == False
+
+- name: check {{ MYBACKUPDIR }} destination
+  shell: df -h {{ MYBACKUPDIR }} | grep -v 'Filesystem' | awk '{ print $5}' | cut -d '%' -f 1
+  register: shell_result
+  changed_when: false
+
+- name: fail with custom message
+  fail:
+    msg: "{{ MYBACKUPDIR }} is almost full"
+  when: shell_result.stdout|int > 90
+

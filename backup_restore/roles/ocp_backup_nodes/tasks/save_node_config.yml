@@ -1,0 +1,18 @@
+---
+# Backup of the node host configuration files
+- name: backup directory {{ MYBACKUPDIR }}/etc/sysconfig exists
+  file:
+    path: "{{ MYBACKUPDIR }}/etc/sysconfig"
+    state: directory
+
+- name: save /etc/origin
+  shell: cp -aR /etc/origin {{ MYBACKUPDIR }}/etc
+
+- name: save /etc/sysconfig
+  shell: cp -aR /etc/sysconfig/* {{ MYBACKUPDIR }}/etc/sysconfig/
+
+- name: remove symbolic links from backed up directories
+  shell: find {{ MYBACKUPDIR }}/etc/sysconfig -type l -exec rm -f {} \;
+
+- name: save registry certificates
+  shell: tar cf {{ MYBACKUPDIR }}/docker-registry-certs.tar /etc/docker/certs.d/*

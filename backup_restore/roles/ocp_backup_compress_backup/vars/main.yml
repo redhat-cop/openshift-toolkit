@@ -1,0 +1,4 @@
+---
+# vars file for ocp_backup_compress_backup
+MYBACKUPDIR: "/root/ocp_backup/{{ inventory_hostname }}"
+

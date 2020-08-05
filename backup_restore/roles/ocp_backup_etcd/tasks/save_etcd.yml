@@ -1,0 +1,26 @@
+---
+# Save etcd configuration
+- name: backup dir {{ MYBACKUPDIR }}/etcd-config exists
+  file:
+    path: "{{ MYBACKUPDIR }}/etcd-config"
+    state: directory
+
+- name: save etcd configuration
+  shell: cp -aR /etc/etcd/ {{ MYBACKUPDIR }}/etcd-config/
+
+- name: get etcd endpoint
+  shell: grep https {{ ETCD_POD_MANIFEST }} | cut -d '/' -f3
+  register: etcd_ep
+
+- name: etcd data - save snapshot
+  shell: "{{ MASTER_EXEC }} etcd etcd /bin/bash -c \"ETCDCTL_API=3 /usr/bin/etcdctl --cert /etc/etcd/peer.crt --key /etc/etcd/peer.key --cacert /etc/etcd/ca.crt --endpoints {{ etcd_ep.stdout }} snapshot save /var/lib/etcd/snapshot.db\""
+
+- name: etcd data - check snapshot status
+  shell: "{{ MASTER_EXEC }} etcd etcd /bin/bash -c \"ETCDCTL_API=3 /usr/bin/etcdctl --cert /etc/etcd/peer.crt --key /etc/etcd/peer.key --cacert /etc/etcd/ca.crt --endpoints {{ etcd_ep.stdout }} snapshot status /var/lib/etcd/snapshot.db\""
+  register: status_result
+  failed_when: status_result.rc != 0
+
+- name: move snapshot to {{ MYBACKUPDIR }}/etcd-config
+  command: mv /var/lib/etcd/snapshot.db {{ MYBACKUPDIR }}/etcd-config/snapshot.db
+
+

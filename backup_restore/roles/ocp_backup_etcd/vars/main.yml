@@ -1,0 +1,7 @@
+---
+# vars file for ocp_backup_etcd
+MYBACKUPDIR: "/root/ocp_backup/{{ inventory_hostname }}"
+MASTER_EXEC: "/usr/local/bin/master-exec"
+ETCD_CONFIG_DIR: "/etc/etcd"
+ETCD_POD_MANIFEST: "/etc/origin/node/pods/etcd.yaml"
+

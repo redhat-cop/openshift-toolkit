@@ -1,0 +1,11 @@
+---
+# tasks file for ocp_backup_masters
+- name: save master config 
+  import_tasks: save_master_config.yml
+
+- name: save ocp files
+  import_tasks: save_ocp_files.yml
+
+- name: save installed pkgs list
+  import_tasks: installed_pkgs_list.yml
+
