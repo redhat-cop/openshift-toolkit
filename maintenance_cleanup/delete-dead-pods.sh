@@ -50,8 +50,8 @@ if [ "$dryrun" = "false" ]; then
     {system("bash -c '\''oc delete pod -n "$1" "$2" '\''")}'
 
   #Force kill any hanging pods
-  oc get pods --no-headers | awk '$4 == "Terminating" \
-    {system("bash -c '\''oc delete pod -n "$1" "$2" --grace-period=0 '\''")}'
+  oc get pods --all-namespaces --no-headers | awk '$4 == "Terminating" \
+    {system("bash -c '\''oc delete pod -n "$1" "$2" --force --grace-period=0 '\''")}'
 
   exit 0
 fi
